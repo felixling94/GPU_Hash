@@ -41,7 +41,6 @@ std::vector<T1> erzeuge_schluessel_zelle(size_t maxSchluessel, size_t zahlschlue
     T1 rand;
     rand = distribution(rnd);
     schluesselVector.push_back(rand);
-
   }
 
   return schluesselVector;

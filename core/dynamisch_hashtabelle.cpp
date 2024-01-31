@@ -10,13 +10,6 @@ template <typename T1, typename T2>
 Dynamisch_Hashtabelle<T1,T2>::Dynamisch_Hashtabelle():Hashtabelle<T1>::Hashtabelle(){
     standAuflosung = false;
     hashtabelle = new Liste<T1,T2>[2];
-
-    for (size_t i=0 ;i<2; i++){
-        hashtabelle[i].jetzt.schluessel = 0;
-        hashtabelle[i].jetzt.wert = 0;
-        hashtabelle[i].naechste.schluessel = 0;
-        hashtabelle[i].naechste.wert = 0;
-    }
 };
 
 template <typename T1, typename T2>
@@ -24,13 +17,6 @@ Dynamisch_Hashtabelle<T1,T2>::Dynamisch_Hashtabelle(bool pStandAuflosung, size_t
 Hashtabelle<T1>::Hashtabelle(pGroesse){
     standAuflosung = pStandAuflosung;
     hashtabelle = new Liste<T1,T2>[pGroesse];
-    
-    for (size_t i=0 ;i<pGroesse; i++){
-        hashtabelle[i].jetzt.schluessel = 0;
-        hashtabelle[i].jetzt.wert = 0;
-        hashtabelle[i].naechste.schluessel = 0;
-        hashtabelle[i].naechste.wert = 0;
-    }
 };
 
 template <typename T1, typename T2>

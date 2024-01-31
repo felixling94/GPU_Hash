@@ -53,10 +53,10 @@ void Dynamisch_Hashtabelle<T1,T2>::insert_List(T1 * pSchluesselListe, T2 * pWert
     if(standAuflosung == true){
         //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
         cudaMalloc(&zellen_GPU,sizeof(Zelle<T1,T2>)*pGroesse);
-        cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*sizeof(Liste<T1,T2>)*(this->groesseHashtabelle));
+        cudaMalloc(&hashtabelle_GPU,sizeof(Liste<T1,T2>)*(this->groesseHashtabelle));
         
         cudaMemcpy(zellen_GPU,zellen_neu,sizeof(Zelle<T1,T2>)*pGroesse,cudaMemcpyHostToDevice);
-        cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*sizeof(Liste<T1,T2>)*(this->groesseHashtabelle),cudaMemcpyHostToDevice);
+        cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Liste<T1,T2>)*(this->groesseHashtabelle),cudaMemcpyHostToDevice);
         
         //Erstelle Ereignisse, um Dauer für GPU zu messen
         cudaEvent_t start, stop;
@@ -71,7 +71,7 @@ void Dynamisch_Hashtabelle<T1,T2>::insert_List(T1 * pSchluesselListe, T2 * pWert
         kernel_Dynamisch_Insert<<<1,threads>>>(zellen_GPU, hashtabelle_GPU, (this->groesseHashtabelle));
         
         //Kopiere Daten aus der GPU zur Hashtabelle
-        cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*sizeof(Liste<T1,T2>)*(this->groesseHashtabelle), cudaMemcpyDeviceToHost);
+        cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Liste<T1,T2>)*(this->groesseHashtabelle), cudaMemcpyDeviceToHost);
         
         cudaEventRecord(stop);
         cudaEventSynchronize(stop);
