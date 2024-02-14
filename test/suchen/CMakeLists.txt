@@ -1,29 +1,27 @@
-# set(TS_S1 ../../include/hashtabelle.h  ../../include/statisch_hashtabelle.h  ../../include/deklaration.cuh 
-# ../../core/hashtabelle.cpp  ../../core/statisch_hashtabelle.cpp  ../../core/hashfunktionen.cu
-# ../../src/test_main.cpp  ../../src/hashtabelle.cu  ../../src/statisch_hashtabelle.cu
-# ../../test/suchen/hashtabelleStatischSuchen_klein.cu)
+################################################################################################
+#Parallele Ausführung
+################################################################################################
+set(TS_I1 ../../include/hashtabelle.h   ../../include/deklaration.cuh   ../../include/hashfunktionen.h
+../../include/hashfunktionen.cuh   ../../include/test_parallel.cuh  ../../core/hashtabelle.cpp   
+../../core/hashtabelle_kernels.cuh   ../../core/hashtabelle_device.cuh   ../../src/hashtabelle.cuh   
+../../tools/timer.h   ../../test/suchen/hashtabelle_klein.cu)
 
-# set(TD_S1 ../../include/hashtabelle.h  ../../include/deklaration.cuh 
-# ../../core/test_main.h  ../../core/hashtabelle.cpp  ../../core/hashtabelle.cuh 
-# ../../src/hashtabelle_kernels_suchen.cuh  ../../src/hashtabelle_kernels_insert.cuh
-# ../../test/suchen/hashtabelleSuchen_klein.cu)
+set(TS_I2 ../../include/hashtabelle.h   ../../include/deklaration.cuh   ../../include/hashfunktionen.h
+../../include/hashfunktionen.cuh   ../../include/test_parallel.cuh   ../../core/hashtabelle.cpp   
+../../core/hashtabelle_kernels.cuh   ../../core/hashtabelle_device.cuh   ../../src/hashtabelle.cuh   
+../../tools/timer.h   ../../test/suchen/hashtabelle_gross.cu)
 
-# set(TD_S2 ../../include/hashtabelle.h  ../../include/deklaration.cuh 
-# ../../core/test_main.h  ../../core/hashtabelle.cpp  ../../core/hashtabelle.cuh 
-# ../../src/hashtabelle_kernels_suchen.cuh  ../../src/hashtabelle_kernels_insert.cuh
-# ../../test/suchen/hashtabelleSuchen_gross.cu)
+add_executable(testSuchen_klein ${TS_I1})
+add_executable(testSuchen_gross ${TS_I2})
 
-# set(TC_S1 ../../include/hashtabelle.h  ../../include/deklaration.cuh 
-# ../../core/test_main.h  ../../core/hashtabelle.cpp  ../../core/hashtabelle.cuh 
-# ../../src/hashtabelle_kernels_suchen.cuh  ../../src/hashtabelle_kernels_insert.cuh 
-# ../../test/suchen/hashtabelleSuchenCuckoo_klein.cu)
+################################################################################################
+#Sequentielle Ausführung
+################################################################################################
+set(TS_SS1 ../../include/hashtabelle.h   ../../core/hashtabelle.cpp   ../../include/hashfunktionen.h
+../../include/test_sequentiell.h   ../../tools/timer.h   ../../test/suchen/hashtabelle_klein.cpp)
 
-# set(TC_S2 ../../include/hashtabelle.h  ../../include/deklaration.cuh 
-# ../../core/test_main.h  ../../core/hashtabelle.cpp  ../../core/hashtabelle.cuh 
-# ../../src/hashtabelle_kernels_suchen.cuh  ../../src/hashtabelle_kernels_insert.cuh 
-# ../../test/suchen/hashtabelleSuchenCuckoo_gross.cu)
+set(TS_SS2 ../../include/hashtabelle.h   ../../core/hashtabelle.cpp   ../../include/hashfunktionen.h
+../../include/test_sequentiell.h   ../../tools/timer.h   ../../test/suchen/hashtabelle_gross.cpp)
 
-# add_executable(testStatischSuchen_klein ${TS_S1})
-# add_executable(testStatischSuchen_gross ${TS_S2})
-# add_executable(testCuckooSuchen_klein ${TC_S1})
-# add_executable(testCuckooSuchen_gross ${TC_S2})
+add_executable(testSequentiellSuchen_klein ${TS_SS1})
+add_executable(testSequentiellSuchen_gross ${TS_SS2})

@@ -57,6 +57,9 @@
         "typeinfo": "cpp",
         "__nullptr": "cpp",
         "__config": "cpp",
-        "__split_buffer": "cpp"
+        "__split_buffer": "cpp",
+        "coroutine": "cpp",
+        "iomanip": "cpp",
+        "sstream": "cpp"
     }
 }

@@ -1,197 +1,328 @@
-#ifndef _HASHTABELLE_CUH_
-#define _HASHTABELLE_CUH_
+#ifndef HASHTABELLE_CUH
+#define HASHTABELLE_CUH
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
 #include <stdint.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
-#include <../include/statisch_hashtabelle.h>
-#include <../include/dynamisch_hashtabelle.h>
-#include <../include/deklaration.cuh>
+#include <../include/hashtabelle.h>
+#include <../core/hashtabelle_kernels.cuh>
 
-//Berechne den Index einer Zelle durch Modulo-Funktion
-template <typename T1>
-DEVICEQUALIFIER size_t getHashwert(T1 pSchluessel, size_t pGroesseHashtabelle){
-    return (size_t)pSchluessel % pGroesseHashtabelle;
-};
-
-//Berechne einen Sondierungswert
-DEVICEQUALIFIER size_t getQuadratisch_Sondierungswert(size_t pIndex){
-    size_t i = (size_t) pow(ceil((double)pIndex/2),2.0);
-    size_t j = (size_t) pow(-1.0,(double)pIndex);
-    return (i * j);
-};
-
-//Füge der Hashtabelle eine Liste von Schlüsseln und deren Werten durch linear Hashverfahren hinzu.
+//Fuege der Hashtabelle ein Array von Schlüsseln und deren Werten gleichzeitig hinzu.
 template <typename T1, typename T2>
-DEVICEQUALIFIER void hashtabelle_Linear_Insert(Zelle<T1,T2>* pZellen, Zelle<T1,T2>* pHashtabelle, size_t pGroesseHashtabelle){
-    size_t i, threadid, index_neu;
-    T1 schluessel;
-    T2 wert;
+void Hashtabelle<T1,T2>::insert_List(T1 * pSchluesselListe, T2 * pWerteListe, size_t pGroesse){
+    Zelle<T1,T2> * zellen_neu;
+
+    Zelle<T1,T2> * hashtabelle_GPU;
+    Zelle<T1,T2> * zellen_GPU;
+
+    if(pGroesse <= groesseHashtabelle){
+        std::vector<Zelle<T1,T2>> schluesselwertVektor;
+        schluesselwertVektor.reserve(pGroesse);
+        
+        for (size_t i = 0; i < pGroesse ; i++)
+            schluesselwertVektor.push_back(Zelle<T1,T2>{pSchluesselListe[i],pWerteListe[i]});
+        
+        zellen_neu = schluesselwertVektor.data();
+
+        if (hashtyp_kode == keine_aufloesung){
+            //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
+            cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*groesseHashtabelle);
+            cudaMalloc(&zellen_GPU,sizeof(Zelle<T1,T2>)*pGroesse);
+            
+            cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*groesseHashtabelle,cudaMemcpyHostToDevice);
+            cudaMemcpy(zellen_GPU,zellen_neu,sizeof(Zelle<T1,T2>)*pGroesse,cudaMemcpyHostToDevice);
+
+            //Erstelle Ereignisse, um Dauer für GPU zu messen
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
+
+            cudaEventRecord(start);
+
+            //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
+            dim3 threads(pGroesse);
+
+            kernel_Insert<<<1,threads>>>(zellen_GPU, hashtabelle_GPU, groesseHashtabelle,hashfunktion_kode);
+
+            //Kopiere Daten aus der GPU zur Hashtabelle
+            cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*groesseHashtabelle, cudaMemcpyDeviceToHost);
+
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
   
-    i = 0;
-    threadid = threadIdx.x;
-    schluessel = pZellen[threadid].schluessel;
-    wert = pZellen[threadid].wert;
-    index_neu = getHashwert<T1>(schluessel,pGroesseHashtabelle);
-    
-    while(i < pGroesseHashtabelle){
-        index_neu = getHashwert<T1>(schluessel + (T1) i, pGroesseHashtabelle);
+            float Millisekunden = 0;
+            cudaEventElapsedTime(&Millisekunden, start, stop);
+            float Sekunden = Millisekunden / 1000.0f;
+
+            std::cout << "Zahl der zu belegenden Zellen (in Datenelementen)                 : ";
+            std::cout << pGroesse << std::endl;
+            std::cout << "Dauer (in Millisekunden)                                          : ";
+            std::cout <<  Millisekunden << std::endl;
+            std::cout << "Zahl der belegten Zellen pro Sekunde (in Millionen Datenelementen   ";
+            std::cout << std::endl;
+            std::cout << "pro Sekunde)                                                      : ";
+            std::cout << (pGroesse / (double) Sekunden / 1000000.0f) << std::endl;
+            std::cout << std::endl;
         
-        T1 vorher_schluessel = atomicCAS(&pHashtabelle[index_neu].schluessel, 0, schluessel);
-        
-        if (vorher_schluessel == 0 || vorher_schluessel == schluessel){
-            pHashtabelle[index_neu].schluessel = schluessel;
-            pHashtabelle[index_neu].wert = wert;
+            cudaFree(hashtabelle_GPU);
+            cudaFree(zellen_GPU);
+            cudaFree(zellen_neu);
+
             return;
-        }
+        }else if (hashtyp_kode == linear_aufloesung){
+            //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
+            cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*groesseHashtabelle);
+            cudaMalloc(&zellen_GPU,sizeof(Zelle<T1,T2>)*pGroesse);
+            
+            cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*groesseHashtabelle,cudaMemcpyHostToDevice);
+            cudaMemcpy(zellen_GPU,zellen_neu,sizeof(Zelle<T1,T2>)*pGroesse,cudaMemcpyHostToDevice);
 
-        ++i;
-    }
+            //Erstelle Ereignisse, um Dauer für GPU zu messen
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
 
-    return;
-};
+            cudaEventRecord(start);
 
-//Füge der Hashtabelle eine Liste von Schlüsseln und deren Werten durch quadratische Hashverfahren hinzu.
-template <typename T1, typename T2>
-DEVICEQUALIFIER void hashtabelle_Quadratisch_Insert(Zelle<T1,T2>* pZellen, Zelle<T1,T2>* pHashtabelle, size_t pGroesseHashtabelle){
-    size_t i, threadid, index_neu, sondierungswert;
-    T1 schluessel;
-    T2 wert;
+            //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
+            dim3 threads(pGroesse);
 
-    i = 0;
-    threadid = threadIdx.x;
-    schluessel = pZellen[threadid].schluessel;
-    wert = pZellen[threadid].wert;
-    index_neu = getHashwert<T1>(schluessel,pGroesseHashtabelle);
+            kernel_Linear_Insert<<<1,threads>>>(zellen_GPU, hashtabelle_GPU, groesseHashtabelle,hashfunktion_kode);
 
-    while((i/2) < pGroesseHashtabelle){
-        sondierungswert = getQuadratisch_Sondierungswert(i);
-        index_neu = getHashwert<T1>(index_neu + (T1) sondierungswert,pGroesseHashtabelle);
-        
-        T1 vorher_schluessel = atomicCAS(&pHashtabelle[index_neu].schluessel, 0, schluessel);
-        
-        if (vorher_schluessel == 0 || vorher_schluessel == schluessel){
-            pHashtabelle[index_neu].schluessel = schluessel;
-            pHashtabelle[index_neu].wert = wert;
-            return;
-        }
+            //Kopiere Daten aus der GPU zur Hashtabelle
+            cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*groesseHashtabelle, cudaMemcpyDeviceToHost);
 
-        ++i;
-    } 
-
-    return;   
-};
-
-//TODO
-//Cuckoo-Hashverfahren
-
-//TODO
-//Beliebige Hashverfahren
-
-//Füge der Hashtabelle eine Liste von Schlüsseln und deren Werten durch dynamische Hashverfahren hinzu.
-template <typename T1, typename T2>
-DEVICEQUALIFIER void hashtabelle_Dynamisch_Insert(Zelle<T1,T2>* pZellen, Liste<T1,T2>* pHashtabelle, size_t pGroesseHashtabelle){
-    size_t i, threadid, index_vorher, index_nachher;
-    T1 schluessel;
-    T2 wert;
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
   
-    i = 0;
-    threadid = threadIdx.x;
-    schluessel = pZellen[threadid].schluessel;
-    wert = pZellen[threadid].wert;
-    index_vorher = getHashwert<T1>(schluessel,pGroesseHashtabelle);
-    index_nachher = index_vorher;
-    
-    while(i < pGroesseHashtabelle){
-        index_nachher+=i;
+            float Millisekunden = 0;
+            cudaEventElapsedTime(&Millisekunden, start, stop);
+            float Sekunden = Millisekunden / 1000.0f;
 
-        T1 vorher_schluessel = atomicCAS(&pHashtabelle[index_nachher].jetzt.schluessel, 0, schluessel);
+            std::cout << "Zahl der zu belegenden Zellen (in Datenelementen)                 : ";
+            std::cout << pGroesse << std::endl;
+            std::cout << "Dauer (in Millisekunden)                                          : ";
+            std::cout <<  Millisekunden << std::endl;
+            std::cout << "Zahl der belegten Zellen pro Sekunde (in Millionen Datenelementen   ";
+            std::cout << std::endl;
+            std::cout << "pro Sekunde)                                                      : ";
+            std::cout << (pGroesse / (double) Sekunden / 1000000.0f) << std::endl;
+            std::cout << std::endl;
         
-        if(vorher_schluessel == 0 || vorher_schluessel == schluessel){
-            pHashtabelle[index_nachher].jetzt.schluessel = schluessel;
-            pHashtabelle[index_nachher].jetzt.wert = wert;
-
-            if (i>0){
-                pHashtabelle[index_vorher].naechste.schluessel = schluessel;
-                pHashtabelle[index_vorher].naechste.wert = wert;
-            }
+            cudaFree(hashtabelle_GPU);
+            cudaFree(zellen_GPU);
+            cudaFree(zellen_neu);
 
             return;
-        }
-        ++i;
-    }
+        }else if (hashtyp_kode == quadratisch_aufloesung){
+            //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
+            cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*groesseHashtabelle);
+            cudaMalloc(&zellen_GPU,sizeof(Zelle<T1,T2>)*pGroesse);
+            
+            cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*groesseHashtabelle,cudaMemcpyHostToDevice);
+            cudaMemcpy(zellen_GPU,zellen_neu,sizeof(Zelle<T1,T2>)*pGroesse,cudaMemcpyHostToDevice);
+ 
+            //Erstelle Ereignisse, um Dauer für GPU zu messen
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
 
-    return;
-};
+            cudaEventRecord(start);
 
-//Suche nach einer Liste von Schlüsseln durch lineare Hashverfahren
-template <typename T1, typename T2>
-DEVICEQUALIFIER void hashtabelle_Linear_Suchen(T1 * pSchluesselListe, Zelle<T1,T2> * pHashtabelle, size_t pGroesseHashtabelle){
-    size_t i, threadid, index_neu;
-    T1 schluessel;
+            //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
+            dim3 threads(pGroesse);
 
-    i = 0;
-    threadid = threadIdx.x;
-    schluessel = pSchluesselListe[threadid];
-    index_neu = getHashwert<T1>(schluessel,pGroesseHashtabelle);
-
-    while(i < pGroesseHashtabelle ){
-        index_neu = getHashwert<T1>(schluessel + (T1) i, pGroesseHashtabelle);
-
-        T1 vorher_schluessel = pHashtabelle[index_neu].schluessel;
-
-        if (vorher_schluessel==schluessel){
-            //TODO
-            return;
-        }
-
-        ++i;
-    }
-
-    return;
-};
-
-//Suche nach einer Liste von Schlüsseln durch quadratische Hashverfahren
-template <typename T1, typename T2>
-DEVICEQUALIFIER void hashtabelle_Quadratisch_Suchen(T1 * pSchluesselListe, Zelle<T1,T2>* pHashtabelle, size_t pGroesseHashtabelle){
-    size_t i, threadid, index_neu, sondierungswert;
-    T1 schluessel;
-
-    i = 0;
-    threadid = threadIdx.x;
-    schluessel = pSchluesselListe[threadid];
-    index_neu = getHashwert<T1>(schluessel,pGroesseHashtabelle);
-
-    while((i/2) < pGroesseHashtabelle){
-        sondierungswert = getQuadratisch_Sondierungswert(i);
-        index_neu = getHashwert<T1>(index_neu + (T1) sondierungswert,pGroesseHashtabelle);
-       
-        T1 vorher_schluessel = pHashtabelle[index_neu].schluessel;
-    
-        if (vorher_schluessel==schluessel){
-            //TODO
-            return;
-        }
+            kernel_Quadratisch_Insert<<<1,threads>>>(zellen_GPU, hashtabelle_GPU, groesseHashtabelle,hashfunktion_kode);
         
-        ++i;
-    }  
+            //Kopiere Daten aus der GPU zur Hashtabelle
+            cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*groesseHashtabelle, cudaMemcpyDeviceToHost);
 
-    return;  
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
+  
+            float Millisekunden = 0;
+            cudaEventElapsedTime(&Millisekunden, start, stop);
+            float Sekunden = Millisekunden / 1000.0f;
+
+            std::cout << "Zahl der belegenden Zellen (in Datenelementen)                    : ";
+            std::cout << pGroesse << std::endl;
+            std::cout << "Dauer (in Millisekunden)                                          : ";
+            std::cout <<  Millisekunden << std::endl;
+            std::cout << "Zahl der belegten Zellen pro Sekunde (in Millionen Datenelementen   ";
+            std::cout << std::endl;
+            std::cout << "pro Sekunde)                                                      : ";
+            std::cout << (pGroesse / (double) Sekunden / 1000000.0f) << std::endl;
+            std::cout << std::endl;
+        
+            cudaFree(hashtabelle_GPU);
+            cudaFree(zellen_GPU);
+            cudaFree(zellen_neu);
+
+            return;
+        }else{
+        //TODO
+            return;
+        }
+
+    }else{
+        std::cout << "Die Größe der der Hashtabelle hinzufügenden Schlüssel muss mindestens 0 und höchstens ";
+        std::cout << " die Größe der Hashtabelle betragen." << std::endl;
+        return;
+    }
 };
 
-//TODO
-//Cuckoo-Hashverfahren
-
-//TODO
-//Beliebige Hashverfahren
-
-//Suche nach einer Liste von Schlüsseln durch dynamische Hashverfahren
+//Suche nach einem Array von Schlüsseln in der Hashtabelle gleichzeitig.
 template <typename T1, typename T2>
-DEVICEQUALIFIER void hashtabelle_Dynamisch_Suchen(T1 * pSchluesselListe, Liste<T1,T2>* pHashtabelle, size_t pGroesseHashtabelle){
-    //TODO
+void Hashtabelle<T1,T2>::suchen_List(T1 * pSchluesselListe, size_t pGroesse){
+    Zelle<T1,T2> * hashtabelle_GPU;
+    T1 * schluesselListe_GPU;
+
+    if(pGroesse <= groesseHashtabelle){
+        if (hashtyp_kode == keine_aufloesung){
+            //Reserviere und kopiere Daten aus der Hashtabelle, eingegebenen Zellen auf GPU
+            cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*groesseHashtabelle);
+            cudaMalloc(&schluesselListe_GPU,sizeof(T1)*pGroesse);
+        
+            cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*groesseHashtabelle,cudaMemcpyHostToDevice);
+            cudaMemcpy(schluesselListe_GPU,pSchluesselListe,sizeof(T1)* pGroesse,cudaMemcpyHostToDevice);
+
+            //Erstelle Ereignisse, um Dauer für GPU zu messen
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
+
+            cudaEventRecord(start);
+
+            //Suche nach einer Liste aller eingegebenen Zellen in der Hashtabelle
+            dim3 threads(pGroesse);
+        
+            kernel_Suchen<<<1,threads>>>(schluesselListe_GPU, hashtabelle_GPU,groesseHashtabelle,hashfunktion_kode);
+        
+            //Kopiere Daten aus der GPU zur Hashtabelle
+            cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*groesseHashtabelle, cudaMemcpyDeviceToHost);
+
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
+  
+            float Millisekunden = 0;
+            cudaEventElapsedTime(&Millisekunden, start, stop);
+            float Sekunden = Millisekunden / 1000.0f;
+            
+            std::cout << "Zahl der gesuchten Zellen in der Hashtabelle (in Datenelementen)  : ";
+            std::cout << pGroesse << std::endl;
+            std::cout << "Dauer (in Millisekunden)                                          : ";
+            std::cout <<  Millisekunden << std::endl;
+            std::cout << "Zahl der gesuchten Zellen pro Sekunde (in Millionen Datenelementen  ";
+            std::cout << std::endl;
+            std::cout << "pro Sekunde)                                                      : ";
+            std::cout << (pGroesse / (double) Sekunden / 1000000.0f) << std::endl;
+            std::cout << std::endl;
+
+            cudaFree(hashtabelle_GPU);
+            cudaFree(schluesselListe_GPU);
+
+        }else if (hashtyp_kode == linear_aufloesung){
+            //Reserviere und kopiere Daten aus der Hashtabelle, eingegebenen Zellen auf GPU
+            cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*groesseHashtabelle);
+            cudaMalloc(&schluesselListe_GPU,sizeof(T1)*pGroesse);
+        
+            cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*groesseHashtabelle,cudaMemcpyHostToDevice);
+            cudaMemcpy(schluesselListe_GPU,pSchluesselListe,sizeof(T1)* pGroesse,cudaMemcpyHostToDevice);
+
+            //Erstelle Ereignisse, um Dauer für GPU zu messen
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
+
+            cudaEventRecord(start);
+
+            //Suche nach einer Liste aller eingegebenen Zellen in der Hashtabelle
+            dim3 threads(pGroesse);
+        
+            kernel_Linear_Suchen<<<1,threads>>>(schluesselListe_GPU, hashtabelle_GPU,groesseHashtabelle,hashfunktion_kode);
+        
+            //Kopiere Daten aus der GPU zur Hashtabelle
+            cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*groesseHashtabelle, cudaMemcpyDeviceToHost);
+
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
+  
+            float Millisekunden = 0;
+            cudaEventElapsedTime(&Millisekunden, start, stop);
+            float Sekunden = Millisekunden / 1000.0f;
+            
+            std::cout << "Zahl der gesuchten Zellen in der Hashtabelle (in Datenelementen)  : ";
+            std::cout << pGroesse << std::endl;
+            std::cout << "Dauer (in Millisekunden)                                          : ";
+            std::cout <<  Millisekunden << std::endl;
+            std::cout << "Zahl der gesuchten Zellen pro Sekunde (in Millionen Datenelementen  ";
+            std::cout << std::endl;
+            std::cout << "pro Sekunde)                                                      : ";
+            std::cout << (pGroesse / (double) Sekunden / 1000000.0f) << std::endl;
+            std::cout << std::endl;
+
+            cudaFree(hashtabelle_GPU);
+            cudaFree(schluesselListe_GPU);
+
+        }else if (hashtyp_kode == quadratisch_aufloesung){
+            //Reserviere und kopiere Daten aus der Hashtabelle, eingegebenen Zellen auf GPU
+            cudaMalloc(&hashtabelle_GPU,sizeof(Zelle<T1,T2>)*groesseHashtabelle);
+            cudaMalloc(&schluesselListe_GPU,sizeof(T1)*pGroesse);
+        
+            cudaMemcpy(hashtabelle_GPU,hashtabelle,sizeof(Zelle<T1,T2>)*groesseHashtabelle,cudaMemcpyHostToDevice);
+            cudaMemcpy(schluesselListe_GPU,pSchluesselListe,sizeof(T1)* pGroesse,cudaMemcpyHostToDevice);
+
+            //Erstelle Ereignisse, um Dauer für GPU zu messen
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
+
+            cudaEventRecord(start);
+
+            //Suche nach einer Liste aller eingegebenen Zellen in der Hashtabelle
+            dim3 threads(pGroesse);
+        
+            kernel_Quadratisch_Suchen<<<1,threads>>>(schluesselListe_GPU, hashtabelle_GPU,groesseHashtabelle,hashfunktion_kode);
+        
+            //Kopiere Daten aus der GPU zur Hashtabelle
+            cudaMemcpy(hashtabelle, hashtabelle_GPU, sizeof(Zelle<T1,T2>)*groesseHashtabelle, cudaMemcpyDeviceToHost);
+
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
+  
+            float Millisekunden = 0;
+            cudaEventElapsedTime(&Millisekunden, start, stop);
+            float Sekunden = Millisekunden / 1000.0f;
+
+            std::cout << "Zahl der gesuchten Zellen in der Hashtabelle (in Datenelementen)  : ";
+            std::cout << pGroesse << std::endl;
+            std::cout << "Dauer (in Millisekunden)                                          : ";
+            std::cout <<  Millisekunden << std::endl;
+            std::cout << "Zahl der gesuchten Zellen pro Sekunde (in Millionen Datenelementen  ";
+            std::cout << std::endl;
+            std::cout << "pro Sekunde)                                                      : ";
+            std::cout << (pGroesse / (double) Sekunden / 1000000.0f) << std::endl;
+            std::cout << std::endl;
+        
+            cudaFree(hashtabelle_GPU);
+            cudaFree(schluesselListe_GPU);
+        
+        }else{
+            //TODO
+        }
+
+    }else{
+        std::cout << "Die Größe der der Hashtabelle nach suchenden Schlüssel muss mindestens 0 und höchstens ";
+        std::cout << " die Größe der Hashtabelle betragen." << std::endl;
+        return;
+    }
 };
 
 #endif

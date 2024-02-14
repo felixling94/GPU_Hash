@@ -13,4 +13,10 @@
 #define DEVICEQUALIFIER
 #endif
 
+#ifdef __CUDACC__
+#define INLINEQUALIFIER  __forceinline__
+#else
+#define INLINEQUALIFIER inline
+#endif
+
 #endif
