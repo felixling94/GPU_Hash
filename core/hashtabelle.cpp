@@ -26,7 +26,7 @@ template <typename T1, typename T2>
 Hashtabelle<T1,T2>::~Hashtabelle(){
 };
 
-//Berechne den Modulo eines Schlüssels
+//Berechne den Hashwert eines Schlüssels
 template <typename T1, typename T2>
 size_t Hashtabelle<T1,T2>::getHashwert(T1 pSchluessel){
     if (hashfunktion_kode == modulo){

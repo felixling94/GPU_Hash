@@ -109,59 +109,58 @@ DEVICEQUALIFIER void quadratisch_insert(Zelle<T1,T2>* pZellen, Zelle<T1,T2>* pHa
 
 //Füge der Hashtabelle eine Liste von Schlüsseln und deren Werten durch Cuckoo-Hashverfahren hinzu.
 template <typename T1, typename T2>
-DEVICEQUALIFIER void cuckoo_insert(Zelle<T1,T2>* pZellen,
-Zelle<T1,T2>* pHashtabelle1, Zelle<T1,T2>* pHashtabelle2, size_t pGroesseHashtabelle){
-    Zelle<T1,T2> zelle_neu;
+DEVICEQUALIFIER void cuckoo_insert(Zelle<T1,T2>* pZellen, Zelle<T1,T2>* pHashtabelle1, hashfunktion pHashfunktion1, 
+Zelle<T1,T2>* pHashtabelle2, hashfunktion pHashfunktion2, size_t pGroesseHashtabelle){
+    T1 schluessel, schluessel_temp;
+    T2 wert, wert_temp;
     size_t i, threadid, index_neu1, index_neu2;
-    T1 schluessel, vorher_schluessel1, vorher_schluessel2;
-    T2 wert;
 
     i = 0;
     threadid = threadIdx.x;
     schluessel = pZellen[threadid].schluessel;
     wert = pZellen[threadid].wert;
 
-    index_neu1 = getHashwert<T1>(schluessel,pGroesseHashtabelle,murmer);
-    index_neu2 = getHashwert<T1>(schluessel,pGroesseHashtabelle,murmer);
+    index_neu1 = getHashwert<T1>(schluessel,pGroesseHashtabelle,pHashfunktion1);
+    index_neu2 = getHashwert<T1>(schluessel,pGroesseHashtabelle,pHashfunktion2);
 
-    while(i<pGroesseHashtabelle){
+    while (i<pGroesseHashtabelle){
         index_neu1 = (index_neu1 + i )%pGroesseHashtabelle;
-        index_neu2 = (index_neu2 + getQuadratisch_Sondierungswert(i))%pGroesseHashtabelle;
-     
-        vorher_schluessel1 = atomicCAS(&pHashtabelle1[index_neu1].schluessel, FeldLeer, schluessel);
+        index_neu2 = (index_neu2 + i )%pGroesseHashtabelle; 
 
-        if (vorher_schluessel1 == FeldLeer || vorher_schluessel1 == schluessel){
+        schluessel_temp = atomicCAS(&pHashtabelle1[index_neu1].schluessel,FeldLeer,schluessel);
+        
+        if (schluessel_temp == FeldLeer || schluessel_temp == schluessel){
             pHashtabelle1[index_neu1].schluessel = schluessel;
             pHashtabelle1[index_neu1].wert = wert;
             return;
         }
 
-        zelle_neu.schluessel = pHashtabelle1[index_neu1].schluessel;
-        zelle_neu.wert = pHashtabelle1[index_neu1].wert;
+        schluessel_temp = pHashtabelle1[index_neu1].schluessel;
+        wert_temp = pHashtabelle1[index_neu1].wert;
 
         pHashtabelle1[index_neu1].schluessel = schluessel;
         pHashtabelle1[index_neu1].wert = wert;
 
-        schluessel = zelle_neu.schluessel;
-        wert = zelle_neu.wert ;
+        schluessel = schluessel_temp;
+        wert = wert_temp;
 
-        vorher_schluessel2 = atomicCAS(&pHashtabelle2[index_neu2].schluessel, FeldLeer, schluessel);
-
-        if (vorher_schluessel2 == FeldLeer || vorher_schluessel2 == schluessel){
+        schluessel_temp = atomicCAS(&pHashtabelle2[index_neu2].schluessel,FeldLeer,schluessel);
+        
+        if (schluessel_temp == FeldLeer || schluessel_temp == schluessel){
             pHashtabelle2[index_neu2].schluessel = schluessel;
             pHashtabelle2[index_neu2].wert = wert;
             return;
         }
 
-        zelle_neu.schluessel = pHashtabelle2[index_neu2].schluessel;
-        zelle_neu.wert = pHashtabelle2[index_neu2].wert;
+        schluessel_temp = pHashtabelle2[index_neu2].schluessel;
+        wert_temp = pHashtabelle2[index_neu2].wert;
 
         pHashtabelle2[index_neu2].schluessel = schluessel;
         pHashtabelle2[index_neu2].wert = wert;
 
-        schluessel = zelle_neu.schluessel;
-        wert = zelle_neu.wert ;
-
+        schluessel = schluessel_temp;
+        wert = wert_temp;
+        
         ++i;
     }
     return;

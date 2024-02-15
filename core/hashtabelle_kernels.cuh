@@ -26,6 +26,13 @@ Zelle<uint32_t,uint32_t> * pHashtabelle, size_t pGroesseHashtabelle,hashfunktion
     quadratisch_insert<uint32_t,uint32_t>(pZellen,pHashtabelle,pGroesseHashtabelle,pHashfunktion);
 }
 
+GLOBALQUALIFIER void kernel_Cuckoo_Insert(Zelle<uint32_t,uint32_t>* pZellen,
+Zelle<uint32_t,uint32_t>* pHashtabelle1, hashfunktion pHashfunktion1,
+Zelle<uint32_t,uint32_t>* pHashtabelle2, hashfunktion pHashfunktion2,
+size_t pGroesseHashtabelle){
+    cuckoo_insert<uint32_t,uint32_t>(pZellen, pHashtabelle1, pHashfunktion1, pHashtabelle2, pHashfunktion2,pGroesseHashtabelle);
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //Suche nach einer Liste von Paaren von Schlüsseln in der Hashtabelle
 /////////////////////////////////////////////////////////////////////////////////////////

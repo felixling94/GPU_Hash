@@ -7,9 +7,15 @@
 #include <algorithm>
 
 #include <../include/hashfunktionen.h>
+
 #include <../include/hashtabelle.h>
-#include <../core/hashtabelle.cpp>
 #include <../src/hashtabelle.cuh>
+#include <../core/hashtabelle.cpp>
+
+#include <../include/cuckoo_hashtabelle.h>
+#include <../src/cuckoo_hashtabelle.cuh>
+#include <../core/cuckoo_hashtabelle.cpp>
+
 #include <../tools/timer.h>
 
 template <typename T1, typename T2>
@@ -172,6 +178,28 @@ class Test_Parallel{
             }
             std::cout << Zeit::getDauer() << std::endl;
             std::cout << std::endl;
+        };
+
+        void insert_Cuckoo(hashtyp pHashtyp1, hashfunktion pHashfunktion1, hashtyp pHashtyp2, hashfunktion pHashfunktion2,bool pStandDruecke){
+            /////////////////////////////////////////////////////////////////////////////////////////
+            //Fuege der Hashtabelle eine Liste von Paaren von Schlüsseln und Werten hinzu
+            /////////////////////////////////////////////////////////////////////////////////////////
+            std::cout << "Speicherung von " << zellen_zahl << " Zellen in der Hashtabelle mit der Größe von ";
+            std::cout << test_groesseHashtabelle << " Datenelementen" << std::endl;
+            std::cout << std::endl;
+            
+            //Erstelle eine ggf. Cuckoo-Hashtabelle
+            Cuckoo_Hashtabelle<T1,T2> cuckooHashtabelle(pHashtyp1, pHashfunktion1, pHashtyp2, pHashfunktion2, test_groesseHashtabelle);
+
+            std::cout << "****************************************************************";
+            std::cout << "****************************************************************" << std::endl;
+            std::cout << "Cuckoo-Hashverfahren" << std::endl;
+            std::cout << "****************************************************************";
+            std::cout << "****************************************************************" << std::endl;
+            
+            cuckooHashtabelle.insert_List(test_schluessel.data(),test_werte.data(),zellen_zahl);
+
+            if (pStandDruecke == true) cuckooHashtabelle.drucken();
         };
 
         void suche_hashtabelle(hashtyp pHashtyp, hashfunktion pHashfunktion, bool pStandDruecke){
