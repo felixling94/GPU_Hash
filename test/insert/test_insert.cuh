@@ -137,8 +137,6 @@ class Test_Insert{
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             hashtabelle2.insert_List(schluesselListe.data(),werteListe.data(),nx*ny*nz);
-            std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
-            std::cout << hashtabelle2.getzahlZellen() << std::endl;
         };
 };
 

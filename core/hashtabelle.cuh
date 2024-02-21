@@ -156,6 +156,9 @@ void Hashtabelle_Device<T1,T2>::insert0(Zelle<T1,T2> * zellen, size_t pGroesse){
     cudaEventElapsedTime(&dauer_herunterladen, start3, stop3);
     cudaEventElapsedTime(&dauer_gesamt, start1, stop3);
     
+    std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
+    std::cout << getzahlZellen() << std::endl;
+    std::cout << std::endl;    
     std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
     std::cout <<  dauer_hochladen << std::endl;
     std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";
@@ -233,7 +236,10 @@ void Hashtabelle_Device<T1,T2>::insert_linear(Zelle<T1,T2> * zellen, size_t pGro
     cudaEventElapsedTime(&dauer_ausfuehrung, start2, stop2);
     cudaEventElapsedTime(&dauer_herunterladen, start3, stop3);
     cudaEventElapsedTime(&dauer_gesamt, start1, stop3);
-     
+
+    std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
+    std::cout << getzahlZellen() << std::endl;
+    std::cout << std::endl;     
     std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
     std::cout <<  dauer_hochladen << std::endl;
     std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";
@@ -312,6 +318,9 @@ void Hashtabelle_Device<T1,T2>::insert_quadratisch(Zelle<T1,T2> * zellen, size_t
     cudaEventElapsedTime(&dauer_herunterladen, start3, stop3);
     cudaEventElapsedTime(&dauer_gesamt, start1, stop3);
     
+    std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
+    std::cout << getzahlZellen() << std::endl;
+    std::cout << std::endl;
     std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
     std::cout <<  dauer_hochladen << std::endl;
     std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";
@@ -390,6 +399,9 @@ void Hashtabelle_Device<T1,T2,>::insert_doppelt(Zelle<T1,T2> * zellen, size_t pG
     cudaEventElapsedTime(&dauer_herunterladen, start3, stop3);
     cudaEventElapsedTime(&dauer_gesamt, start1, stop3);
     
+    std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
+    std::cout << getzahlZellen() << std::endl;
+    std::cout << std::endl;
     std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
     std::cout <<  dauer_hochladen << std::endl;
     std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";
