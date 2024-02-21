@@ -77,11 +77,10 @@ int main(int argc, char** argv){
     //Fasse Resultate zusammen
     Zeit::grundBeende();
     std::cout << std::endl;
-    std::cout << "Gesamtdauer für alle offenen Hashverfahren (in Millisekunden)     : ";
+    std::cout << "Gesamtdauer für alle offenen Hashverfahren  : ";
     std::cout << Zeit::getGrundDauer() << std::endl;
-    std::cout << std::endl;
-    std::cout << "Erfolgreich" << std::endl;
-
+    std::cout << "(in Millisekunden)" << std::endl;
+    
     return 0;
 };
 
