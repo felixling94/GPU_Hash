@@ -1,5 +1,4 @@
-include_directories(${CMAKE_SOURCE_DIR}/hashtabelle /insert /suchen)
+include_directories(${CMAKE_SOURCE_DIR}/hashfunktionen   /insert)
 
-add_subdirectory(hashtabelle)
+add_subdirectory(hashfunktionen)
 add_subdirectory(insert)
-add_subdirectory(suchen)

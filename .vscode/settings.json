@@ -62,7 +62,21 @@
         "iomanip": "cpp",
         "sstream": "cpp",
         "__locale": "cpp",
-        "__threading_support": "cpp"
+        "__threading_support": "cpp",
+        "codecvt": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "regex": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "variant": "cpp",
+        "list": "cpp",
+        "__node_handle": "cpp",
+        "ios": "cpp",
+        "__hash_table": "cpp",
+        "__tree": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false
 }

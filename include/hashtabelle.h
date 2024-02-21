@@ -4,54 +4,39 @@
 #include <iostream>
 #include <string>
 
-#include <../include/hashfunktionen.h>
-
-#define FeldLeer 0xffffffff
-
-//Arten der offenen Hashverfahren
-//0: Keine Kollisionsauflösung
-//1: Lineare Hashverfahren
-//2: Quadratische Hashverfahren
-//3: Beliebige Hashverfahren
-enum hashtyp{keine_aufloesung=0, linear_aufloesung, quadratisch_aufloesung, 
-             cuckoo_aufloesung, beliebig_aufloesung};
-
-template <typename T1, typename T2>
-struct Zelle{
-    T1 schluessel = FeldLeer;
-    T2 wert = FeldLeer;
-};
+#include <../data/datenvorlage.h>
 
 template <typename T1, typename T2>
 class Hashtabelle{
     private:
         size_t groesseHashtabelle;
-        hashtyp hashtyp_kode;
-        hashfunktion hashfunktion_kode;
         Zelle<T1,T2> * hashtabelle;
+        hashtyp hashtyp_kode;
 
         size_t getHashwert(T1 pSchluessel);
+        size_t getHashwert2(T1 pSchluessel);
+        
         size_t getQuadratisch_Sondierungswert(size_t pIndex);
-
         std::string getZelle(size_t pIndex);
-
+        
     public:
         Hashtabelle();
-        Hashtabelle(hashtyp pHashtyp, hashfunktion pHashfunktion, size_t pGroesse);
+        Hashtabelle(hashtyp pHashtyp, size_t pGroesse);
         ~Hashtabelle();
         
+        size_t getzahlZellen();
         size_t getGroesseHashtabelle();
-        hashtyp getHashTyp();
-        hashfunktion getHashfunktion();
         Zelle<T1,T2> * getHashtabelle(); 
-           
-        void drucken();
+    
+        hashtyp getHashTyp();
         
-        void insert(T1 pSchluessel, T2 pWert);
-        bool suchen(T1 pSchluessel);
+        void drucken();
 
-        void insert_List(T1 * pSchluesselListe, T2 * pWerteListe, size_t pGroesse);
-        void suchen_List(T1 * pSchluesselListe, size_t pGroesse);
+        void insert(T1 pSchluessel, T2 pWert);
+        void insert_List(T1 * pSchluesselListe, T2 * pWerteListe, const size_t nx, const size_t ny, const size_t nz);
+
+        bool suchen(T1 pSchluessel);
+        void suchen_List(T1 * pSchluesselListe, const size_t nx, const size_t ny, const size_t nz);
 };
 
 #endif
