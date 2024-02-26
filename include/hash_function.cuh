@@ -30,9 +30,9 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t multiplication_hash(T value, size_t t
     return (size_t) hashed_key % tableSize;
 };
 
-//Perfekte Hashverfahren
+//Universelle Hashverfahren
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t perfect_hash(T value, size_t tableSize, size_t a, size_t b, size_t primeNum){
+HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t universal_hash(T value, size_t tableSize, size_t a, size_t b, size_t primeNum){
     size_t hashed_key = (size_t) value;
     return ((a*hashed_key + b)%primeNum) % tableSize;
 };
@@ -122,12 +122,12 @@ template <typename T>
 HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHash(T key, size_t table_size, hash_function function){
     if (function == multiplication){
         return multiplication_hash<T>(key,table_size);
-    }else if (function == perfect0){
-        return perfect_hash<T>(key, table_size,34999950,34999960,34999969);
-    }else if (function == perfect1){
-        return perfect_hash<T>(key, table_size,15999950,15999990,15999989);
-    }else if (function == perfect2){
-        return perfect_hash<T>(key, table_size,135,140,149);
+    }else if (function == universal0){
+        return universal_hash<T>(key, table_size,34999950,34999960,34999969);
+    }else if (function == universal1){
+        return universal_hash<T>(key, table_size,15999950,15999990,15999989);
+    }else if (function == universal2){
+        return universal_hash<T>(key, table_size,135,140,149);
     }else if (function == murmer){
         return murmer_hash<T>(key, table_size);
     }else if (function == dycuckoo_hash1){

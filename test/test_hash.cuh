@@ -29,14 +29,14 @@ GLOBALQUALIFIER void calculate_hash_kernel(T* A, T* result, size_t tableSize, ha
 };
 
 template <typename T>
-GLOBALQUALIFIER void calculate_perfect_hash_kernel(T* A, T* result, size_t tableSize, size_t a, size_t b, size_t primeNum){
+GLOBALQUALIFIER void calculate_universal_hash_kernel(T* A, T* result, size_t tableSize, size_t a, size_t b, size_t primeNum){
     int i_inBlock, blockID, i;
     
     i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
     blockID = blockIdx.x;
     i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
 
-    result[i] = perfect_hash<T>(A[i],tableSize,a,b,primeNum);
+    result[i] = universal_hash<T>(A[i],tableSize,a,b,primeNum);
 };
 
 template<typename T> 
@@ -137,8 +137,8 @@ class Test_Hash{
         
         //Gebe den Hashwert eines Schlüssels zurück
         T getHashValue(T key, hash_function function){
-            if (function == perfect3){
-                return perfect_hash<T>(key,table_size,a,b,prime_num);
+            if (function == universal3){
+                return universal_hash<T>(key,table_size,a,b,prime_num);
             }else{
                 return getHash<T>(key,table_size,function);
             }
@@ -182,15 +182,15 @@ class Test_Hash{
             upload.GPUstop();
 
             //Berechnen die Hashwerte durch Device
-            if (function == perfect0 || function == perfect1 ||function == perfect2 || function == perfect3){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, calculate_perfect_hash_kernel<T>, 0, 0);
+            if (function == universal0 || function == universal1 ||function == universal2 || function == universal3){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, calculate_universal_hash_kernel<T>, 0, 0);
                 grid_size = ((size_t)(array_size)+block_size-1)/block_size;
                 dim3 block(block_size);
                 dim3 grid(grid_size);
                 
                 void *args[6] = {&testArray_Device, &testResultArray_Device, &table_size,&a,&b,&prime_num};
                 run.GPUstart();
-                cudaLaunchKernel((void*)calculate_perfect_hash_kernel<T>,grid,block,args,0,run.getStream());
+                cudaLaunchKernel((void*)calculate_universal_hash_kernel<T>,grid,block,args,0,run.getStream());
                 run.GPUstop(); 
 
             }else{
@@ -239,8 +239,8 @@ class Test_Hash{
             std::cout << "***************" << std::endl;
             if (function == multiplication){
                 std::cout << "Multiplikative Methode" << std::endl;
-            }else if (function == perfect0 || function == perfect1 || function == perfect2 || function == perfect3){
-                std::cout << "Perfekte Hashverfahren (a: " << a << "  b: " << b << "  Primzahl: " << prime_num << ")" << std::endl;
+            }else if (function == universal0 || function == universal1 || function == universal2 || function == universal3){
+                std::cout << "Universelle Hashfunktion (a: " << a << "  b: " << b << "  Primzahl: " << prime_num << ")" << std::endl;
             }else if (function == murmer){
                 std::cout << "Murmer Hash" << std::endl;
             }else if (function == dycuckoo_hash1){

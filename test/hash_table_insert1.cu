@@ -11,47 +11,12 @@
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    size_t testHashTableSize, testKeyLength;
-    double occupancy;
-    int function_code1, function_code2;
-    hash_function hash_function1, hash_function2; 
-
-    const size_t keySize{800*200*200};
-    //const size_t keySize{8};
-    const size_t matrix_size{keySize * sizeof(uint32_t)};
+    const size_t testKeyLength{800*200*200};
+    const size_t testHashTableSize{testKeyLength};
+    const size_t matrix_size{testKeyLength * sizeof(uint32_t)};
 
     int deviceID{0};
     struct cudaDeviceProp props;
-
-    if(argc < 5){
-        std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
-        return -1;
-    }
-
-    testKeyLength = (size_t) atoi(argv[1]);
-    occupancy = atof(argv[2]);
-    function_code1 = atoi(argv[3]);
-    function_code2 = atoi(argv[4]);
-    
-    if (testKeyLength <=0){
-        std::cout << "Die Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-
-    if (occupancy <=0){
-        std::cout << "Der Auslastungsfaktor der Hashtabelle muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-    
-    if (function_code1<0 || function_code1>12){
-        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 0 bis 12 sein." << std::endl;
-        return -1;
-    }
-
-    if (function_code2<0 || function_code2>12){
-        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 0 bis 12 sein." << std::endl;
-        return -1;
-    }
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -63,129 +28,147 @@ int main(int argc, char** argv){
     std::cout << "Gesamtgröße von Kernelargumenten: "
               << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
-    testHashTableSize = (size_t) ceil((double) (keySize) / occupancy);
-
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;   
     std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << keySize << std::endl;
+    std::cout << testKeyLength << std::endl;
     std::cout << "Größe der Hashtabelle                       : ";
     std::cout << testHashTableSize << std::endl;
-    std::cout << "Größe der Cuckoo-Hashtabelle                : ";
-    std::cout << 2*testHashTableSize << std::endl;
-
-    std::cout << std::endl;
-    if (function_code1 == 2){
-        hash_function1 = multiplication;
-        std::cout << "1. Hashverfahren: Multiplikative Methode" << std::endl;
-    }else if (function_code1 == 3){
-        hash_function1 = murmer;
-        std::cout << "1. Hashverfahren: Murmer Hash" << std::endl;
-    }else if (function_code1 == 4){
-        hash_function1 = perfect0;
-        std::cout << "1. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
-    }else if (function_code1 == 5){
-        hash_function1 = perfect1;
-        std::cout << "1. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
-    }else if (function_code1 == 6){
-        hash_function1 = perfect2;
-        std::cout << "1. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 135  b: 140  Primzahl: 149)" << std::endl;
-    }else if (function_code1 == 7){
-        hash_function1 = dycuckoo_hash1;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 1" << std::endl;
-    }else if (function_code1 == 8){
-        hash_function1 = dycuckoo_hash2;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 2" << std::endl;
-    }else if (function_code1 == 9){
-        hash_function1 = dycuckoo_hash3;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 3" << std::endl;
-    }else if (function_code1 == 10){
-        hash_function1 = dycuckoo_hash4;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 4" << std::endl;
-    }else if (function_code1 == 11) {
-        hash_function1 = dycuckoo_hash5;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 5" << std::endl;
-    }else{
-        hash_function1 = modulo;
-        std::cout << "1. Hashverfahren: Divisionsmethode" << std::endl;
-    }
-
-    if (function_code2 == 2){
-        hash_function2 = multiplication;
-        std::cout << "2. Hashverfahren: Multiplikative Methode" << std::endl;
-    }else if (function_code2 == 3){
-        hash_function2 = murmer;
-        std::cout << "2. Hashverfahren: Murmer Hash" << std::endl;
-    }else if (function_code2 == 4){
-        hash_function2 = perfect0;
-        std::cout << "2. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
-    }else if (function_code2 == 5){
-        hash_function2 = perfect1;
-        std::cout << "2. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
-    }else if (function_code2 == 6){
-        hash_function2 = perfect2;
-        std::cout << "2. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 135  b: 140  Primzahl: 149)" << std::endl;
-    }else if (function_code2 == 7){
-        hash_function2 = dycuckoo_hash1;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 1" << std::endl;
-    }else if (function_code2 == 8){
-        hash_function2 = dycuckoo_hash2;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 2" << std::endl;
-    }else if (function_code2 == 9){
-        hash_function2 = dycuckoo_hash3;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 3" << std::endl;
-    }else if (function_code2 == 10){
-        hash_function2 = dycuckoo_hash4;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 4" << std::endl;
-    }else if (function_code2 == 11) {
-        hash_function2 = dycuckoo_hash5;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 5" << std::endl;
-    }else{
-        hash_function2 = modulo;
-        std::cout << "2. Hashverfahren: Divisionsmethode" << std::endl;
-    }
-    std::cout << std::endl;
-
-    Test_Hash_Table<uint32_t,uint32_t> test_hash_table(keySize,testHashTableSize,hash_function1,hash_function2);
-    test_hash_table.createCells(1,(int)testKeyLength);
 
     CPUTimer timer;
     timer.start();
 
     /////////////////////////////////////////////////////////////////////////////////////////
-    //Keine Kollionsauflösung
+    //Modulo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.insertTestCells(no_probe);
+    std::cout << std::endl;
+    std::cout << "1. Hashfunktion: Divisions-Rest-Methode" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table1(testKeyLength,testHashTableSize,modulo);
+    test_hash_table1.createCells(1,(int)testKeyLength);
+    test_hash_table1.insertTestCells(no_probe);
+
     /////////////////////////////////////////////////////////////////////////////////////////
-    //Lineare Hashverfahren
+    //Multiplikative Methode
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.insertTestCells(linear_probe);
+    std::cout << std::endl;
+    std::cout << "2. Hashfunktion: Multiplikative Methode" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table2(testKeyLength,testHashTableSize,multiplication);
+    test_hash_table2.createCells(1,(int)testKeyLength);
+    test_hash_table2.insertTestCells(no_probe);
+
     /////////////////////////////////////////////////////////////////////////////////////////
-    //Quadratische Hashverfahren
+    //Murmer-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.insertTestCells(quadratic_probe);
+    std::cout << std::endl;
+    std::cout << "3. Hashfunktion: Murmer-Hashfunktion" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table3(testKeyLength,testHashTableSize,murmer);
+    test_hash_table3.createCells(1,(int)testKeyLength);
+    test_hash_table3.insertTestCells(no_probe);
+
     /////////////////////////////////////////////////////////////////////////////////////////
-    //Doppelte Hashverfahren
+    //1. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.insertTestCells(double_probe);
+    std::cout << std::endl;
+    std::cout << "4. Hashfunktion: Universelle Hashfunktion" << std::endl;
+    std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table4(testKeyLength,testHashTableSize,universal0);
+    test_hash_table4.createCells(1,(int)testKeyLength);
+    test_hash_table4.insertTestCells(no_probe);
+
     /////////////////////////////////////////////////////////////////////////////////////////
-    //Cuckoo-Hashverfahren
+    //2. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.insertTestCells(cuckoo_probe);
+    std::cout << std::endl;
+    std::cout << "5. Hashfunktion: Universelle Hashfunktion" << std::endl;
+    std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table5(testKeyLength,testHashTableSize,universal1);
+    test_hash_table5.createCells(1,(int)testKeyLength);
+    test_hash_table5.insertTestCells(no_probe);
+
     /////////////////////////////////////////////////////////////////////////////////////////
+    //3. Universelle Hashfunktion
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << std::endl;
+    std::cout << "6. Hashfunktion: Universelle Hashfunktion" << std::endl;
+    std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table6(testKeyLength,testHashTableSize,universal2);
+    test_hash_table6.createCells(1,(int)testKeyLength);
+    test_hash_table6.insertTestCells(no_probe);
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //1. DyCuckoo-Hashfunktion
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << std::endl;
+    std::cout << "7. Hashfunktion: DyCuckoo-Hash 1" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table7(testKeyLength,testHashTableSize,dycuckoo_hash1);
+    test_hash_table7.createCells(1,(int)testKeyLength);
+    test_hash_table7.insertTestCells(no_probe);
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //2. DyCuckoo-Hashfunktion
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << std::endl;
+    std::cout << "9. Hashfunktion: DyCuckoo-Hash 2" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table8(testKeyLength,testHashTableSize,dycuckoo_hash2);
+    test_hash_table8.createCells(1,(int)testKeyLength);
+    test_hash_table8.insertTestCells(no_probe);
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //3. DyCuckoo-Hashfunktion
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << std::endl;
+    std::cout << "9. Hashfunktion: DyCuckoo-Hash 3" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table9(testKeyLength,testHashTableSize,dycuckoo_hash3);
+    test_hash_table9.createCells(1,(int)testKeyLength);
+    test_hash_table9.insertTestCells(no_probe);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //4. DyCuckoo-Hashfunktion
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << std::endl;
+    std::cout << "10. Hashfunktion: DyCuckoo-Hash 4" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table10(testKeyLength,testHashTableSize,dycuckoo_hash4);
+    test_hash_table10.createCells(1,(int)testKeyLength);
+    test_hash_table10.insertTestCells(no_probe);
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //5. DyCuckoo-Hashfunktion
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << std::endl;
+    std::cout << "11. Hashfunktion: DyCuckoo-Hash 5" << std::endl;
+    std::cout << std::endl;
+
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table11(testKeyLength,testHashTableSize,dycuckoo_hash5);
+    test_hash_table11.createCells(1,(int)testKeyLength);
+    test_hash_table11.insertTestCells(no_probe);
 
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;
-    std::cout << "Gesamtdauer für alle offenen Hashverfahren  : ";
+    std::cout << "Gesamtdauer für alle Hashfunktionen ohne    : ";
     std::cout << timer.getDuration() << std::endl;
-    std::cout << "(in Millisekunden)" << std::endl;
+    std::cout << "Kollionsauflösung (in Millisekunden)" << std::endl;
     
     return 0;
 };

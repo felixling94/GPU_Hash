@@ -26,8 +26,8 @@ GLOBALQUALIFIER void insert_normal_kernel(cell<T1,T2> * cells, cell<T1,T2> * has
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
-    T2 value;
-    
+    T2 value; 
+
     i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
     blockID = blockIdx.x;
     i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);

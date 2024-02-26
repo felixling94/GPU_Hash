@@ -16,10 +16,6 @@ int main(int argc, char** argv){
     int function_code1, function_code2;
     hash_function hash_function1, hash_function2; 
 
-    const size_t keySize{800*200*200};
-    //const size_t keySize{8};
-    const size_t matrix_size{keySize * sizeof(uint32_t)};
-
     int deviceID{0};
     struct cudaDeviceProp props;
 
@@ -53,6 +49,8 @@ int main(int argc, char** argv){
         return -1;
     }
 
+    const size_t matrix_size{testKeyLength * sizeof(uint32_t)};
+
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
 
@@ -63,12 +61,12 @@ int main(int argc, char** argv){
     std::cout << "Gesamtgröße von Kernelargumenten: "
               << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
-    testHashTableSize = (size_t) ceil((double) (keySize) / occupancy);
+    testHashTableSize = (size_t) ceil((double) (testKeyLength) / occupancy);
 
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;   
     std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << keySize << std::endl;
+    std::cout << testKeyLength << std::endl;
     std::cout << "Größe der Hashtabelle                       : ";
     std::cout << testHashTableSize << std::endl;
     std::cout << "Größe der Cuckoo-Hashtabelle                : ";
@@ -77,82 +75,82 @@ int main(int argc, char** argv){
     std::cout << std::endl;
     if (function_code1 == 2){
         hash_function1 = multiplication;
-        std::cout << "1. Hashverfahren: Multiplikative Methode" << std::endl;
+        std::cout << "1. Hashfunktion: Multiplikative Methode" << std::endl;
     }else if (function_code1 == 3){
         hash_function1 = murmer;
-        std::cout << "1. Hashverfahren: Murmer Hash" << std::endl;
+        std::cout << "1. Hashfunktion: Murmer Hash" << std::endl;
     }else if (function_code1 == 4){
-        hash_function1 = perfect0;
-        std::cout << "1. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        hash_function1 = universal0;
+        std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
     }else if (function_code1 == 5){
-        hash_function1 = perfect1;
-        std::cout << "1. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        hash_function1 = universal1;
+        std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
     }else if (function_code1 == 6){
-        hash_function1 = perfect2;
-        std::cout << "1. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 135  b: 140  Primzahl: 149)" << std::endl;
+        hash_function1 = universal2;
+        std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
     }else if (function_code1 == 7){
         hash_function1 = dycuckoo_hash1;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 1" << std::endl;
+        std::cout << "1. Hashfunktion: DyCuckoo-Hash 1" << std::endl;
     }else if (function_code1 == 8){
         hash_function1 = dycuckoo_hash2;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 2" << std::endl;
+        std::cout << "1. Hashfunktion: DyCuckoo-Hash 2" << std::endl;
     }else if (function_code1 == 9){
         hash_function1 = dycuckoo_hash3;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 3" << std::endl;
+        std::cout << "1. Hashfunktion: DyCuckoo-Hash 3" << std::endl;
     }else if (function_code1 == 10){
         hash_function1 = dycuckoo_hash4;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 4" << std::endl;
+        std::cout << "1. Hashfunktion: DyCuckoo-Hash 4" << std::endl;
     }else if (function_code1 == 11) {
         hash_function1 = dycuckoo_hash5;
-        std::cout << "1. Hashverfahren: DyCuckoo-Hash 5" << std::endl;
+        std::cout << "1. Hashfunktion: DyCuckoo-Hash 5" << std::endl;
     }else{
         hash_function1 = modulo;
-        std::cout << "1. Hashverfahren: Divisionsmethode" << std::endl;
+        std::cout << "1. Hashfunktion: Divisions-Rest-Methode" << std::endl;
     }
 
     if (function_code2 == 2){
         hash_function2 = multiplication;
-        std::cout << "2. Hashverfahren: Multiplikative Methode" << std::endl;
+        std::cout << "2. Hashfunktion: Multiplikative Methode" << std::endl;
     }else if (function_code2 == 3){
         hash_function2 = murmer;
-        std::cout << "2. Hashverfahren: Murmer Hash" << std::endl;
+        std::cout << "2. Hashfunktion: Murmer Hash" << std::endl;
     }else if (function_code2 == 4){
-        hash_function2 = perfect0;
-        std::cout << "2. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        hash_function2 = universal0;
+        std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
     }else if (function_code2 == 5){
-        hash_function2 = perfect1;
-        std::cout << "2. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        hash_function2 = universal1;
+        std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
     }else if (function_code2 == 6){
-        hash_function2 = perfect2;
-        std::cout << "2. Hashverfahren: Perfekte Hashverfahren" << std::endl;
-        std::cout << "                  (a: 135  b: 140  Primzahl: 149)" << std::endl;
+        hash_function2 = universal2;
+        std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
     }else if (function_code2 == 7){
         hash_function2 = dycuckoo_hash1;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 1" << std::endl;
+        std::cout << "2. Hashfunktion: DyCuckoo-Hash 1" << std::endl;
     }else if (function_code2 == 8){
         hash_function2 = dycuckoo_hash2;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 2" << std::endl;
+        std::cout << "2. Hashfunktion: DyCuckoo-Hash 2" << std::endl;
     }else if (function_code2 == 9){
         hash_function2 = dycuckoo_hash3;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 3" << std::endl;
+        std::cout << "2. Hashfunktion: DyCuckoo-Hash 3" << std::endl;
     }else if (function_code2 == 10){
         hash_function2 = dycuckoo_hash4;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 4" << std::endl;
+        std::cout << "2. Hashfunktion: DyCuckoo-Hash 4" << std::endl;
     }else if (function_code2 == 11) {
         hash_function2 = dycuckoo_hash5;
-        std::cout << "2. Hashverfahren: DyCuckoo-Hash 5" << std::endl;
+        std::cout << "2. Hashfunktion: DyCuckoo-Hash 5" << std::endl;
     }else{
         hash_function2 = modulo;
-        std::cout << "2. Hashverfahren: Divisionsmethode" << std::endl;
+        std::cout << "2. Hashfunktion: Divisions-Rest-Methode" << std::endl;
     }
     std::cout << std::endl;
 
-    Test_Hash_Table<uint32_t,uint32_t> test_hash_table(keySize,testHashTableSize,hash_function1,hash_function2);
+    Test_Hash_Table<uint32_t,uint32_t> test_hash_table(testKeyLength,testHashTableSize,hash_function1,hash_function2);
     test_hash_table.createCells(1,(int)testKeyLength);
 
     CPUTimer timer;
