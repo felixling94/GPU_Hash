@@ -1,5 +1,5 @@
-#ifndef TEST_HASH_CUH
-#define TEST_HASH_CUH
+#ifndef EXAMPLE_HASH_CUH
+#define EXAMPLE_HASH_CUH
 
 #include <iostream>
 #include <string>
@@ -40,9 +40,9 @@ GLOBALQUALIFIER void calculate_universal_hash_kernel(T* A, T* result, size_t tab
 };
 
 template<typename T> 
-class Test_Hash{
+class Example_Hash{
     private:
-        T* testArray;
+        T* exampleArray;
         T* resultArray;
         T* resultArray_device;
 
@@ -54,21 +54,21 @@ class Test_Hash{
         size_t prime_num;
 
     public:
-        Test_Hash(){
-            testArray = new T[11];
+        Example_Hash(){
+            exampleArray = new T[11];
             resultArray = new T[11];
             resultArray_device = new T[11];
         };
 
-        Test_Hash(size_t keySize, size_t tableSize, size_t p_a=15999950, size_t p_b=15999990,size_t primNum= 15999989):
+        Example_Hash(size_t keySize, size_t tableSize, size_t p_a=15999950, size_t p_b=15999990,size_t primNum= 15999989):
         array_size(keySize),table_size(tableSize),a(p_a),b(p_b),prime_num(primNum){
-            testArray = new T[keySize];
+            exampleArray = new T[keySize];
             resultArray = new T[keySize];
             resultArray_device = new T[keySize];
         };
 
-        ~Test_Hash(){
-            delete[] testArray;
+        ~Example_Hash(){
+            delete[] exampleArray;
             delete[] resultArray;
             delete[] resultArray_device;
         };
@@ -81,7 +81,7 @@ class Test_Hash{
             std::uniform_int_distribution<T> dist(min, max);
     
             //2. Erzeuge zufällige Werte mithilfe Zufallsgenerator
-            for (size_t i = 0; i<array_size; ++i) testArray[i] = static_cast<T>(dist(mte));
+            for (size_t i = 0; i<array_size; ++i) exampleArray[i] = static_cast<T>(dist(mte));
         };
 
         //Vergleiche zwischen zwei Arrayelementen
@@ -132,7 +132,7 @@ class Test_Hash{
         
         //Gebe die Felder zurück
         T* getArray(){
-            return testArray;
+            return exampleArray;
         };
         
         //Gebe den Hashwert eines Schlüssels zurück
@@ -152,7 +152,7 @@ class Test_Hash{
             timer.start();
 
             //2. Führe Schleifen aus, um Hashwerte zu bestimmen
-            for (size_t i = 0; i<array_size; ++i) resultArray[i] = static_cast<T>(getHashValue(testArray[i],function));
+            for (size_t i = 0; i<array_size; ++i) resultArray[i] = static_cast<T>(getHashValue(exampleArray[i],function));
 
             timer.stop();
             std::cout << "Dauer zur Ausführung (in ms)                : ";
@@ -169,16 +169,16 @@ class Test_Hash{
             duration_download = 0;
             duration_total = 0;
             
-            T * testArray_Device;
-            T * testResultArray_Device;
+            T * exampleArray_Device;
+            T * exampleResultArray_Device;
             
-            //Reserviere und kopiere Daten aus der TestArray und eingegebenen Zellen auf GPU
-            cudaMalloc(&testArray_Device,(sizeof(T))*array_size);
-            cudaMalloc(&testResultArray_Device,(sizeof(T))*array_size);
+            //Reserviere und kopiere Daten aus der exampleArray und eingegebenen Zellen auf GPU
+            cudaMalloc(&exampleArray_Device,(sizeof(T))*array_size);
+            cudaMalloc(&exampleResultArray_Device,(sizeof(T))*array_size);
 
             upload.GPUstart();
-            cudaMemcpyAsync(testArray_Device,testArray,(sizeof(T))*array_size,cudaMemcpyHostToDevice,upload.getStream());      
-            cudaMemcpyAsync(testResultArray_Device,resultArray_device,(sizeof(T))*array_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(exampleArray_Device,exampleArray,(sizeof(T))*array_size,cudaMemcpyHostToDevice,upload.getStream());      
+            cudaMemcpyAsync(exampleResultArray_Device,resultArray_device,(sizeof(T))*array_size,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
             //Berechnen die Hashwerte durch Device
@@ -188,7 +188,7 @@ class Test_Hash{
                 dim3 block(block_size);
                 dim3 grid(grid_size);
                 
-                void *args[6] = {&testArray_Device, &testResultArray_Device, &table_size,&a,&b,&prime_num};
+                void *args[6] = {&exampleArray_Device, &exampleResultArray_Device, &table_size,&a,&b,&prime_num};
                 run.GPUstart();
                 cudaLaunchKernel((void*)calculate_universal_hash_kernel<T>,grid,block,args,0,run.getStream());
                 run.GPUstop(); 
@@ -199,15 +199,15 @@ class Test_Hash{
                 dim3 block(block_size);
                 dim3 grid(grid_size);
                 
-                void *args[4] = {&testArray_Device, &testResultArray_Device, &table_size,&function};
+                void *args[4] = {&exampleArray_Device, &exampleResultArray_Device, &table_size,&function};
                 run.GPUstart();
                 cudaLaunchKernel((void*)calculate_hash_kernel<T>,grid,block,args,0,run.getStream());
                 run.GPUstop(); 
             }
 
-            //Kopiere Daten aus der GPU zur TestArray
+            //Kopiere Daten aus der GPU zur exampleArray
             download.GPUstart();
-            cudaMemcpyAsync(resultArray_device, testResultArray_Device, sizeof(T)*array_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(resultArray_device, exampleResultArray_Device, sizeof(T)*array_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
         
             duration_upload = upload.getGPUDuration();
@@ -224,8 +224,8 @@ class Test_Hash{
             std::cout << "Gesamtdauer (in Millisekunden)              : ";
             std::cout <<  duration_total << std::endl;
     
-            cudaFree(testArray_Device);
-            cudaFree(testResultArray_Device);
+            cudaFree(exampleArray_Device);
+            cudaFree(exampleResultArray_Device);
         };
 
         void compare_host_device(hash_function function){

@@ -476,7 +476,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
         max_hash_table = (size_t) ((100+LOOP_PERCENTAGE)/100*table_size);
 
         while((j/2)<max_hash_table){
-            i = (i+getProbe2(j))%table_size;
+            i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             prev = swapHash<T1>(hash_table[i].key, BLANK, key);
 
             if (prev == BLANK || prev == key){
@@ -551,14 +551,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             j = (j + k) % (2*table_size);
 
             //Vertausche zwei Schlüssel innerhalb der 1. Hashtabelle
-            temp_key = hash_table[i].key;
-            temp_value = hash_table[i].value;
-            
-            hash_table[i].key = key;
-            hash_table[i].value = value;
-
-            key = temp_key;
-            value = temp_key;
+            swapCells<T1,T2>(key,value,i,hash_table);
 
             prev1 = swapHash<T1>(hash_table[i].key, BLANK, key);
             
@@ -570,14 +563,8 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
                 break;
             }
 
-            temp_key = hash_table2[j].key;
-            temp_value = hash_table2[j].value;
-            
-            hash_table2[j].key = key;
-            hash_table2[j].value = value;
-
-            key = temp_key;
-            value = temp_key;
+            //Vertausche zwei Schlüssel innerhalb der 2. Hashtabelle
+            swapCells<T1,T2>(key,value,j,hash_table2);
 
             prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
 
@@ -777,9 +764,6 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         duration_download = download.getGPUDuration();
         duration_total = duration_upload + duration_run + duration_download;
 
-        std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
-        std::cout << getNumCell() << std::endl;
-        std::cout << std::endl;
         std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
         std::cout <<  duration_upload << std::endl;
         std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";
@@ -831,7 +815,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
         j = 0;
 
         while((j/2)<table_size){
-            i = (i+getProbe2(j))%table_size;
+            i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             if (hash_table[i].key == key) return true;
             ++j;
         }
@@ -1126,7 +1110,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
         j = 0;
 
         while((j/2)<table_size){
-            i = (i+getProbe2(j))%table_size;
+            i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             prev = swapHash<T1>(hash_table[i].key, key, BLANK);
 
             if (prev == BLANK){
@@ -1225,7 +1209,6 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         
         float duration_upload, duration_run, duration_download, duration_total;
         int min_grid_size, grid_size, block_size;
-        size_t num_cells_prev, num_cells_curr;
         
         GPUTimer upload, run, download;
         
@@ -1233,8 +1216,6 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         duration_run = 0; 
         duration_download = 0;
         duration_total = 0;
-
-        num_cells_prev = getNumCell();
 
         //Ohne Kollisionsauflösung
         if (type_hash == no_probe){
@@ -1379,16 +1360,11 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             download.GPUstop();
         }
         
-        num_cells_curr = num_cells_prev - getNumCell();
-
         duration_upload = upload.getGPUDuration();
         duration_run = run.getGPUDuration();
         duration_download = download.getGPUDuration();
         duration_total = duration_upload + duration_run + duration_download;
 
-        std::cout << "Anzahl der gelöschten Zellen                : ";
-        std::cout << num_cells_curr << std::endl;
-        std::cout << std::endl;
         std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
         std::cout <<  duration_upload << std::endl;
         std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";

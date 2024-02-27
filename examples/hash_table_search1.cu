@@ -5,13 +5,13 @@
 #include <random>
 #include <stdint.h>
 
-#include "test_hash_table.cuh"
+#include "example_hash_table.cuh"
 #include <../include/base.h>
 #include <../tools/timer.cuh>
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    size_t testHashTableSize, testKeyLength;
+    size_t exampleHashTableSize, exampleKeyLength;
     double occupancy;
     int function_code1, function_code2;
     hash_function hash_function1, hash_function2; 
@@ -24,12 +24,12 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    testKeyLength = (size_t) atoi(argv[1]);
+    exampleKeyLength = (size_t) atoi(argv[1]);
     occupancy = atof(argv[2]);
     function_code1 = atoi(argv[3]);
     function_code2 = atoi(argv[4]);
     
-    if (testKeyLength <=0){
+    if (exampleKeyLength <=0){
         std::cout << "Die Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
         return -1;
     }
@@ -49,7 +49,7 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    const size_t matrix_size{testKeyLength * sizeof(uint32_t)};
+    const size_t matrix_size{exampleKeyLength * sizeof(uint32_t)};
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -61,16 +61,16 @@ int main(int argc, char** argv){
     std::cout << "Gesamtgröße von Kernelargumenten: "
               << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
-    testHashTableSize = (size_t) ceil((double) (testKeyLength) / occupancy);
+    exampleHashTableSize = (size_t) ceil((double) (exampleKeyLength) / occupancy);
 
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;   
     std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << testKeyLength << std::endl;
+    std::cout << exampleKeyLength << std::endl;
     std::cout << "Größe der Hashtabelle                       : ";
-    std::cout << testHashTableSize << std::endl;
+    std::cout << exampleHashTableSize << std::endl;
     std::cout << "Größe der Cuckoo-Hashtabelle                : ";
-    std::cout << 2*testHashTableSize << std::endl;
+    std::cout << 2*exampleHashTableSize << std::endl;
 
     std::cout << std::endl;
     if (function_code1 == 2){
@@ -150,8 +150,8 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Test_Hash_Table<uint32_t,uint32_t> test_hash_table(testKeyLength,testHashTableSize,hash_function1,hash_function2);
-    test_hash_table.createCells(1,(int)testKeyLength);
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyLength,exampleHashTableSize,hash_function1,hash_function2);
+    example_hash_table.createCells(1,(int)exampleKeyLength*2);
 
     CPUTimer timer;
     timer.start();
@@ -159,23 +159,23 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Keine Kollionsauflösung
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.searchTestCells(no_probe);
+    example_hash_table.searchTestCells(no_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.searchTestCells(linear_probe);
+    example_hash_table.searchTestCells(linear_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.searchTestCells(quadratic_probe);
+    example_hash_table.searchTestCells(quadratic_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.searchTestCells(double_probe);
+    example_hash_table.searchTestCells(double_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    test_hash_table.searchTestCells(cuckoo_probe);
+    example_hash_table.searchTestCells(cuckoo_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen

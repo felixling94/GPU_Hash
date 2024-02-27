@@ -1,5 +1,5 @@
-#ifndef TEST_HASH_TABLE_CUH
-#define TEST_HASH_TABLE_CUH
+#ifndef EXAMPLE_HASH_TABLE_CUH
+#define EXAMPLE_HASH_TABLE_CUH
 
 #include <iostream>
 #include <vector>
@@ -12,26 +12,26 @@
 #include <../tools/timer.cuh>
 
 template <typename T1, typename T2>
-class Test_Hash_Table{
+class Example_Hash_Table{
     private:
-        std::vector<T1> testKeyList;
-        std::vector<T2> testValueList;
+        std::vector<T1> exampleKeyList;
+        std::vector<T2> exampleValueList;
 
-        size_t testCellSize = 11;
-        size_t testHashTableSize = testCellSize + 5;
+        size_t exampleCellSize = 11;
+        size_t exampleHashTableSize = exampleCellSize + 5;
 
-        hash_function testfunction1 = modulo;
-        hash_function testfunction2;
+        hash_function examplefunction1 = modulo;
+        hash_function examplefunction2;
 
     public:
         //Konstruktor
-        Test_Hash_Table(){
-            testKeyList.reserve(testCellSize);
-            testValueList.reserve(testCellSize);
+        Example_Hash_Table(){
+            exampleKeyList.reserve(exampleCellSize);
+            exampleValueList.reserve(exampleCellSize);
         };
         
-        Test_Hash_Table(size_t test_cell_size, size_t test_table_size,hash_function function1, hash_function function2=modulo):
-        testCellSize(test_cell_size),testHashTableSize(test_table_size),testfunction1(function1),testfunction2(function2){
+        Example_Hash_Table(size_t test_cell_size, size_t test_table_size,hash_function function1, hash_function function2=modulo):
+        exampleCellSize(test_cell_size),exampleHashTableSize(test_table_size),examplefunction1(function1),examplefunction2(function2){
             if (test_cell_size>test_table_size){
                 std::cout << "Die Hashtabelle darf höchstens maximal " << test_table_size;
                 std::cout << " Datenelemente enthalten." << std::endl;
@@ -39,21 +39,21 @@ class Test_Hash_Table{
                 exit (EXIT_FAILURE);
             }
             
-            testKeyList.reserve(test_cell_size);
-            testValueList.reserve(test_cell_size);
+            exampleKeyList.reserve(test_cell_size);
+            exampleValueList.reserve(test_cell_size);
         };
 
         //Destruktor
-        ~Test_Hash_Table(){};
+        ~Example_Hash_Table(){};
 
         //Gebe Schlüssel zurück
         std::vector<T1> getKeys(){
-            return testKeyList;
+            return exampleKeyList;
         };
 
         //Gebe Werte zurück
         std::vector<T2> getKValues(){
-            return testValueList;
+            return exampleValueList;
         };
 
         //Erzeuge verschiedene Werte für die Schlüssel und Werte zufällig
@@ -61,8 +61,8 @@ class Test_Hash_Table{
             std::vector<T1> keys_vector;
             std::vector<T2> values_vector;
             
-            keys_vector.reserve(testCellSize);
-            values_vector.reserve(testCellSize);
+            keys_vector.reserve(exampleCellSize);
+            values_vector.reserve(exampleCellSize);
             
             std::random_device generator;
             size_t seed = generator();
@@ -71,7 +71,7 @@ class Test_Hash_Table{
             std::uniform_int_distribution<T1> dist1(1,max);
             std::uniform_int_distribution<T2> dist2(min,max);
 
-            for (size_t i = 0; i < testCellSize; i++){
+            for (size_t i = 0; i < exampleCellSize; i++){
                 T1 rand1 = dist1(rnd);
                 T2 rand2 = dist2(rnd);
 
@@ -79,23 +79,23 @@ class Test_Hash_Table{
                 values_vector.push_back(rand2);
             }
 
-            std::copy(keys_vector.begin(),keys_vector.end(),testKeyList.begin());
-            std::copy(values_vector.begin(),values_vector.end(),testValueList.begin());
+            std::copy(keys_vector.begin(),keys_vector.end(),exampleKeyList.begin());
+            std::copy(values_vector.begin(),values_vector.end(),exampleValueList.begin());
         };
 
         //Mische verschiedene Schlüssel
         void shuffleKeys(){
             std::vector<T1> keys_vector;
-            keys_vector.reserve(testCellSize);
+            keys_vector.reserve(exampleCellSize);
 
             std::random_device generator;
             size_t seed = generator();
             std::mt19937 rnd(seed);
             
-            std::copy(testKeyList.begin(), testKeyList.end(),keys_vector.begin());
+            std::copy(exampleKeyList.begin(), exampleKeyList.end(),keys_vector.begin());
             std::shuffle(keys_vector.begin(), keys_vector.end(), rnd);
 
-            std::copy(keys_vector.begin(),keys_vector.end(),testKeyList.begin());
+            std::copy(keys_vector.begin(),keys_vector.end(),exampleKeyList.begin());
         };
 
         //Fuege der Hashtabelle eine Liste von Paaren von Schlüsseln und Werten hinzu       
@@ -104,10 +104,13 @@ class Test_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Sequentielle Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            T1 * keyListArray = testKeyList.data();
-            T2 * valueListArray = testValueList.data(); 
+            size_t numCells1 = 0;
+            size_t numCells2 = 0;
 
-            Hash_Table<T1,T2> hash_table1(HashType,testfunction1,testfunction2,testHashTableSize);
+            T1 * keyListArray = exampleKeyList.data();
+            T2 * valueListArray = exampleValueList.data(); 
+
+            Hash_Table<T1,T2> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
             std::cout << "****************************************************************";
             std::cout << "***************" << std::endl;
@@ -129,12 +132,11 @@ class Test_Hash_Table{
             
             CPUTimer timer;
             timer.start();
-            for (size_t i=0; i<testCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
             timer.stop();
+
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Anzahl der Zellen in der Hashtabelle        : ";
-            std::cout << hash_table1.getNumCell() << std::endl;
             std::cout << "Gesamtdauer (Millisekunden)                 : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
@@ -142,10 +144,30 @@ class Test_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Parallele Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            Hash_Table<T1,T2> hash_table2(HashType,testfunction1,testfunction2,testHashTableSize);
+            Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table2.insert_List(testKeyList.data(),testValueList.data(),testCellSize);
+            hash_table2.insert_List(exampleKeyList.data(),exampleValueList.data(),exampleCellSize);
+            
+            numCells1 = hash_table1.getNumCell();
+            numCells2 = hash_table2.getNumCell();
+            
+            if (numCells1 == numCells2){
+                std::cout << std::endl;
+                std::cout << "Anzahl der Zellen in der Hashtabelle bei    : ";
+                std::cout << numCells1 << std::endl;
+                std::cout << "sequentiellen und parallelen Ausführungen" << std::endl;
+                std::cout << std::endl;
+            }else{
+                std::cout << std::endl;
+                std::cout << "Anzahl der Zellen in der Hashtabelle bei" << std::endl;
+                std::cout << "a) sequentiellen Ausführungen               : ";
+                std::cout << numCells1 << std::endl;
+                std::cout << "b) parallelen Ausführungen                  : ";
+                std::cout << numCells2 << std::endl;
+                std::cout << std::endl;
+            }
+        
             //hash_table2.print();
         };
 
@@ -157,10 +179,10 @@ class Test_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             size_t sum_found = 0;
 
-            T1 * keyListArray = testKeyList.data();
-            T2 * valueListArray = testValueList.data(); 
+            T1 * keyListArray = exampleKeyList.data();
+            T2 * valueListArray = exampleValueList.data(); 
 
-            Hash_Table<T1,T2> hash_table(HashType,testfunction1,testfunction2,testHashTableSize);
+            Hash_Table<T1,T2> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
             std::cout << "****************************************************************";
             std::cout << "***************" << std::endl;
@@ -180,13 +202,13 @@ class Test_Hash_Table{
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
-            for (size_t i=0; i<testCellSize; i++) hash_table.insert(keyListArray[i],valueListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],valueListArray[i]);
             createCells();
             shuffleKeys();
 
             CPUTimer timer;
             timer.start();
-            for (size_t i=0; i<testCellSize; i++) if (hash_table.search(keyListArray[i]) == true) ++sum_found;
+            for (size_t i=0; i<exampleCellSize; i++) if (hash_table.search(keyListArray[i]) == true) ++sum_found;
             timer.stop();
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
@@ -201,22 +223,23 @@ class Test_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table.search_List(testKeyList.data(),testCellSize);
+            hash_table.search_List(exampleKeyList.data(),exampleCellSize);
             //hash_table2.print();
         };
 
         //Lösche eine Liste von Schlüsseln in der Hashtabelle
-        void deleteTestCells(hash_type HashType){
+        void deleteTestCells(hash_type HashType, int min=0, int max=100){
             //1. Deklariere und initialisiere alle Variablen
             /////////////////////////////////////////////////////////////////////////////////////////
             //Sequentielle Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            size_t num_cells_prev, num_cells_curr;
+            size_t num_cells_prev1, num_cells_curr1;
+            size_t num_cells_prev2, num_cells_curr2;
 
-            T1 * keyListArray = testKeyList.data();
-            T2 * valueListArray = testValueList.data(); 
+            T1 * keyListArray = exampleKeyList.data();
+            T2 * valueListArray = exampleValueList.data(); 
 
-            Hash_Table<T1,T2> hash_table1(HashType,testfunction1,testfunction2,testHashTableSize);
+            Hash_Table<T1,T2> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
             std::cout << "****************************************************************";
             std::cout << "***************" << std::endl;
@@ -236,22 +259,18 @@ class Test_Hash_Table{
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
-            for (size_t i=0; i<testCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
-            num_cells_prev = hash_table1.getNumCell();
-            createCells();
+            for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
+            num_cells_prev1 = hash_table1.getNumCell();
+            createCells(min,max);
             shuffleKeys();
 
             CPUTimer timer;
             timer.start();
-            for (size_t i=0; i<testCellSize; i++) hash_table1.deleteKey(keyListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table1.deleteKey(keyListArray[i]);
             timer.stop();
-
-            num_cells_curr = num_cells_prev - hash_table1.getNumCell();
 
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Anzahl der gelöschten Zellen                : ";
-            std::cout << num_cells_curr << std::endl;
             std::cout << "Gesamtdauer (Millisekunden)                 : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
@@ -259,13 +278,35 @@ class Test_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Parallele Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            Hash_Table<T1,T2> hash_table2(HashType,testfunction1,testfunction2,testHashTableSize);
-            for (size_t i=0; i<testCellSize; i++) hash_table2.insert(keyListArray[i],valueListArray[i]);
-            createCells();
+            Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table2.insert(keyListArray[i],valueListArray[i]);
+            num_cells_prev2 = hash_table2.getNumCell();
+
+            createCells(min,max);
             shuffleKeys();
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table2.delete_List(testKeyList.data(),testCellSize);
+            hash_table2.delete_List(exampleKeyList.data(),exampleCellSize);
+
+            num_cells_curr1 = num_cells_prev1 - hash_table1.getNumCell();
+            num_cells_curr2 = num_cells_prev2 - hash_table2.getNumCell();
+
+            if (num_cells_curr1 == num_cells_curr2){
+                std::cout << std::endl;
+                std::cout << "Anzahl der gelöschten Zellen bei            : ";
+                std::cout << num_cells_curr1 << std::endl;
+                std::cout << "sequentiellen und parallelen Ausführungen" << std::endl;
+                std::cout << std::endl;
+            }else{
+                std::cout << std::endl;
+                std::cout << "Anzahl der gelöschten Zellen in der Hashtabelle bei" << std::endl;
+                std::cout << "a) sequentiellen Ausführungen               : ";
+                std::cout << num_cells_curr1 << std::endl;
+                std::cout << "b) parallelen Ausführungen                  : ";
+                std::cout << num_cells_curr2 << std::endl;
+                std::cout << std::endl;
+            }
+
             //hash_table2.print();
         };
 };

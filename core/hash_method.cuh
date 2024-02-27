@@ -58,7 +58,7 @@ DEVICEQUALIFIER void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* H
     max_hash_table_size = (size_t)((100+LOOP_PERCENTAGE)/100*HashTableSize);
 
     while(j<max_hash_table_size){
-        i = (i + getProbe2(j)) % HashTableSize;
+        i = ((size_t) ((int) i + getProbe2(j))) % HashTableSize;
         prev = atomicCAS(&HashTable[i].key, BLANK, key);
         
         if (prev == BLANK || prev == key){
@@ -133,15 +133,8 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
         j = (j + k) % (2*HashTableSize);
         
         //Vertausche zwei Schlüssel innerhalb der 1. Hashtabelle
-        temp_key = HashTable1[i].key;
-        temp_value = HashTable1[i].value;
-            
-        HashTable1[i].key = key;
-        HashTable1[i].value = value;
-        
-        key = temp_key;
-        value = temp_key;
-        
+        swapCells<T1,T2>(key,value,i,HashTable1);
+
         prev1 = atomicCAS(&HashTable1[i].key, BLANK, key);
         
         if (prev1 == BLANK || prev1 == key){
@@ -153,14 +146,8 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
             break;
         }
 
-        temp_key = HashTable2[j].key;
-        temp_value = HashTable2[j].value;
-            
-        HashTable2[j].key = key;
-        HashTable2[j].value = value;
-
-        key = temp_key;
-        value = temp_key;
+        //Vertausche zwei Schlüssel innerhalb der 2. Hashtabelle
+        swapCells<T1,T2>(key,value,j,HashTable2);
 
         prev2 = atomicCAS(&HashTable2[j].key, BLANK, key);
 
@@ -211,7 +198,7 @@ DEVICEQUALIFIER T1 search_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, si
     j = 0;
 
     while((j/2)<HashTableSize){
-        i = (i + getProbe2(j)) % HashTableSize;
+        i = ((size_t) ((int) i + getProbe2(j))) % HashTableSize;
         if (HashTable[i].key == key) return BLANK;
         ++j;
     }
@@ -293,7 +280,7 @@ DEVICEQUALIFIER void delete_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, 
     T1 prev;
     
     while((j/2)<HashTableSize){
-        i = (i+getProbe2(j))%HashTableSize;
+        i = ((size_t) ((int) i + getProbe2(j))) % HashTableSize;
         prev = atomicCAS(&HashTable[i].key,key, BLANK);
 
         if (prev == BLANK){

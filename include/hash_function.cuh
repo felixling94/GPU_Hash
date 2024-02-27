@@ -145,6 +145,21 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHash(T key, size_t table_size, has
     }
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//Vertausche zwischen zwei Zellen in einer der zwei Hashtabellen bei Cuckoo-Hashverfahren
+/////////////////////////////////////////////////////////////////////////////////////////
+template <typename T1, typename T2>
+HOSTDEVICEQUALIFIER void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
+    T1 temp_key = hash_table[i].key;
+    T2 temp_value = hash_table[i].value;
+            
+    hash_table[i].key = key;
+    hash_table[i].value = value;
+
+    key = temp_key;
+    value = temp_key;
+};
+
 //Vertausche zwischen zwei Schlüsseln
 template <typename T>
 HOSTQUALIFIER T swapHash(T currentKey, T reference, T key){
@@ -166,9 +181,9 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHashProbe(T key, size_t i, size_t 
 };
 
 //Quadratische Sondierungsfunktion
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getProbe2(size_t i){
-    size_t j = (size_t) pow(ceil((double)i/2),2.0);
-    size_t k = (size_t) pow(-1.0,(double)i);
+HOSTDEVICEQUALIFIER INLINEQUALIFIER int getProbe2(size_t i){
+    int j = pow(ceil((double)i/2),2.0);
+    int k = pow(-1.0,(double)i);
     return (j * k);
 };
 

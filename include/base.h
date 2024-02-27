@@ -1,7 +1,7 @@
 #ifndef BASE_H
 #define BASE_H
 
-#define LOOP_PERCENTAGE 15
+#define LOOP_PERCENTAGE 0
 #define BLANK 0
 
 //Arten der offenen Hashverfahren

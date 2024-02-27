@@ -9,6 +9,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 string(APPEND CMAKE_CUDA_FLAGS " -gencode arch=compute_61,code=sm_61")
 
-include_directories(${CMAKE_SOURCE_DIR}/include   /core   /test   /tools)
+include_directories(${CMAKE_SOURCE_DIR}/include   /core   /examples   /tools)
+#include_directories(${CMAKE_SOURCE_DIR}/include   /core   /examples   /test   /tools)
 
-add_subdirectory(test)
+add_subdirectory(examples)
+#add_subdirectory(tests)
+
+add_subdirectory(extern/Catch2)
