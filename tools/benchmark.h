@@ -12,6 +12,8 @@ class Benchmark{
         float download;
         float total;
 
+        size_t sum_found;
+
         operation_type type_operation;
 
     public:
@@ -26,27 +28,35 @@ class Benchmark{
         
         //Erfasse Daten
         void record(operation_type TypeOperation, 
-        float UploadOperation, float RunOperation, float DownloadOperation, float TotalOperation){
+        float UploadOperation, float RunOperation, float DownloadOperation, float TotalOperation,
+        size_t SumFound = 0){
             type_operation = TypeOperation;
 
             upload = UploadOperation;
             run = RunOperation;
             download = DownloadOperation;
             total = TotalOperation;
+
+            if (TypeOperation == search_hash_table) sum_found = SumFound;
         };
 
         //Drucke Zeitmessung
         void print(){
             if (type_operation == insert_hash_table){
                 std::cout << "Speicherung von Schlüsseln in der Hashtabelle" << std::endl;
+                std::cout << std::endl;
             }else if(type_operation == search_hash_table){
                 std::cout << "Suche nach Schlüsseln in der Hashtabelle" << std::endl;
+                std::cout << std::endl;
+                std::cout << "Anzahl der gesuchten Zellen                 : ";
+                std::cout << sum_found << std::endl;
             }else if(type_operation == delete_hash_table){
                 std::cout << "Löschung von Schlüsseln in der Hashtabelle" << std::endl;
+                std::cout << std::endl;
             }else{
                 std::cout << "Berechnung der Hashwerte" << std::endl;
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
             std::cout << "Dauer zum Hochladen (ms)                    : ";
             std::cout <<  upload << std::endl;
             std::cout << "Dauer zur Ausführung (ms)                   : ";

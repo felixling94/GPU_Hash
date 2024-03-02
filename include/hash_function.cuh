@@ -122,7 +122,7 @@ template <typename T>
 HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHash(T key, size_t table_size, hash_function function){
     if (function == multiplication){
         return multiplication_hash<T>(key,table_size);
-    }else if (function == universal0){
+    }else if (function == universal0 || function == universal3){
         return universal_hash<T>(key, table_size,34999950,34999960,34999969);
     }else if (function == universal1){
         return universal_hash<T>(key, table_size,15999950,15999990,15999989);

@@ -1076,7 +1076,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         duration_download = download.getGPUDuration();
         duration_total = total.getGPUDuration();
 
-        Benchmark_Search.record(search_hash_table,duration_upload,duration_run,duration_download,duration_total);
+        Benchmark_Search.record(search_hash_table,duration_upload,duration_run,duration_download,duration_total,sum_found);
         benchmark_hash_table[1] = Benchmark_Search;
     
         cudaFree(hash_table_device1);

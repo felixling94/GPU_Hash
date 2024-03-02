@@ -31,9 +31,15 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
         std::cout << "1. Hashfunktion: Multiplikative Methode" << std::endl;
     }else if (function1 == murmer){
         std::cout << "1. Hashfunktion: Murmer Hash" << std::endl;
+    }else if (function1 == universal0){
+        std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+    }else if (function1 == universal1){
+        std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
     }else if (function1 == universal2){
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 135  b: 140  Zahl: " <<  keySize << ")" << std::endl;
+        std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
     }else if (function1 == dycuckoo_hash1){
         std::cout << "1. Hashfunktion: DyCuckoo-Hash 1" << std::endl;
     }else if (function1 == dycuckoo_hash2){
@@ -52,9 +58,15 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
         std::cout << "2. Hashfunktion: Multiplikative Methode" << std::endl;
     }else if (function2 == murmer){
         std::cout << "2. Hashfunktion: Murmer Hash" << std::endl;
+    }else if (function2 == universal0){
+        std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+    }else if (function2 == universal1){
+        std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
+        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
     }else if (function2 == universal2){
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 135  b: 140  Zahl: " <<  keySize << ")" << std::endl;
+        std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
     }else if (function2 == dycuckoo_hash1){
         std::cout << "2. Hashfunktion: DyCuckoo-Hash 1" << std::endl;
     }else if (function2 == dycuckoo_hash2){
@@ -108,13 +120,13 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    if (function_code1<0 || function_code1>9){
-        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 0 bis 9 sein." << std::endl;
+    if (function_code1<0 || function_code1>11){
+        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 0 bis 11 sein." << std::endl;
         return -1;
     }
 
-    if (function_code2<0 || function_code2>9){
-        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 0 bis 9 sein." << std::endl;
+    if (function_code2<0 || function_code2>11){
+        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 0 bis 11 sein." << std::endl;
         return -1;
     }
     
@@ -133,16 +145,20 @@ int main(int argc, char** argv){
     }else if (function_code1 == 3){
         hash_function1 = murmer;
     }else if (function_code1 == 4){
-        hash_function1 = universal2;
+        hash_function1 = universal0;
     }else if (function_code1 == 5){
-        hash_function1 = dycuckoo_hash1;
+        hash_function1 = universal1;
     }else if (function_code1 == 6){
-        hash_function1 = dycuckoo_hash2;
+        hash_function1 = universal2;
     }else if (function_code1 == 7){
-        hash_function1 = dycuckoo_hash3;
+        hash_function1 = dycuckoo_hash1;
     }else if (function_code1 == 8){
+        hash_function1 = dycuckoo_hash2;
+    }else if (function_code1 == 9){
+        hash_function1 = dycuckoo_hash3;
+    }else if (function_code1 == 10){
         hash_function1 = dycuckoo_hash4;
-    }else if (function_code1 == 9) {
+    }else if (function_code1 == 11) {
         hash_function1 = dycuckoo_hash5;
     }else{
         hash_function1 = modulo;
@@ -153,16 +169,20 @@ int main(int argc, char** argv){
     }else if (function_code2 == 3){
         hash_function2 = murmer;
     }else if (function_code2 == 4){
-        hash_function2 = universal2;
+        hash_function2 = universal0;
     }else if (function_code2 == 5){
-        hash_function2 = dycuckoo_hash1;
+        hash_function2 = universal1;
     }else if (function_code2 == 6){
-        hash_function2 = dycuckoo_hash2;
+        hash_function2 = universal2;
     }else if (function_code2 == 7){
-        hash_function2 = dycuckoo_hash3;
+        hash_function2 = dycuckoo_hash1;
     }else if (function_code2 == 8){
+        hash_function2 = dycuckoo_hash2;
+    }else if (function_code2 == 9){
+        hash_function2 = dycuckoo_hash3;
+    }else if (function_code2 == 10){
         hash_function2 = dycuckoo_hash4;
-    }else if (function_code2 == 9) {
+    }else if (function_code2 == 11) {
         hash_function2 = dycuckoo_hash5;
     }else{
         hash_function2 = modulo;
