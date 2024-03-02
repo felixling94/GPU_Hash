@@ -12,6 +12,7 @@
 #include <../include/declaration.cuh>
 #include <../include/hash_function.cuh>
 #include <../tools/timer.cuh>
+#include <../tools/benchmark.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -155,14 +156,15 @@ class Example_Hash{
             for (size_t i = 0; i<array_size; ++i) resultArray[i] = static_cast<T>(getHashValue(exampleArray[i],function));
 
             timer.stop();
-            std::cout << "Dauer zur Ausführung (in ms)                : ";
+            std::cout << "Dauer zur Ausführung (ms)                   : ";
             std::cout <<  timer.getDuration() << std::endl;
         };
 
         void getHashArrayOnDevice(hash_function function){
             float duration_upload, duration_run, duration_download, duration_total;
             int min_grid_size, grid_size, block_size;
-            GPUTimer upload, run, download;
+            GPUTimer upload, run, download, total;
+            Benchmark Benchmark_Calculate;
         
             duration_upload = 0; 
             duration_run = 0; 
@@ -175,6 +177,8 @@ class Example_Hash{
             //Reserviere und kopiere Daten aus der exampleArray und eingegebenen Zellen auf GPU
             cudaMalloc(&exampleArray_Device,(sizeof(T))*array_size);
             cudaMalloc(&exampleResultArray_Device,(sizeof(T))*array_size);
+
+            total.GPUstart();
 
             upload.GPUstart();
             cudaMemcpyAsync(exampleArray_Device,exampleArray,(sizeof(T))*array_size,cudaMemcpyHostToDevice,upload.getStream());      
@@ -209,21 +213,17 @@ class Example_Hash{
             download.GPUstart();
             cudaMemcpyAsync(resultArray_device, exampleResultArray_Device, sizeof(T)*array_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
+
+            total.GPUstop();
         
             duration_upload = upload.getGPUDuration();
             duration_run = run.getGPUDuration();
             duration_download = download.getGPUDuration();
-            duration_total = duration_upload + duration_run + duration_download;
+            duration_total = total.getGPUDuration();
 
-            std::cout << "Dauer zum Hochladen (in Millisekunden)      : ";
-            std::cout <<  duration_upload << std::endl;
-            std::cout << "Dauer zur Ausführung (in Millisekunden)     : ";
-            std::cout <<  duration_run << std::endl;
-            std::cout << "Dauer zum Herunterladen (in Millisekunden)  : ";
-            std::cout <<  duration_download << std::endl;
-            std::cout << "Gesamtdauer (in Millisekunden)              : ";
-            std::cout <<  duration_total << std::endl;
-    
+            Benchmark_Calculate.record(calculate_hash_value,duration_upload,duration_run,duration_download,duration_total);
+            Benchmark_Calculate.print();
+
             cudaFree(exampleArray_Device);
             cudaFree(exampleResultArray_Device);
         };

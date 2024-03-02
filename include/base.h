@@ -4,6 +4,9 @@
 #define LOOP_PERCENTAGE 0
 #define BLANK 0
 
+//Operationen in einer Hashtabelle
+enum operation_type{calculate_hash_value=0, insert_hash_table, search_hash_table, delete_hash_table};
+
 //Arten der offenen Hashverfahren
 //0: Keine Kollisionsauflösung
 //1: Lineare Hashverfahren

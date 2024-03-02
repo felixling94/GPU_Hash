@@ -4,6 +4,7 @@
 #include <string>
 
 #include "base.h"
+#include <../tools/benchmark.h>
 
 template <typename T1, typename T2>
 class Hash_Table{
@@ -15,6 +16,8 @@ class Hash_Table{
         hash_type type_hash;
         hash_function function1;
         hash_function function2;
+
+        Benchmark * benchmark_hash_table = new Benchmark[3];
 
         std::string getCell(size_t i, int j = 0);
     
@@ -29,6 +32,9 @@ class Hash_Table{
 
         hash_type getHashType();
         hash_function getHashFunction(int i = 0);
+
+        Benchmark getBenchmark(operation_type type);
+        Benchmark * getBenchmarkList();
 
         void print();
         

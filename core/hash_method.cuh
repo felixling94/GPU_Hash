@@ -27,13 +27,11 @@ DEVICEQUALIFIER void insert_normal(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
 template <typename T1, typename T2>
 DEVICEQUALIFIER void insert_linear(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j;
-    size_t max_hash_table_size;
     T1 prev;
 
     j = 0;
-    max_hash_table_size = (size_t)((100+LOOP_PERCENTAGE)/100*HashTableSize);
 
-    while(j<max_hash_table_size){
+    while(j<HashTableSize){
         i = (i + j) % HashTableSize;
         prev = atomicCAS(&HashTable[i].key, BLANK, key);
         
@@ -51,13 +49,11 @@ DEVICEQUALIFIER void insert_linear(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
 template <typename T1, typename T2>
 DEVICEQUALIFIER void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j;
-    size_t max_hash_table_size;
     T1 prev;
 
     j = 0;
-    max_hash_table_size = (size_t)((100+LOOP_PERCENTAGE)/100*HashTableSize);
 
-    while(j<max_hash_table_size){
+    while(j<HashTableSize){
         i = ((size_t) ((int) i + getProbe2(j))) % HashTableSize;
         prev = atomicCAS(&HashTable[i].key, BLANK, key);
         
@@ -75,13 +71,11 @@ DEVICEQUALIFIER void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* H
 template <typename T1, typename T2>
 DEVICEQUALIFIER void insert_double(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
     size_t j;
-    size_t max_hash_table_size;
     T1 prev;
 
     j = 0;
-    max_hash_table_size = (size_t)((100+LOOP_PERCENTAGE)/100*HashTableSize);
 
-    while(j<max_hash_table_size){
+    while(j<HashTableSize){
         i = (i + getHashProbe(key,j,HashTableSize,function)) % HashTableSize;
         prev = atomicCAS(&HashTable[i].key, BLANK, key);
         
@@ -104,13 +98,11 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
     T2 temp_value;
 
     k = 1;
-    max_hash_table_size = (size_t)((100+LOOP_PERCENTAGE)/100*HashTableSize);
+    max_hash_table_size = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*HashTableSize);
 
     prev1 = atomicCAS(&HashTable1[i].key, BLANK, key);
     
     if (prev1 == BLANK || prev1 == key){
-    //if (HashTable1[i].key == BLANK){
-    //if (HashTable1[i].key == BLANK || HashTable1[i].key == key){
         HashTable1[i].key = key;
         HashTable1[i].value = value;
         __syncthreads();
@@ -120,8 +112,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
     prev2 = atomicCAS(&HashTable2[i].key, BLANK, key);
 
     if (prev2 == BLANK || prev2 == key){
-    //if (HashTable2[j].key == BLANK){
-    //if (HashTable2[j].key == BLANK || HashTable2[j].key == key){
         HashTable2[j].key = key;
         HashTable2[j].value = value;
         __syncthreads();
@@ -138,8 +128,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
         prev1 = atomicCAS(&HashTable1[i].key, BLANK, key);
         
         if (prev1 == BLANK || prev1 == key){
-        //if (HashTable1[i].key == BLANK){
-        //if (HashTable1[i].key == BLANK || HashTable1[i].key == key){
             HashTable1[i].key = key;
             HashTable1[i].value = value;
             __syncthreads();
@@ -152,8 +140,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
         prev2 = atomicCAS(&HashTable2[j].key, BLANK, key);
 
         if (prev2 == BLANK || prev2 == key){
-        //if (HashTable2[j].key == BLANK){
-        //if (HashTable2[j].key == BLANK || HashTable2[j].key == key){
             HashTable2[j].key = key;
             HashTable2[j].value = value;
             __syncthreads();
@@ -247,7 +233,6 @@ DEVICEQUALIFIER void delete_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
     T1 prev = atomicCAS(&HashTable[i].key,key, BLANK);
     
     if (prev == BLANK){
-    //if (HashTable[i].key == key){
         HashTable[i].key = BLANK;
         HashTable[i].value = BLANK;
     }
@@ -264,7 +249,6 @@ DEVICEQUALIFIER void delete_linear(T1 key, size_t i, cell<T1,T2>* HashTable, siz
         prev = atomicCAS(&HashTable[i].key,key, BLANK);
 
         if (prev == BLANK){
-        //if (HashTable[i].key == key){
             HashTable[i].key = BLANK;
             HashTable[i].value = BLANK;
             break;
@@ -284,7 +268,6 @@ DEVICEQUALIFIER void delete_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, 
         prev = atomicCAS(&HashTable[i].key,key, BLANK);
 
         if (prev == BLANK){
-        //if (HashTable[i].key == key){
             HashTable[i].key = BLANK;
             HashTable[i].value = BLANK;
             break;
@@ -304,7 +287,6 @@ DEVICEQUALIFIER void delete_double(T1 key, size_t i, cell<T1,T2>* HashTable, siz
         prev = atomicCAS(&HashTable[i].key,key, BLANK); 
 
         if (prev == BLANK){
-        //if (HashTable[i].key == key){{
             HashTable[i].key = BLANK;
             HashTable[i].value = BLANK;
             break;
@@ -322,7 +304,6 @@ DEVICEQUALIFIER void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* Hash
     prev1 = atomicCAS(&HashTable1[i].key,key, BLANK); 
 
     if (prev1 == BLANK){
-    //if (HashTable1[i].key == key){
         HashTable1[i].key = BLANK;
         HashTable1[i].value = BLANK;
         return;
@@ -331,7 +312,6 @@ DEVICEQUALIFIER void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* Hash
     prev2 = atomicCAS(&HashTable2[j].key,key, BLANK); 
     
     if (prev2 == BLANK){
-    //if (HashTable2[j].key == key){
         HashTable2[j].key = BLANK;
         HashTable2[j].value = BLANK;
         return;
@@ -344,7 +324,6 @@ DEVICEQUALIFIER void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* Hash
         prev1 = atomicCAS(&HashTable1[i].key,key, BLANK); 
 
         if (prev1 == BLANK){
-        //if (HashTable1[i].key == key){
             HashTable1[i].key = BLANK;
             HashTable1[i].value = BLANK;
             break;
@@ -353,7 +332,6 @@ DEVICEQUALIFIER void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* Hash
         prev2 = atomicCAS(&HashTable2[j].key,key, BLANK); 
 
         if (prev2 == BLANK){
-        //if (HashTable2[j].key == key){
             HashTable2[j].key = BLANK;
             HashTable2[j].value = BLANK;
             break;

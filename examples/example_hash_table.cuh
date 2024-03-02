@@ -10,6 +10,7 @@
 #include <../include/hash_table.h>
 #include <../core/hash_table.cuh>
 #include <../tools/timer.cuh>
+#include <../tools/benchmark.h>
 
 template <typename T1, typename T2>
 class Example_Hash_Table{
@@ -137,7 +138,7 @@ class Example_Hash_Table{
 
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Gesamtdauer (Millisekunden)                 : ";
+            std::cout << "Gesamtdauer (ms)                            : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
@@ -148,7 +149,9 @@ class Example_Hash_Table{
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             hash_table2.insert_List(exampleKeyList.data(),exampleValueList.data(),exampleCellSize);
-            
+            Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
+            Benchmark_Insert.print();
+
             numCells1 = hash_table1.getNumCell();
             numCells2 = hash_table2.getNumCell();
             
@@ -214,7 +217,7 @@ class Example_Hash_Table{
             //Fasse Resultate für jede Hashverfahren zusammen
             std::cout << "Anzahl der gesuchten Zellen                 : ";
             std::cout << sum_found << std::endl;
-            std::cout << "Gesamtdauer (Millisekunden)                 : ";
+            std::cout << "Gesamtdauer (ms)                            : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
@@ -224,6 +227,8 @@ class Example_Hash_Table{
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             hash_table.search_List(exampleKeyList.data(),exampleCellSize);
+            Benchmark Benchmark_Search = hash_table.getBenchmark(search_hash_table);
+            Benchmark_Search.print();
             //hash_table2.print();
         };
 
@@ -271,7 +276,7 @@ class Example_Hash_Table{
 
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Gesamtdauer (Millisekunden)                 : ";
+            std::cout << "Gesamtdauer (ms)                            : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
@@ -287,6 +292,8 @@ class Example_Hash_Table{
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             hash_table2.delete_List(exampleKeyList.data(),exampleCellSize);
+            Benchmark Benchmark_Delete = hash_table2.getBenchmark(delete_hash_table);
+            Benchmark_Delete.print();
 
             num_cells_curr1 = num_cells_prev1 - hash_table1.getNumCell();
             num_cells_curr2 = num_cells_prev2 - hash_table2.getNumCell();
