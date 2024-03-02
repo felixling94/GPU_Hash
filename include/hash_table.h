@@ -10,7 +10,7 @@ template <typename T1, typename T2>
 class Hash_Table{
     private:
         size_t table_size;
-        cell<T1,T2> * hash_table;
+        cell<T1,T2> * hash_table1;
         cell<T1,T2> * hash_table2;
 
         hash_type type_hash;

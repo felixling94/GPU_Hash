@@ -308,19 +308,19 @@ GLOBALQUALIFIER void delete_cuckoo_kernel(T1 * keyList, cell<T1,T2> * hashTable1
 
 template <typename T1, typename T2>
 Hash_Table<T1,T2>::Hash_Table():type_hash(no_probe),function1(modulo),function2(modulo),table_size(2){
-    hash_table = new cell<T1,T2>[2];
+    hash_table1 = new cell<T1,T2>[2];
 };
 
 template <typename T1, typename T2>
 Hash_Table<T1,T2>::Hash_Table(hash_type HashType, hash_function function_1, hash_function function_2, size_t TableSize):
 type_hash(HashType),function1(function_1),function2(function_2),table_size(TableSize){
-    hash_table = new cell<T1,T2>[TableSize];
+    hash_table1 = new cell<T1,T2>[TableSize];
     if (HashType == cuckoo_probe) hash_table2 = new cell<T1,T2>[TableSize];
 };
     
 template <typename T1, typename T2>
 Hash_Table<T1,T2>::~Hash_Table(){
-    delete[] hash_table;
+    delete[] hash_table1;
     if (type_hash == cuckoo_probe) delete[] hash_table2;
 };
 
@@ -331,10 +331,10 @@ std::string Hash_Table<T1,T2>::getCell(size_t i, int j){
     
     if (j == 0){
         if (i < (table_size)){
-            if (hash_table[i].key!= BLANK){
-                string.append(std::to_string(hash_table[i].key));
+            if (hash_table1[i].key!= BLANK){
+                string.append(std::to_string(hash_table1[i].key));
                 string.append("  ");
-                string.append(std::to_string(hash_table[i].value));
+                string.append(std::to_string(hash_table1[i].value));
             }else{
                 string.append("Leer      Leer");
             } 
@@ -359,7 +359,7 @@ std::string Hash_Table<T1,T2>::getCell(size_t i, int j){
 template <typename T1, typename T2>
 size_t Hash_Table<T1,T2>::getNumCell(){
     size_t sumCell = 0;
-    for (size_t i=0; i<table_size; i++) if(hash_table[i].key!=BLANK) ++sumCell;
+    for (size_t i=0; i<table_size; i++) if(hash_table1[i].key!=BLANK) ++sumCell;
 
     if (type_hash == cuckoo_probe){
         for (size_t j=0; j<table_size; j++) if(hash_table2[j].key!=BLANK) ++sumCell;
@@ -383,7 +383,7 @@ size_t Hash_Table<T1,T2>::getTableSize(){
 template <typename T1, typename T2>
 cell<T1,T2> * Hash_Table<T1,T2>::getTable(int i){
     if (i == 0){
-        return hash_table;
+        return hash_table1;
     }else{
         return hash_table2;
     }
@@ -451,11 +451,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
         T1 prev;
 
         i = getHash<T1>(key,table_size,function1);
-        prev = swapHash<T1>(hash_table[i].key, BLANK, key);
+        prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
         if (prev == BLANK || prev == key){
-            hash_table[i].key = key;
-            hash_table[i].value = value;
+            hash_table1[i].key = key;
+            hash_table1[i].value = value;
         }
 
     //Lineare Hashverfahren
@@ -468,11 +468,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
 
         while(j<table_size){
             i = (i+j)%table_size;
-            prev = swapHash<T1>(hash_table[i].key, BLANK, key);
+            prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
             
             if (prev == BLANK || prev == key){
-                hash_table[i].key = key;
-                hash_table[i].value = value;
+                hash_table1[i].key = key;
+                hash_table1[i].value = value;
                 break;
             }
             ++j;
@@ -488,11 +488,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
 
         while((j/2)<table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
-            prev = swapHash<T1>(hash_table[i].key, BLANK, key);
+            prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
             if (prev == BLANK || prev == key){
-                hash_table[i].key = key;
-                hash_table[i].value = value;
+                hash_table1[i].key = key;
+                hash_table1[i].value = value;
                 break;
             }
             ++j;
@@ -508,11 +508,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
 
         while((j/2)<table_size){
             i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
-            prev = swapHash<T1>(hash_table[i].key, BLANK, key);
+            prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
             if (prev == BLANK || prev == key){
-                hash_table[i].key = key;
-                hash_table[i].value = value;
+                hash_table1[i].key = key;
+                hash_table1[i].value = value;
                 break;
             }
             ++j;
@@ -531,11 +531,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
         k = 1;
         max_hash_table = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*table_size);
 
-        prev1 = swapHash<T1>(hash_table[i].key, BLANK, key);
+        prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
     
         if (prev1 == BLANK || prev1 == key){
-            hash_table[i].key = key;
-            hash_table[i].value = value;
+            hash_table1[i].key = key;
+            hash_table1[i].value = value;
             return;
         }
 
@@ -552,13 +552,13 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             j = (j + k) % (2*table_size);
 
             //Vertausche zwei Schlüssel innerhalb der 1. Hashtabelle
-            swapCells<T1,T2>(key,value,i,hash_table);
+            swapCells<T1,T2>(key,value,i,hash_table1);
 
-            prev1 = swapHash<T1>(hash_table[i].key, BLANK, key);
+            prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
             
             if (prev1 == BLANK || prev1 == key){
-                hash_table[i].key = key;
-                hash_table[i].value = value;
+                hash_table1[i].key = key;
+                hash_table1[i].value = value;
                 break;
             }
 
@@ -587,7 +587,8 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
     }else{
         cell<T1,T2> * cells;
         cell<T1,T2> * cells_device;
-        cell<T1,T2> * hash_table_device;
+        cell<T1,T2> * hash_table_device1;
+        cell<T1,T2> * hash_table_device2;
 
         std::vector<cell<T1,T2>> cells_vector;
 
@@ -613,13 +614,13 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         //Ohne Kollisionsauflösung
         if (type_hash == no_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&cells_device,sizeof(cell<T1,T2>)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(cells_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -629,7 +630,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[4] = {&cells_device, &hash_table_device, &table_size, &function1};
+            void *args[4] = {&cells_device, &hash_table_device1, &table_size, &function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)insert_normal_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -637,7 +638,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -645,13 +646,13 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         //Lineare Hashverfahren
         }else if(type_hash == linear_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&cells_device,sizeof(cell<T1,T2>)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(cells_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -661,7 +662,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[4] = {&cells_device, &hash_table_device, &table_size,&function1};
+            void *args[4] = {&cells_device, &hash_table_device1, &table_size,&function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)insert_linear_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -669,7 +670,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -677,13 +678,13 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         //Quadratische Hashverfahren
         }else if(type_hash == quadratic_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&cells_device,sizeof(cell<T1,T2>)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(cells_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -693,7 +694,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[4] = {&cells_device, &hash_table_device, &table_size,&function1};
+            void *args[4] = {&cells_device, &hash_table_device1, &table_size,&function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)insert_quadratic_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -701,7 +702,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -709,13 +710,13 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         //Doppelte Hashverfahren
         }else if (type_hash == double_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&cells_device,sizeof(cell<T1,T2>)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(cells_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -725,7 +726,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[5] = {&cells_device, &hash_table_device, &table_size,&function1,&function2};
+            void *args[5] = {&cells_device, &hash_table_device1, &table_size,&function1,&function2};
 
             run.GPUstart();
             cudaLaunchKernel((void*)insert_double_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -733,24 +734,22 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
 
         //Cuckoo-Hashverfahren
         }else{
-            cell<T1,T2> * hash_table_device2;
-            
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&hash_table_device2,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&cells_device,sizeof(cell<T1,T2>)*cellSize);
 
             total.GPUstart();
             
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(hash_table_device2,hash_table2,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(cells_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
@@ -761,7 +760,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[6] = {&cells_device, &hash_table_device, &hash_table_device2, &table_size,&function1,&function2};
+            void *args[6] = {&cells_device, &hash_table_device1, &hash_table_device2, &table_size,&function1,&function2};
 
             run.GPUstart();
             cudaLaunchKernel((void*)insert_cuckoo_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -769,13 +768,11 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             cudaMemcpyAsync(hash_table2, hash_table_device2, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
-
-            cudaFree(hash_table_device2);
         }
         
         duration_upload = upload.getGPUDuration();
@@ -786,7 +783,8 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         Benchmark_Insert.record(insert_hash_table,duration_upload,duration_run,duration_download,duration_total);
         benchmark_hash_table[0] = Benchmark_Insert;
     
-        cudaFree(hash_table_device);
+        cudaFree(hash_table_device1);
+        cudaFree(hash_table_device2);
         cudaFree(cells_device);
         cudaFree(cells);
     }
@@ -800,7 +798,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
         size_t i;
         i = getHash<T1>(key,table_size,function1);
         
-        if (hash_table[i].key == key){
+        if (hash_table1[i].key == key){
             return true;
         }else{
             return false;
@@ -815,7 +813,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
 
         while(j<table_size){
             i = (i+j)%table_size;
-            if (hash_table[i].key == key) return true;
+            if (hash_table1[i].key == key) return true;
             ++j;
         }
         return false;
@@ -829,7 +827,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
 
         while((j/2)<table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
-            if (hash_table[i].key == key) return true;
+            if (hash_table1[i].key == key) return true;
             ++j;
         }
         return false;
@@ -843,7 +841,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
 
         while((j/2)<table_size){
             i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
-            if (hash_table[i].key == key) return true;
+            if (hash_table1[i].key == key) return true;
             ++j;
         }
         return false;
@@ -854,14 +852,14 @@ bool Hash_Table<T1,T2>::search(T1 key){
         size_t j = getHash<T1>(key,table_size,function2);
         size_t k = 1;
 
-        if (hash_table[i].key == key) return true;
+        if (hash_table1[i].key == key) return true;
         if (hash_table2[j].key == key) return true;
 
         while (k<table_size){
             i = (i + k) % (2*table_size);
             j = (j + k) % (2*table_size);
             
-            if (hash_table[i].key == key) return true;
+            if (hash_table1[i].key == key) return true;
             if (hash_table2[j].key == key) return true;
 
             ++k;
@@ -881,7 +879,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
 
         T1 * keyList_device;
         T1 * keyListResult_device;
-        cell<T1,T2> * hash_table_device;
+        cell<T1,T2> * hash_table_device1;
         cell<T1,T2> * hash_table_device2;
         
         float duration_upload, duration_run, duration_download, duration_total;
@@ -900,14 +898,14 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         //Ohne Kollisionsauflösung
         if (type_hash == no_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
             cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
             
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
@@ -918,7 +916,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device, &table_size,&function1};
+            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device1, &table_size,&function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)search_normal_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -934,14 +932,14 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         //Lineare Hashverfahren
         }else if(type_hash == linear_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
             cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
@@ -952,7 +950,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device, &table_size,&function1};
+            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device1, &table_size,&function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)search_linear_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -968,14 +966,14 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         //Quadratische Hashverfahren
         }else if(type_hash == quadratic_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
             cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
@@ -986,7 +984,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device, &table_size,&function1};
+            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device1, &table_size,&function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)search_quadratic_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1002,14 +1000,14 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         //Doppelte Hashverfahren
         }else if (type_hash == double_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
             cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
@@ -1020,7 +1018,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[6] = {&keyList_device, &keyListResult_device, &hash_table_device, &table_size,&function1,&function2};
+            void *args[6] = {&keyList_device, &keyListResult_device, &hash_table_device1, &table_size,&function1,&function2};
 
             run.GPUstart();
             cudaLaunchKernel((void*)search_double_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1036,7 +1034,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         //Cuckoo-Hashverfahren
         }else{
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&hash_table_device2,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
             cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
@@ -1044,7 +1042,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             total.GPUstart();
             
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(hash_table_device2,hash_table2,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
@@ -1056,7 +1054,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[7] = {&keyList_device, &keyListResult_device, &hash_table_device, &hash_table_device2, &table_size,&function1,&function2};
+            void *args[7] = {&keyList_device, &keyListResult_device, &hash_table_device1, &hash_table_device2, &table_size,&function1,&function2};
 
             run.GPUstart();
             cudaLaunchKernel((void*)search_cuckoo_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1081,7 +1079,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
         Benchmark_Search.record(search_hash_table,duration_upload,duration_run,duration_download,duration_total);
         benchmark_hash_table[1] = Benchmark_Search;
     
-        cudaFree(hash_table_device);
+        cudaFree(hash_table_device1);
         cudaFree(hash_table_device2);
         cudaFree(keyList_device);
         cudaFree(keyListResult_device);
@@ -1098,11 +1096,11 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
         T1 prev;
 
         i = getHash<T1>(key,table_size,function1);
-        prev = swapHash<T1>(hash_table[i].key, key, BLANK);
+        prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
         if (prev == BLANK){
-            hash_table[i].key = BLANK;
-            hash_table[i].value = BLANK;
+            hash_table1[i].key = BLANK;
+            hash_table1[i].value = BLANK;
         }
 
     //Lineare Hashverfahren
@@ -1115,11 +1113,11 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
 
         while(j<table_size){
             i = (i+j)%table_size;
-            prev = swapHash<T1>(hash_table[i].key, key, BLANK);
+            prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev == BLANK){
-                hash_table[i].key = BLANK;
-                hash_table[i].value = BLANK;
+                hash_table1[i].key = BLANK;
+                hash_table1[i].value = BLANK;
                 break;
             }
             ++j;
@@ -1135,11 +1133,11 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
 
         while((j/2)<table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
-            prev = swapHash<T1>(hash_table[i].key, key, BLANK);
+            prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev == BLANK){
-                hash_table[i].key = BLANK;
-                hash_table[i].value = BLANK;
+                hash_table1[i].key = BLANK;
+                hash_table1[i].value = BLANK;
                 break;
             }
             ++j;
@@ -1155,11 +1153,11 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
 
         while((j/2)<table_size){
             i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
-            prev = swapHash<T1>(hash_table[i].key, key, BLANK);
+            prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev == BLANK){
-                hash_table[i].key = BLANK;
-                hash_table[i].value = BLANK;
+                hash_table1[i].key = BLANK;
+                hash_table1[i].value = BLANK;
                 break;
             }
             ++j;
@@ -1174,11 +1172,11 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
         j = getHash<T1>(key,table_size,function2);
         k = 1;
 
-        prev1 = swapHash<T1>(hash_table[i].key, key, BLANK);
+        prev1 = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
         if (prev1 == BLANK){
-            hash_table[i].key = BLANK;
-            hash_table[i].value = BLANK;
+            hash_table1[i].key = BLANK;
+            hash_table1[i].value = BLANK;
             return;
         }
 
@@ -1194,11 +1192,11 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
             i = (i + k) % (2*table_size);
             j = (j + k) % (2*table_size);
 
-            prev1 = swapHash<T1>(hash_table[i].key, key, BLANK);
+            prev1 = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev1 == BLANK){
-                hash_table[i].key = BLANK;
-                hash_table[i].value = BLANK;
+                hash_table1[i].key = BLANK;
+                hash_table1[i].value = BLANK;
                 break;
             }
 
@@ -1222,7 +1220,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         std::cout << " die Größe der Hashtabelle betragen." << std::endl;
     }else{
         T1 * keyList_device;
-        cell<T1,T2> * hash_table_device;
+        cell<T1,T2> * hash_table_device1;
         cell<T1,T2> * hash_table_device2;
         
         float duration_upload, duration_run, duration_download, duration_total;
@@ -1240,13 +1238,13 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         //Ohne Kollisionsauflösung
         if (type_hash == no_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
             
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -1256,7 +1254,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[4] = {&keyList_device, &hash_table_device, &table_size, &function1};
+            void *args[4] = {&keyList_device, &hash_table_device1, &table_size, &function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)delete_normal_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1264,7 +1262,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -1272,13 +1270,13 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         //Lineare Hashverfahren
         }else if(type_hash == linear_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -1288,7 +1286,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[4] = {&keyList_device, &hash_table_device, &table_size, &function1};
+            void *args[4] = {&keyList_device, &hash_table_device1, &table_size, &function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)delete_linear_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1296,7 +1294,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -1304,13 +1302,13 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         //Quadratische Hashverfahren
         }else if(type_hash == quadratic_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -1320,7 +1318,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[4] = {&keyList_device, &hash_table_device, &table_size, &function1};
+            void *args[4] = {&keyList_device, &hash_table_device1, &table_size, &function1};
 
             run.GPUstart();
             cudaLaunchKernel((void*)delete_quadratic_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1328,7 +1326,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -1336,13 +1334,13 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         //Doppelte Hashverfahren
         }else if (type_hash == double_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
@@ -1352,7 +1350,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[5] = {&keyList_device, &hash_table_device, &table_size, &function1, &function2};
+            void *args[5] = {&keyList_device, &hash_table_device1, &table_size, &function1, &function2};
 
             run.GPUstart();
             cudaLaunchKernel((void*)delete_double_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1360,7 +1358,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -1368,14 +1366,14 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         //Cuckoo-Hashverfahren
         }else{
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
-            cudaMalloc(&hash_table_device,sizeof(cell<T1,T2>)*table_size);
+            cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&hash_table_device2,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
             
             upload.GPUstart();
-            cudaMemcpyAsync(hash_table_device,hash_table,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(hash_table_device2,hash_table2,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,keyList,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
@@ -1386,7 +1384,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             dim3 block(block_size);
             dim3 grid(grid_size);
             
-            void *args[6] = {&keyList_device, &hash_table_device, &hash_table_device2, &table_size, &function1, &function2};
+            void *args[6] = {&keyList_device, &hash_table_device1, &hash_table_device2, &table_size, &function1, &function2};
 
             run.GPUstart();
             cudaLaunchKernel((void*)delete_cuckoo_kernel<T1,T2>,grid,block,args,0,run.getStream());
@@ -1394,7 +1392,8 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(hash_table, hash_table_device, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table1, hash_table_device1, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(hash_table2, hash_table_device2, sizeof(cell<T1,T2>)*table_size, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -1408,7 +1407,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
         Benchmark_Delete.record(delete_hash_table,duration_upload,duration_run,duration_download,duration_total);
         benchmark_hash_table[2] = Benchmark_Delete;
     
-        cudaFree(hash_table_device);
+        cudaFree(hash_table_device1);
         cudaFree(hash_table_device2);
         cudaFree(keyList_device);
     }
