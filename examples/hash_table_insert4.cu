@@ -120,13 +120,13 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    if (function_code1<0 || function_code1>11){
-        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 0 bis 11 sein." << std::endl;
+    if (function_code1<1 || function_code1>11){
+        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
         return -1;
     }
 
-    if (function_code2<0 || function_code2>11){
-        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 0 bis 11 sein." << std::endl;
+    if (function_code2<1 || function_code2>11){
+        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
         return -1;
     }
     

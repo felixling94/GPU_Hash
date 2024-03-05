@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <algorithm>
 #include <stdint.h>
@@ -100,7 +101,7 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    const size_t * key_size = new size_t[5]{32000000,25000000,20000000,15000000,10000000};
+    const size_t key_size{32000000};
     size_t * exampleHashTableSize = new size_t[5];
     int function_code1, function_code2, hash_type_code;
     hash_function hash_function1, hash_function2;
@@ -120,13 +121,13 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    if (function_code1<1 || function_code1>11){
-        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
+    if (function_code1<0 || function_code1>11){
+        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 0 bis 11 sein." << std::endl;
         return -1;
     }
 
-    if (function_code2<1 || function_code2>11){
-        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
+    if (function_code2<0 || function_code2>11){
+        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 0 bis 11 sein." << std::endl;
         return -1;
     }
     
@@ -190,9 +191,34 @@ int main(int argc, char** argv){
 
     CPUTimer timer;
     timer.start();
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Ausführung eines Hashverfahren mit verschiedenen Datentypen von Werten
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //int
+    std::cout << "****************************************************************";
+    std::cout << "***************" << std::endl;
+    std::cout << "Wert mit Datentyp von " << std::quoted("int") << std::endl;
+    runMain<uint32_t,int>(hash_type1, hash_function1, hash_function2, key_size);
 
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, key_size[i]);
-  
+    //double
+    std::cout << "****************************************************************";
+    std::cout << "***************" << std::endl;
+    std::cout << "Wert mit Datentyp von " << std::quoted("double") << std::endl;
+    runMain<uint32_t,double>(hash_type1, hash_function1, hash_function2, key_size);
+
+    //float
+    std::cout << "****************************************************************";
+    std::cout << "***************" << std::endl;
+    std::cout << "Wert mit Datentyp von " << std::quoted("float") << std::endl;
+    runMain<uint32_t,float>(hash_type1, hash_function1, hash_function2, key_size);
+
+    //char
+    std::cout << "****************************************************************";
+    std::cout << "***************" << std::endl;
+    std::cout << "Wert mit Datentyp von " << std::quoted("char") << std::endl;
+    runMain<uint32_t,char>(hash_type1, hash_function1, hash_function2, key_size);
+
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;

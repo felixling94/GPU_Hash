@@ -69,13 +69,13 @@ class Example_Hash_Table{
             size_t seed = generator();
             std::mt19937 rnd(seed);
             
-            std::uniform_int_distribution<T1> dist1(1,max);
-            std::uniform_int_distribution<T2> dist2(min,max);
+            std::uniform_real_distribution<> dist1((double) 1,(double) max);
+            std::uniform_real_distribution<> dist2((double) min,(double) max);
 
             for (size_t i = 0; i < exampleCellSize; i++){
-                T1 rand1 = dist1(rnd);
-                T2 rand2 = dist2(rnd);
-
+                T1 rand1 = (T1) dist1(rnd);
+                T2 rand2 = (T2) dist2(rnd);
+                
                 keys_vector.push_back(rand1);
                 values_vector.push_back(rand2);
             }
