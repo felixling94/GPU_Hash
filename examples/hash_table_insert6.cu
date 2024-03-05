@@ -201,11 +201,17 @@ int main(int argc, char** argv){
     std::cout << "Wert mit Datentyp von " << std::quoted("int") << std::endl;
     runMain<uint32_t,int>(hash_type1, hash_function1, hash_function2, key_size);
 
-    //double
+    //long int
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;
-    std::cout << "Wert mit Datentyp von " << std::quoted("double") << std::endl;
-    runMain<uint32_t,double>(hash_type1, hash_function1, hash_function2, key_size);
+    std::cout << "Wert mit Datentyp von " << std::quoted("long int") << std::endl;
+    runMain<uint32_t,long int>(hash_type1, hash_function1, hash_function2, key_size);
+
+    //long long int
+    std::cout << "****************************************************************";
+    std::cout << "***************" << std::endl;
+    std::cout << "Wert mit Datentyp von " << std::quoted("long long int") << std::endl;
+    runMain<uint32_t,long long int>(hash_type1, hash_function1, hash_function2, key_size);
 
     //float
     std::cout << "****************************************************************";
@@ -213,11 +219,17 @@ int main(int argc, char** argv){
     std::cout << "Wert mit Datentyp von " << std::quoted("float") << std::endl;
     runMain<uint32_t,float>(hash_type1, hash_function1, hash_function2, key_size);
 
-    //char
+    //double
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;
-    std::cout << "Wert mit Datentyp von " << std::quoted("char") << std::endl;
-    runMain<uint32_t,char>(hash_type1, hash_function1, hash_function2, key_size);
+    std::cout << "Wert mit Datentyp von " << std::quoted("double") << std::endl;
+    runMain<uint32_t,double>(hash_type1, hash_function1, hash_function2, key_size);
+
+    //double
+    std::cout << "****************************************************************";
+    std::cout << "***************" << std::endl;
+    std::cout << "Wert mit Datentyp von " << std::quoted("long double") << std::endl;
+    runMain<uint32_t,long double>(hash_type1, hash_function1, hash_function2, key_size);
 
     //Fasse Resultate zusammen
     timer.stop();

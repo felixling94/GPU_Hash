@@ -18,7 +18,6 @@ DEVICEQUALIFIER void insert_normal(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
     if (prev == BLANK || prev == key){
         HashTable[i].key = key;
         HashTable[i].value = value;
-        __syncthreads();
         return;
     }
 };
@@ -38,7 +37,6 @@ DEVICEQUALIFIER void insert_linear(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
         if (prev == BLANK || prev == key){
             HashTable[i].key = key;
             HashTable[i].value = value;
-            __syncthreads();
             break;
         }
         ++j;
@@ -60,7 +58,6 @@ DEVICEQUALIFIER void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* H
         if (prev == BLANK || prev == key){
             HashTable[i].key = key;
             HashTable[i].value = value;
-            __syncthreads();
             break;
         }
         ++j;
@@ -82,7 +79,6 @@ DEVICEQUALIFIER void insert_double(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
         if (prev == BLANK || prev == key){
             HashTable[i].key = key;
             HashTable[i].value = value;
-            __syncthreads();
             break;
         }
         ++j;
@@ -105,7 +101,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
     if (prev1 == BLANK || prev1 == key){
         HashTable1[i].key = key;
         HashTable1[i].value = value;
-        __syncthreads();
         return;
     }
 
@@ -114,7 +109,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
     if (prev2 == BLANK || prev2 == key){
         HashTable2[j].key = key;
         HashTable2[j].value = value;
-        __syncthreads();
         return;
     }
     
@@ -130,7 +124,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
         if (prev1 == BLANK || prev1 == key){
             HashTable1[i].key = key;
             HashTable1[i].value = value;
-            __syncthreads();
             break;
         }
 
@@ -142,7 +135,6 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
         if (prev2 == BLANK || prev2 == key){
             HashTable2[j].key = key;
             HashTable2[j].value = value;
-            __syncthreads();
             break;
         }
 
@@ -339,26 +331,5 @@ DEVICEQUALIFIER void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* Hash
         ++k;
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
