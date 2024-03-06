@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <../include/base.h>
-#include <../include/declaration.cuh>
 #include <../include/hash_function.cuh>
 #include <../tools/timer.cuh>
 #include <../tools/benchmark.h>
@@ -19,7 +18,7 @@
 #include <cuda_runtime_api.h>
 
 template <typename T>
-GLOBALQUALIFIER void calculate_hash_kernel(T* A, T* result, size_t tableSize, hash_function hashFunction){
+__global__ void calculate_hash_kernel(T* A, T* result, size_t tableSize, hash_function hashFunction){
     int i_inBlock, blockID, i;
     
     i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
@@ -30,7 +29,7 @@ GLOBALQUALIFIER void calculate_hash_kernel(T* A, T* result, size_t tableSize, ha
 };
 
 template <typename T>
-GLOBALQUALIFIER void calculate_universal_hash_kernel(T* A, T* result, size_t tableSize, size_t a, size_t b, size_t primeNum){
+__global__ void calculate_universal_hash_kernel(T* A, T* result, size_t tableSize, size_t a, size_t b, size_t primeNum){
     int i_inBlock, blockID, i;
     
     i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;

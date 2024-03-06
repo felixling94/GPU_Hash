@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include <../include/base.h>
-#include <../include/declaration.cuh>
 #include <../include/hash_function.cuh>
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -12,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //Keine Kollisionsauflösung
 template <typename T1, typename T2>
-DEVICEQUALIFIER void insert_normal(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable){
+__device__ void insert_normal(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable){
     T1 prev = atomicCAS(&HashTable[i].key, BLANK, key);
     
     if (prev == BLANK || prev == key){
@@ -24,7 +23,7 @@ DEVICEQUALIFIER void insert_normal(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
 
 //Lineare Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void insert_linear(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
+__device__ void insert_linear(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j;
     T1 prev;
 
@@ -45,7 +44,7 @@ DEVICEQUALIFIER void insert_linear(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
 
 //Quadratische Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
+__device__ void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j;
     T1 prev;
 
@@ -66,7 +65,7 @@ DEVICEQUALIFIER void insert_quadratic(T1 key, T2 value, size_t i, cell<T1,T2>* H
 
 //Doppelte Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void insert_double(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
+__device__ void insert_double(T1 key, T2 value, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
     size_t j;
     T1 prev;
 
@@ -87,7 +86,7 @@ DEVICEQUALIFIER void insert_double(T1 key, T2 value, size_t i, cell<T1,T2>* Hash
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1,T2>* HashTable1, cell<T1,T2>* HashTable2, size_t HashTableSize, hash_function function){
+__device__ void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1,T2>* HashTable1, cell<T1,T2>* HashTable2, size_t HashTableSize, hash_function function){
     size_t k;
     size_t max_hash_table_size;
     T1 prev1, prev2, temp_key;
@@ -147,7 +146,7 @@ DEVICEQUALIFIER void insert_cuckoo(T1 key, T2 value, size_t i, size_t j, cell<T1
 /////////////////////////////////////////////////////////////////////////////////////////
 //Keine Kollisionsauflösung
 template <typename T1, typename T2>
-DEVICEQUALIFIER T1 search_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
+__device__ T1 search_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
     if (HashTable[i].key == key){
         return BLANK;
     }else{
@@ -157,7 +156,7 @@ DEVICEQUALIFIER T1 search_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
 
 //Lineare Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER T1 search_linear(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
+__device__ T1 search_linear(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j;
     j = 0;
 
@@ -171,7 +170,7 @@ DEVICEQUALIFIER T1 search_linear(T1 key, size_t i, cell<T1,T2>* HashTable, size_
 
 //Quadratische Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER T1 search_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
+__device__ T1 search_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j;
     j = 0;
 
@@ -185,7 +184,7 @@ DEVICEQUALIFIER T1 search_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, si
 
 //Quadratische Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER T1 search_double(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
+__device__ T1 search_double(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
     size_t j;
     j = 0;
     
@@ -199,7 +198,7 @@ DEVICEQUALIFIER T1 search_double(T1 key, size_t i, cell<T1,T2>* HashTable, size_
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER T1 search_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* HashTable1, cell<T1,T2>* HashTable2, size_t HashTableSize, hash_function function){
+__device__ T1 search_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* HashTable1, cell<T1,T2>* HashTable2, size_t HashTableSize, hash_function function){
     size_t k = 1;
 
     if (HashTable1[i].key == key) return BLANK;
@@ -221,7 +220,7 @@ DEVICEQUALIFIER T1 search_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* HashTa
 /////////////////////////////////////////////////////////////////////////////////////////
 //Keine Kollisionsauflösung
 template <typename T1, typename T2>
-DEVICEQUALIFIER void delete_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
+__device__ void delete_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
     T1 prev = atomicCAS(&HashTable[i].key,key, BLANK);
     
     if (prev == BLANK){
@@ -232,7 +231,7 @@ DEVICEQUALIFIER void delete_normal(T1 key, size_t i, cell<T1,T2>* HashTable){
 
 //Lineare Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void delete_linear(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
+__device__ void delete_linear(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j = 0;
     T1 prev;
     
@@ -251,7 +250,7 @@ DEVICEQUALIFIER void delete_linear(T1 key, size_t i, cell<T1,T2>* HashTable, siz
 
 //Quadratische Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void delete_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
+__device__ void delete_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize){
     size_t j = 0;
     T1 prev;
     
@@ -270,7 +269,7 @@ DEVICEQUALIFIER void delete_quadratic(T1 key, size_t i, cell<T1,T2>* HashTable, 
 
 //Quadratische Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void delete_double(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
+__device__ void delete_double(T1 key, size_t i, cell<T1,T2>* HashTable, size_t HashTableSize, hash_function function){
     size_t j = 0;
     T1 prev;
         
@@ -289,7 +288,7 @@ DEVICEQUALIFIER void delete_double(T1 key, size_t i, cell<T1,T2>* HashTable, siz
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-DEVICEQUALIFIER void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* HashTable1, cell<T1,T2>* HashTable2, size_t HashTableSize, hash_function function){
+__device__ void delete_cuckoo(T1 key, size_t i, size_t j, cell<T1,T2>* HashTable1, cell<T1,T2>* HashTable2, size_t HashTableSize, hash_function function){
     size_t k = 1;
     T1 prev1, prev2;
     

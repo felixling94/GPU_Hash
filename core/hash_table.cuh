@@ -13,7 +13,6 @@
 
 #include <../include/base.h>
 #include <../include/hash_table.h>
-#include <../include/declaration.cuh>
 #include <../include/hash_function.cuh>
 #include <../core/hash_method.cuh>
 #include <../tools/timer.cuh>
@@ -24,7 +23,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void insert_kernel0(hash_type hashType, cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
+__global__ void insert_kernel0(hash_type hashType, cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
@@ -53,7 +52,7 @@ GLOBALQUALIFIER void insert_kernel0(hash_type hashType, cell<T1,T2> * cells, cel
 
 //Doppelte Hashverfahren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void insert_double_kernel(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void insert_double_kernel(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
@@ -76,7 +75,7 @@ GLOBALQUALIFIER void insert_double_kernel(cell<T1,T2> * cells, cell<T1,T2> * has
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void insert_cuckoo_kernel(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void insert_cuckoo_kernel(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     int i_inBlock, blockID, i;
     size_t j, k;
     T1 key;
@@ -103,7 +102,7 @@ GLOBALQUALIFIER void insert_cuckoo_kernel(cell<T1,T2> * cells, cell<T1,T2> * has
 /////////////////////////////////////////////////////////////////////////////////////////
 //Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void search_kernel0(hash_type hashType, T1 * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
+__global__ void search_kernel0(hash_type hashType, T1 * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
@@ -130,7 +129,7 @@ GLOBALQUALIFIER void search_kernel0(hash_type hashType, T1 * keyList, T1 * keyLi
 
 //Doppelte Hashverfahren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void search_double_kernel(T1 * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void search_double_kernel(T1 * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
@@ -152,7 +151,7 @@ GLOBALQUALIFIER void search_double_kernel(T1 * keyList, T1 * keyListResult, cell
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void search_cuckoo_kernel(T1* keyList, T1 * keyListResult, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void search_cuckoo_kernel(T1* keyList, T1 * keyListResult, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     int i_inBlock, blockID, i;
     size_t j, k;
     T1 key;
@@ -178,7 +177,7 @@ GLOBALQUALIFIER void search_cuckoo_kernel(T1* keyList, T1 * keyListResult, cell<
 /////////////////////////////////////////////////////////////////////////////////////////
 //Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void delete_kernel0(hash_type hashType, T1 * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
+__global__ void delete_kernel0(hash_type hashType, T1 * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
@@ -205,7 +204,7 @@ GLOBALQUALIFIER void delete_kernel0(hash_type hashType, T1 * keyList, cell<T1,T2
 
 //Doppelte Hashverfahren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void delete_double_kernel(T1 * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void delete_double_kernel(T1 * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
     int i_inBlock, blockID, i;
     size_t j;
     T1 key;
@@ -226,7 +225,7 @@ GLOBALQUALIFIER void delete_double_kernel(T1 * keyList, cell<T1,T2> * hashTable,
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-GLOBALQUALIFIER void delete_cuckoo_kernel(T1 * keyList, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void delete_cuckoo_kernel(T1 * keyList, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     int i_inBlock, blockID, i;
     size_t j, k;
     T1 key;

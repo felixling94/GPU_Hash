@@ -3,22 +3,23 @@
 
 #include <stdint.h>
 
-#include "declaration.cuh"
 #include "base.h"
+
+#define PRIME_uint 294967291u
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //Normale Hashfunktionen
 /////////////////////////////////////////////////////////////////////////////////////////
 //Modulo-Funktion
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t modulo_hash(T value, size_t tableSize){
+__device__  __host__   size_t modulo_hash(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     return hashed_key % tableSize;
 };
 
 //Multiplikative Methode
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t multiplication_hash(T value, size_t tableSize){
+__device__  __host__   size_t multiplication_hash(T value, size_t tableSize){
     double golden_value, hashed_key, hash_table_size_double;
     
     golden_value = (sqrt(5.0)-1.0)/2.0;
@@ -32,14 +33,14 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t multiplication_hash(T value, size_t t
 
 //Universelle Hashverfahren
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t universal_hash(T value, size_t tableSize, size_t a, size_t b, size_t primeNum){
+__device__  __host__   size_t universal_hash(T value, size_t tableSize, size_t a, size_t b, size_t primeNum){
     size_t hashed_key = (size_t) value;
     return ((a*hashed_key + b)%primeNum) % tableSize;
 };
 
 //Murmer-Hash
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t murmer_hash(T value, size_t tableSize){
+__device__  __host__   size_t murmer_hash(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
 
     hashed_key ^= hashed_key >> 16;
@@ -55,7 +56,7 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t murmer_hash(T value, size_t tableSize
 //DyCuckoo-Hashfunktionen
 /////////////////////////////////////////////////////////////////////////////////////////
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash1(T value, size_t tableSize){
+__device__  __host__   size_t hash1(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     
     hashed_key = ~hashed_key + (hashed_key << 15);
@@ -69,7 +70,7 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash1(T value, size_t tableSize){
 };
 
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash2(T value, size_t tableSize){
+__device__  __host__   size_t hash2(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     
     hashed_key = (hashed_key + 0x7ed55d16) + (hashed_key << 12);
@@ -83,13 +84,13 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash2(T value, size_t tableSize){
 };
 
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash3(T value, size_t tableSize){
+__device__  __host__   size_t hash3(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     return (((hashed_key ^ 59064253) + 72355969) % PRIME_uint) % tableSize;
 };
 
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash4(T value, size_t tableSize){
+__device__  __host__   size_t hash4(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
 
     hashed_key = (hashed_key ^ 61) ^ (hashed_key>> 16);
@@ -102,7 +103,7 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash4(T value, size_t tableSize){
 };
 
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash5(T value, size_t tableSize){
+__device__  __host__   size_t hash5(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     hashed_key -= (hashed_key << 6);
     hashed_key ^= (hashed_key >> 17);
@@ -119,7 +120,7 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t hash5(T value, size_t tableSize){
 //Wahl einer Hashfunktion
 /////////////////////////////////////////////////////////////////////////////////////////
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHash(T key, size_t table_size, hash_function function){
+__device__  __host__   size_t getHash(T key, size_t table_size, hash_function function){
     if (function == multiplication){
         return multiplication_hash<T>(key,table_size);
     }else if (function == universal0 || function == universal3){
@@ -149,7 +150,7 @@ HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHash(T key, size_t table_size, has
 //Vertausche zwischen zwei Zellen in einer der zwei Hashtabellen bei Cuckoo-Hashverfahren
 /////////////////////////////////////////////////////////////////////////////////////////
 template <typename T1, typename T2>
-HOSTDEVICEQUALIFIER void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
+__device__  __host__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
     T1 temp_key = hash_table[i].key;
     T2 temp_value = hash_table[i].value;
             
@@ -162,7 +163,7 @@ HOSTDEVICEQUALIFIER void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_t
 
 //Vertausche zwischen zwei Schlüsseln
 template <typename T>
-HOSTQUALIFIER T swapHash(T currentKey, T reference, T key){
+ __host__ T swapHash(T currentKey, T reference, T key){
     if (currentKey==reference){
         currentKey = key;
         return currentKey;
@@ -176,12 +177,12 @@ HOSTQUALIFIER T swapHash(T currentKey, T reference, T key){
 /////////////////////////////////////////////////////////////////////////////////////////
 //Berechne einen Sondierungswert eines Schlüssels durch eine andere Hashfunktion
 template <typename T>
-HOSTDEVICEQUALIFIER INLINEQUALIFIER size_t getHashProbe(T key, size_t i, size_t table_size, hash_function function){
+__device__  __host__   size_t getHashProbe(T key, size_t i, size_t table_size, hash_function function){
     return i*getHash(key,table_size,function);
 };
 
 //Quadratische Sondierungsfunktion
-HOSTDEVICEQUALIFIER INLINEQUALIFIER int getProbe2(size_t i){
+__device__  __host__ __forceinline__  int getProbe2(size_t i){
     int j = pow(ceil((double)i/2),2.0);
     int k = pow(-1.0,(double)i);
     return (j * k);
