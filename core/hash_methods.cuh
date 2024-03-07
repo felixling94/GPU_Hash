@@ -60,7 +60,7 @@ __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
 
     __syncthreads();
 
-    while(k<hashTableSize){
+    while(k < hashTableSize){
         j = (j + k) % hashTableSize;
         prev = atomicCAS(&hashTable[j].key, BLANK, key);
         
@@ -95,7 +95,7 @@ __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, s
 
     __syncthreads();
     
-    while(k<hashTableSize){
+    while((k/2) < hashTableSize){
         j = ((size_t) ((int) j + getProbe2(k))) % hashTableSize;
         prev = atomicCAS(&hashTable[j].key, BLANK, key);
         
@@ -130,7 +130,7 @@ __global__ void insert_double(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
 
     __syncthreads();
 
-    while(k<hashTableSize){
+    while(k < hashTableSize){
         j = (j + getHashProbe(key,k,hashTableSize,function2)) % hashTableSize;
         prev = atomicCAS(&hashTable[j].key, BLANK, key);
         
@@ -184,7 +184,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         return;
     }
     
-    while (m<max_hash_table_size){
+    while (m < max_hash_table_size){
         j = (j + m) % (2*hashTableSize);
         k = (k + m) % (2*hashTableSize);
         

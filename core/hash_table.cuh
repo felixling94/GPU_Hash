@@ -176,7 +176,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while(j<table_size){
+        while(j < table_size){
             i = (i+j)%table_size;
             prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
             
@@ -196,7 +196,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while((j/2)<table_size){
+        while((j/2) < table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
@@ -216,7 +216,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while((j/2)<table_size){
+        while(j < table_size){
             i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
             prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
@@ -257,7 +257,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             return;
         }
 
-        while (k<max_hash_table){
+        while (k < max_hash_table){
             i = (i + k) % (2*table_size);
             j = (j + k) % (2*table_size);
 
@@ -480,7 +480,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while(j<table_size){
+        while(j < table_size){
             i = (i+j)%table_size;
             if (hash_table1[i].key == key) return true;
             ++j;
@@ -494,7 +494,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while((j/2)<table_size){
+        while((j/2) < table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             if (hash_table1[i].key == key) return true;
             ++j;
@@ -508,7 +508,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while((j/2)<table_size){
+        while(j < table_size){
             i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
             if (hash_table1[i].key == key) return true;
             ++j;
@@ -524,7 +524,7 @@ bool Hash_Table<T1,T2>::search(T1 key){
         if (hash_table1[i].key == key) return true;
         if (hash_table2[j].key == key) return true;
 
-        while (k<table_size){
+        while (k < table_size){
             i = (i + k) % (2*table_size);
             j = (j + k) % (2*table_size);
             
@@ -735,7 +735,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while(j<table_size){
+        while(j < table_size){
             i = (i+j)%table_size;
             prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
@@ -755,7 +755,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while((j/2)<table_size){
+        while((j/2) < table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
@@ -775,7 +775,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
         i = getHash<T1>(key,table_size,function1);
         j = 0;
 
-        while((j/2)<table_size){
+        while(j < table_size){
             i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
             prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
@@ -812,7 +812,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key){
             return;
         }
 
-        while (k<table_size){
+        while (k < table_size){
             i = (i + k) % (2*table_size);
             j = (j + k) % (2*table_size);
 
