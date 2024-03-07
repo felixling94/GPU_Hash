@@ -1,7 +1,6 @@
 #ifndef HASH_TABLE_CUH
 #define HASH_TABLE_CUH
 
-//#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <stdint.h>
@@ -13,237 +12,9 @@
 
 #include <../include/base.h>
 #include <../include/hash_table.h>
-#include <../include/hash_function.cuh>
-#include <../core/hash_method.cuh>
+#include <../core/hash_methods.cuh>
 #include <../tools/timer.cuh>
 #include <../tools/benchmark.h>
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//Speicherung von Zellen in einer Hashtabelle
-/////////////////////////////////////////////////////////////////////////////////////////
-//Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
-template <typename T1, typename T2>
-__global__ void insert_kernel0(hash_type hashType, cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
-    int i_inBlock, blockID, i;
-    size_t j;
-    T1 key;
-    T2 value; 
-
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = cells[i].key;
-    value = cells[i].value;
-    j = getHash<T1>(key,hashTableSize,function);
-
-    __syncthreads();
-
-    if (hashType == linear_probe){
-        insert_linear<T1,T2>(key, value, j, hashTable, hashTableSize);
-    }else if (hashType == quadratic_probe){
-        insert_quadratic<T1,T2>(key, value, j, hashTable, hashTableSize);
-    }else{
-        insert_normal(key, value, j, hashTable);
-    }
-
-    __syncthreads();
-};
-
-//Doppelte Hashverfahren
-template <typename T1, typename T2>
-__global__ void insert_double_kernel(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
-    int i_inBlock, blockID, i;
-    size_t j;
-    T1 key;
-    T2 value;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = cells[i].key;
-    value = cells[i].value;
-    j = getHash<T1>(key,hashTableSize,function1);
-
-    __syncthreads();
-
-    insert_double<T1,T2>(key, value, j, hashTable, hashTableSize,function2);
-
-    __syncthreads();
-};
-
-//Cuckoo-Hashverfahren
-template <typename T1, typename T2>
-__global__ void insert_cuckoo_kernel(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
-    int i_inBlock, blockID, i;
-    size_t j, k;
-    T1 key;
-    T2 value;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = cells[i].key;
-    value = cells[i].value;
-    j = getHash<T1>(key,hashTableSize,function1);
-    k = getHash<T1>(key,hashTableSize,function2);
-
-    __syncthreads();
-    
-    insert_cuckoo<T1,T2>(key, value, j, k, hashTable1, hashTable2, hashTableSize,function2);
-
-    __syncthreads();
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//Suchen nach einer Liste von Schlüsseln in einer Hashtabelle
-/////////////////////////////////////////////////////////////////////////////////////////
-//Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
-template <typename T1, typename T2>
-__global__ void search_kernel0(hash_type hashType, T1 * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
-    int i_inBlock, blockID, i;
-    size_t j;
-    T1 key;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = keyList[i];
-
-    __syncthreads();
-
-    j = getHash<T1>(key,hashTableSize,function);
-
-    if (hashType == linear_probe){
-        keyListResult[i] = search_linear(key, j, hashTable,hashTableSize);
-    }else if (hashType == quadratic_probe){
-        keyListResult[i] = search_quadratic(key, j, hashTable,hashTableSize);
-    }else{
-        keyListResult[i] = search_normal(key, j, hashTable);
-    }
-    __syncthreads();
-};
-
-//Doppelte Hashverfahren
-template <typename T1, typename T2>
-__global__ void search_double_kernel(T1 * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
-    int i_inBlock, blockID, i;
-    size_t j;
-    T1 key;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = keyList[i];
-
-    __syncthreads();
-
-    j = getHash<T1>(key,hashTableSize,function1);
-
-    keyListResult[i] = search_double<T1,T2>(key, j, hashTable, hashTableSize,function2);
-
-    __syncthreads();
-};
-
-//Cuckoo-Hashverfahren
-template <typename T1, typename T2>
-__global__ void search_cuckoo_kernel(T1* keyList, T1 * keyListResult, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
-    int i_inBlock, blockID, i;
-    size_t j, k;
-    T1 key;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = keyList[i];
-
-    __syncthreads();
-
-    j = getHash<T1>(key,hashTableSize,function1);
-    k = getHash<T1>(key,hashTableSize,function2);
-    
-    keyListResult[i] = search_cuckoo<T1,T2>(key, j, k, hashTable1, hashTable2, hashTableSize,function2);
-
-    __syncthreads();
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//Löschung von Zellen in einer Hashtabelle
-/////////////////////////////////////////////////////////////////////////////////////////
-//Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
-template <typename T1, typename T2>
-__global__ void delete_kernel0(hash_type hashType, T1 * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
-    int i_inBlock, blockID, i;
-    size_t j;
-    T1 key;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = keyList[i];
-    j = getHash<T1>(key,hashTableSize,function);
-
-    __syncthreads();
-
-    if (hashType == linear_probe){
-        delete_linear<T1,T2>(key, j, hashTable, hashTableSize);
-    }else if (hashType == quadratic_probe){
-        delete_quadratic<T1,T2>(key, j, hashTable, hashTableSize);
-    }else{
-        delete_normal(key, j, hashTable);
-    }
-
-    __syncthreads();
-};
-
-//Doppelte Hashverfahren
-template <typename T1, typename T2>
-__global__ void delete_double_kernel(T1 * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
-    int i_inBlock, blockID, i;
-    size_t j;
-    T1 key;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = keyList[i];
-    j = getHash<T1>(key,hashTableSize,function1);
-
-    __syncthreads();
-
-    delete_double<T1,T2>(key, j, hashTable, hashTableSize,function2);
-
-    __syncthreads();
-};
-
-//Cuckoo-Hashverfahren
-template <typename T1, typename T2>
-__global__ void delete_cuckoo_kernel(T1 * keyList, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
-    int i_inBlock, blockID, i;
-    size_t j, k;
-    T1 key;
-    
-    i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
-    blockID = blockIdx.x;
-    i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
-
-    key = keyList[i];
-    j = getHash<T1>(key,hashTableSize,function1);
-    k = getHash<T1>(key,hashTableSize,function2);
-
-    __syncthreads();
-    
-    delete_cuckoo<T1,T2>(key, j, k, hashTable1, hashTable2, hashTableSize,function2);
-
-    __syncthreads();
-};
 
 template <typename T1, typename T2>
 Hash_Table<T1,T2>::Hash_Table():type_hash(no_probe),function1(modulo),function2(modulo),table_size(2){
@@ -564,16 +335,39 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             upload.GPUstop();
 
             //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_kernel0<T1,T2>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
-            void *args[5] = {&type_hash, &cells_device, &hash_table_device1, &table_size, &function1};
+            void *args[4] = {&cells_device, &hash_table_device1, &table_size, &function1};
 
-            run.GPUstart();
-            cudaLaunchKernel((void*)insert_kernel0<T1,T2>,grid,block,args,0,run.getStream());
-            run.GPUstop(); 
+            if (type_hash == linear_probe){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_linear<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)insert_linear<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop(); 
+
+            }else if (type_hash == quadratic_probe){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_quadratic<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)insert_quadratic<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop();
+
+            }else{
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_normal<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)insert_normal<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop(); 
+
+            }
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
@@ -596,7 +390,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             upload.GPUstop();
 
             //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_double_kernel<T1,T2>, 0, 0);
+            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_double<T1,T2>, 0, 0);
             grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
             dim3 block(block_size);
             dim3 grid(grid_size);
@@ -604,7 +398,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             void *args[5] = {&cells_device, &hash_table_device1, &table_size,&function1,&function2};
 
             run.GPUstart();
-            cudaLaunchKernel((void*)insert_double_kernel<T1,T2>,grid,block,args,0,run.getStream());
+            cudaLaunchKernel((void*)insert_double<T1,T2>,grid,block,args,0,run.getStream());
             run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -630,7 +424,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             upload.GPUstop();
 
             //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_cuckoo_kernel<T1,T2>, 0, 0);
+            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_cuckoo<T1,T2>, 0, 0);
             grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
             dim3 block(block_size);
             dim3 grid(grid_size);
@@ -638,7 +432,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             void *args[6] = {&cells_device, &hash_table_device1, &hash_table_device2, &table_size,&function1,&function2};
 
             run.GPUstart();
-            cudaLaunchKernel((void*)insert_cuckoo_kernel<T1,T2>,grid,block,args,0,run.getStream());
+            cudaLaunchKernel((void*)insert_cuckoo<T1,T2>,grid,block,args,0,run.getStream());
             run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -786,16 +580,39 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             upload.GPUstop();
 
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_kernel0<T1,T2>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
-            void *args[6] = {&type_hash, &keyList_device, &keyListResult_device, &hash_table_device1, &table_size, &function1};
+            void *args[5] = {&keyList_device, &keyListResult_device, &hash_table_device1, &table_size, &function1};
 
-            run.GPUstart();
-            cudaLaunchKernel((void*)search_kernel0<T1,T2>,grid,block,args,0,run.getStream());
-            run.GPUstop(); 
+            if (type_hash == linear_probe){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_linear<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)search_linear<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop(); 
+
+            }else if (type_hash == quadratic_probe){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_quadratic<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)search_quadratic<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop();
+
+            }else{
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_normal<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)search_normal<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop(); 
+
+            }
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
@@ -820,7 +637,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             upload.GPUstop();
 
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_double_kernel<T1,T2>, 0, 0);
+            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_double<T1,T2>, 0, 0);
             grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
             dim3 block(block_size);
             dim3 grid(grid_size);
@@ -828,7 +645,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             void *args[6] = {&keyList_device, &keyListResult_device, &hash_table_device1, &table_size,&function1,&function2};
 
             run.GPUstart();
-            cudaLaunchKernel((void*)search_double_kernel<T1,T2>,grid,block,args,0,run.getStream());
+            cudaLaunchKernel((void*)search_double<T1,T2>,grid,block,args,0,run.getStream());
             run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -856,7 +673,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             upload.GPUstop();
             
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_cuckoo_kernel<T1,T2>, 0, 0);
+            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_cuckoo<T1,T2>, 0, 0);
             grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
             dim3 block(block_size);
             dim3 grid(grid_size);
@@ -864,7 +681,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, size_t cellSize){
             void *args[7] = {&keyList_device, &keyListResult_device, &hash_table_device1, &hash_table_device2, &table_size,&function1,&function2};
 
             run.GPUstart();
-            cudaLaunchKernel((void*)search_cuckoo_kernel<T1,T2>,grid,block,args,0,run.getStream());
+            cudaLaunchKernel((void*)search_cuckoo<T1,T2>,grid,block,args,0,run.getStream());
             run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -1056,16 +873,39 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             upload.GPUstop();
 
             //Lösche eine Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_kernel0<T1,T2>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
+            void *args[4] = {&keyList_device, &hash_table_device1, &table_size, &function1};
             
-            void *args[5] = {&type_hash, &keyList_device, &hash_table_device1, &table_size, &function1};
+            if (type_hash == linear_probe){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_linear<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)delete_linear<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop(); 
 
-            run.GPUstart();
-            cudaLaunchKernel((void*)delete_kernel0<T1,T2>,grid,block,args,0,run.getStream());
-            run.GPUstop(); 
+            }else if (type_hash == quadratic_probe){
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_quadratic<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)delete_quadratic<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop();
+
+            }else{
+                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_normal<T1,T2>, 0, 0);
+                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
+                dim3 block(block_size);
+                dim3 grid(grid_size);
+            
+                run.GPUstart();
+                cudaLaunchKernel((void*)delete_normal<T1,T2>,grid,block,args,0,run.getStream());
+                run.GPUstop(); 
+
+            }
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
@@ -1088,7 +928,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             upload.GPUstop();
 
             //Lösche eine Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_double_kernel<T1,T2>, 0, 0);
+            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_double<T1,T2>, 0, 0);
             grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
             dim3 block(block_size);
             dim3 grid(grid_size);
@@ -1096,7 +936,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             void *args[5] = {&keyList_device, &hash_table_device1, &table_size, &function1, &function2};
 
             run.GPUstart();
-            cudaLaunchKernel((void*)delete_double_kernel<T1,T2>,grid,block,args,0,run.getStream());
+            cudaLaunchKernel((void*)delete_double<T1,T2>,grid,block,args,0,run.getStream());
             run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -1122,7 +962,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             upload.GPUstop();
             
             //Lösche eine Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_cuckoo_kernel<T1,T2>, 0, 0);
+            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_cuckoo<T1,T2>, 0, 0);
             grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
             dim3 block(block_size);
             dim3 grid(grid_size);
@@ -1130,7 +970,7 @@ void Hash_Table<T1,T2>::delete_List(T1 * keyList, size_t cellSize){
             void *args[6] = {&keyList_device, &hash_table_device1, &hash_table_device2, &table_size, &function1, &function2};
 
             run.GPUstart();
-            cudaLaunchKernel((void*)delete_cuckoo_kernel<T1,T2>,grid,block,args,0,run.getStream());
+            cudaLaunchKernel((void*)delete_cuckoo<T1,T2>,grid,block,args,0,run.getStream());
             run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle

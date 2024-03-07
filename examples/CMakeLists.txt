@@ -1,37 +1,15 @@
-set(TS_H   ../include/base.h   ../include/hash_function.cuh   ../tools/timer.cuh   
-../../examples/example_hash.cuh   ../../examples/example_hash.cu)
+set(TS_H   ../../examples/example_hash.cu)
 
-set(TS_I1   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_insert1.cu)
+set(TS_I1   ../../examples/hash_table_insert1.cu)
+set(TS_I2   ../../examples/hash_table_insert2.cu)
+set(TS_I3   ../../examples/hash_table_insert3.cu)
+set(TS_I4   ../../examples/hash_table_insert4.cu)
+set(TS_I5   ../../examples/hash_table_insert5.cu)
+set(TS_I6   ../../examples/hash_table_insert6.cu)
 
-set(TS_I2   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_insert2.cu)
+set(TS_S1   ../../examples/hash_table_search1.cu)
 
-set(TS_I3   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_insert3.cu)
-
-set(TS_I4   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_insert4.cu)
-
-set(TS_I5   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_insert5.cu)
-
-set(TS_I6   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_insert6.cu)
-
-set(TS_S1   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_search1.cu)
-
-set(TS_D1   ../include/hash_table.h   ../include/base.h   ../include/hash_function.cuh   
-../core/hash_table.cuh   ../core/hash_method.cuh   ../tools/timer.cuh  
-../../examples/example_hash_table.cuh   ../../examples/hash_table_delete1.cu)
+set(TS_D1   ../../examples/hash_table_delete1.cu)
 
 add_executable(exampleHash ${TS_H})
 
