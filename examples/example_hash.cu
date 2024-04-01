@@ -48,13 +48,13 @@ int main(){
     /////////////////////////////////////////////////////////////////////////////////////////
     //1. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    Example_Hash<uint32_t>  example_hash3(example_array_size,example_table_size,34999950,34999960,34999969);
+    Example_Hash<uint32_t>  example_hash3(example_array_size,example_table_size,290000,320000,320114);
     example_hash3.createKeys();
     example_hash3.compare_host_device(universal0);
     /////////////////////////////////////////////////////////////////////////////////////////
     //2. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    Example_Hash<uint32_t>  example_hash4(example_array_size,example_table_size,15999950,15999990,15999989);
+    Example_Hash<uint32_t>  example_hash4(example_array_size,example_table_size,149400,149500,149969);
     example_hash4.createKeys();
     example_hash4.compare_host_device(universal1);
     /////////////////////////////////////////////////////////////////////////////////////////

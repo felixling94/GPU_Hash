@@ -9,18 +9,10 @@
 #include <../include/base.h>
 #include <../tools/timer.cuh>
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//Laufzeitvergleich zwischen verschiedenen Hashverfahren bei
-//a. einer gegebenen 1. und 2. Hashfunktionen, 
-//b. einer gegebenen Anzahl von Schlüsseln, 
-//c. unterschiedlichen Schlüsselgrößen, und
-//d. einem gegebenen Auslastungsgrad von einer oder zwei Hashtabellen
-/////////////////////////////////////////////////////////////////////////////////////////
-
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
     int exampleKeyMinSize, exampleKeyMaxSize;
-    
+
     size_t exampleHashTableSize, exampleKeyNum;
     double occupancy;
     int function_code1, function_code2;
@@ -40,9 +32,9 @@ int main(int argc, char** argv){
     occupancy = atof(argv[4]);
     function_code1 = atoi(argv[5]);
     function_code2 = atoi(argv[6]);
-
+    
     if (exampleKeyNum <=0){
-        std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
+        std::cout << "Die Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
@@ -51,13 +43,13 @@ int main(int argc, char** argv){
         return -1;
     }
     
-    if (function_code1<1 || function_code1>11){
-        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
+    if (function_code1<0 || function_code1>12){
+        std::cout << "Der Kode einer 1. Hashfunktion muss innerhalb des Bereiches von 0 bis 12 sein." << std::endl;
         return -1;
     }
 
-    if (function_code2<1 || function_code2>11){
-        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
+    if (function_code2<0 || function_code2>12){
+        std::cout << "Der Kode einer 2. Hashfunktion muss innerhalb des Bereiches von 0 bis 12 sein." << std::endl;
         return -1;
     }
 
@@ -75,7 +67,7 @@ int main(int argc, char** argv){
         std::cout << "Die maximale Größe einer Schlüssel muss mehr als die minimale Größe einer Schlüssel betragen." << std::endl;
         return -1;
     }
-
+    
     const size_t matrix_size{exampleKeyNum * sizeof(uint32_t)};
 
     cudaSetDevice(deviceID);
@@ -186,23 +178,23 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Keine Kollionsauflösung
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(no_probe);
+    example_hash_table.searchTestCells1(no_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(linear_probe);
+    example_hash_table.searchTestCells1(linear_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(quadratic_probe);
+    example_hash_table.searchTestCells1(quadratic_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(double_probe);
+    example_hash_table.searchTestCells1(double_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(cuckoo_probe);
+    example_hash_table.searchTestCells1(cuckoo_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen

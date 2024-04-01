@@ -60,11 +60,11 @@ class Example_Hash{
             resultArray_device = new T[11];
         };
 
-        Example_Hash(size_t keySize, size_t tableSize, size_t p_a=15999950, size_t p_b=15999990,size_t primNum= 15999989):
-        array_size(keySize),table_size(tableSize),a(p_a),b(p_b),prime_num(primNum){
-            exampleArray = new T[keySize];
-            resultArray = new T[keySize];
-            resultArray_device = new T[keySize];
+        Example_Hash(size_t keyNum, size_t tableSize, size_t p_a=15999950, size_t p_b=15999990,size_t primNum= 15999989):
+        array_size(keyNum),table_size(tableSize),a(p_a),b(p_b),prime_num(primNum){
+            exampleArray = new T[keyNum];
+            resultArray = new T[keyNum];
+            resultArray_device = new T[keyNum];
         };
 
         ~Example_Hash(){

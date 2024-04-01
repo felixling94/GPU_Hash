@@ -11,7 +11,9 @@
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    size_t exampleHashTableSize, exampleKeyLength;
+    int exampleKeyMinSize, exampleKeyMaxSize;
+    
+    size_t exampleHashTableSize, exampleKeyNum;
     double occupancy;
     int function_code1, function_code2;
     hash_function hash_function1, hash_function2; 
@@ -24,12 +26,12 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    exampleKeyLength = (size_t) atoi(argv[1]);
+    exampleKeyNum = (size_t) atoi(argv[1]);
     occupancy = atof(argv[2]);
     function_code1 = atoi(argv[3]);
     function_code2 = atoi(argv[4]);
     
-    if (exampleKeyLength <=0){
+    if (exampleKeyNum <=0){
         std::cout << "Die Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
         return -1;
     }
@@ -49,7 +51,9 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    const size_t matrix_size{exampleKeyLength * sizeof(uint32_t)};
+    const size_t matrix_size{exampleKeyNum * sizeof(uint32_t)};
+    exampleKeyMinSize = 0;
+    exampleKeyMaxSize = (int) exampleKeyNum;
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -61,12 +65,12 @@ int main(int argc, char** argv){
     std::cout << "Gesamtgröße von Kernelargumenten: "
               << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
-    exampleHashTableSize = (size_t) ceil((double) (exampleKeyLength) / occupancy);
+    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
 
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;   
     std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << exampleKeyLength << std::endl;
+    std::cout << exampleKeyNum << std::endl;
     std::cout << "Größe der Hashtabelle                       : ";
     std::cout << exampleHashTableSize << std::endl;
     std::cout << "Größe der Cuckoo-Hashtabelle                : ";
@@ -82,11 +86,11 @@ int main(int argc, char** argv){
     }else if (function_code1 == 4){
         hash_function1 = universal0;
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
     }else if (function_code1 == 5){
         hash_function1 = universal1;
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
     }else if (function_code1 == 6){
         hash_function1 = universal2;
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
@@ -120,11 +124,11 @@ int main(int argc, char** argv){
     }else if (function_code2 == 4){
         hash_function2 = universal0;
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
     }else if (function_code2 == 5){
         hash_function2 = universal1;
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
     }else if (function_code2 == 6){
         hash_function2 = universal2;
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
@@ -150,8 +154,8 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyLength,exampleHashTableSize,hash_function1,hash_function2);
-    example_hash_table.createCells(1,(int)exampleKeyLength*2);
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
+    example_hash_table.createCells(exampleKeyMinSize,exampleKeyMaxSize);
 
     CPUTimer timer;
     timer.start();
@@ -159,23 +163,23 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Keine Kollionsauflösung
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells(no_probe,1,(int)exampleKeyLength*2);
+    example_hash_table.deleteTestCells2(no_probe,exampleKeyMinSize,exampleKeyMaxSize);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells(linear_probe,1,(int)exampleKeyLength*2);
+    example_hash_table.deleteTestCells2(linear_probe,exampleKeyMinSize,exampleKeyMaxSize);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells(quadratic_probe,1,(int)exampleKeyLength*2);
+    example_hash_table.deleteTestCells2(quadratic_probe,exampleKeyMinSize,exampleKeyMaxSize);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells(double_probe,1,(int)exampleKeyLength*2);
+    example_hash_table.deleteTestCells2(double_probe,exampleKeyMinSize,exampleKeyMaxSize);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells(cuckoo_probe,1,(int)exampleKeyLength*2);
+    example_hash_table.deleteTestCells2(cuckoo_probe,exampleKeyMinSize,exampleKeyMaxSize);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen

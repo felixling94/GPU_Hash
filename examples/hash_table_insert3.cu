@@ -7,13 +7,20 @@
 #include <../include/base.h>
 #include <../tools/timer.cuh>
 
-const size_t key_size{33000007};
+/////////////////////////////////////////////////////////////////////////////////////////
+//Laufzeitvergleich zwischen verschiedenen Auslastungsgraden einer Hashtabelle bei
+//a. einer festen Anzahl von Schlüsseln von 320.114
+//b. einer gegebenen 1. und 2. Hashfunktionen, und
+//c. gegebenen Hashverfahren, z.B. linearem Sondieren
+/////////////////////////////////////////////////////////////////////////////////////////
+
+const size_t key_num{320114};
 
 template <typename T>
 void runKernel(){
     int deviceID{0};
     struct cudaDeviceProp props;
-    const size_t matrix_size{key_size * sizeof(T)};
+    const size_t matrix_size{key_num * sizeof(T)};
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -30,10 +37,10 @@ void runKernel(){
 //Führe Hashverfahren mit verschiedenen Datentypen aus
 template <typename T1, typename T2>
 void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy){
-    const size_t hashTableSize{(size_t) ceil((double) (key_size) / occupancy)};
+    const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
    
     std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << key_size << std::endl;
+    std::cout << key_num << std::endl;
     if (type != cuckoo_probe){
         std::cout << "Größe der Hashtabelle                       : ";
         std::cout << hashTableSize << std::endl;
@@ -45,9 +52,9 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
     std::cout << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T1,T2> example_hash_table(key_size,hashTableSize,function1,function2);
-    example_hash_table.createCells(1,(int)key_size*2);
-    example_hash_table.insertTestCells(type);
+    Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2);
+    example_hash_table.createCells(1,(int)key_num*2);
+    example_hash_table.insertTestCells2(type);
     
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;
@@ -108,11 +115,11 @@ int main(int argc, char** argv){
     }else if (function_code1 == 4){
         hash_function1 = universal0;
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
     }else if (function_code1 == 5){
         hash_function1 = universal1;
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
     }else if (function_code1 == 6){
         hash_function1 = universal2;
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
@@ -146,11 +153,11 @@ int main(int argc, char** argv){
     }else if (function_code2 == 4){
         hash_function2 = universal0;
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
     }else if (function_code2 == 5){
         hash_function2 = universal1;
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
     }else if (function_code2 == 6){
         hash_function2 = universal2;
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;

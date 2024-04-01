@@ -12,9 +12,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //Laufzeitvergleich zwischen verschiedenen Hashverfahren bei
 //a. einer gegebenen 1. und 2. Hashfunktionen, 
-//b. einer gegebenen Anzahl von Schlüsseln, 
-//c. unterschiedlichen Schlüsselgrößen, und
-//d. einem gegebenen Auslastungsgrad von einer oder zwei Hashtabellen
+//b. einer gegebenen Anzahl von Schlüsseln, und
+//c. einem gegebenen Auslastungsgrad von einer oder zwei Hashtabellen
 /////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv){
@@ -29,17 +28,15 @@ int main(int argc, char** argv){
     int deviceID{0};
     struct cudaDeviceProp props;
 
-    if(argc < 7){
+    if(argc < 5){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
-    exampleKeyMinSize = atoi(argv[1]);
-    exampleKeyMaxSize = atoi(argv[2]);
-    exampleKeyNum = (size_t) atoi(argv[3]);
-    occupancy = atof(argv[4]);
-    function_code1 = atoi(argv[5]);
-    function_code2 = atoi(argv[6]);
+    exampleKeyNum = (size_t) atoi(argv[1]);
+    occupancy = atof(argv[2]);
+    function_code1 = atoi(argv[3]);
+    function_code2 = atoi(argv[4]);
 
     if (exampleKeyNum <=0){
         std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
@@ -61,22 +58,9 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    if (exampleKeyMinSize <0){
-        std::cout << "Die minimale Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-
-    if (exampleKeyMaxSize <=0){
-        std::cout << "Die maximale Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-
-    if (exampleKeyMinSize > exampleKeyMaxSize){
-        std::cout << "Die maximale Größe einer Schlüssel muss mehr als die minimale Größe einer Schlüssel betragen." << std::endl;
-        return -1;
-    }
-
     const size_t matrix_size{exampleKeyNum * sizeof(uint32_t)};
+    exampleKeyMinSize = 0;
+    exampleKeyMaxSize = (int) exampleKeyNum;
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -186,23 +170,23 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Keine Kollionsauflösung
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(no_probe);
+    example_hash_table.insertTestCells1(no_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(linear_probe);
+    example_hash_table.insertTestCells1(linear_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(quadratic_probe);
+    example_hash_table.insertTestCells1(quadratic_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(double_probe);
+    example_hash_table.insertTestCells1(double_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.insertTestCells2(cuckoo_probe);
+    example_hash_table.insertTestCells1(cuckoo_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen

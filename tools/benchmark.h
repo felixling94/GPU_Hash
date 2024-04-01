@@ -40,6 +40,31 @@ class Benchmark{
             if (TypeOperation == search_hash_table) sum_found = SumFound;
         };
 
+        //Gebe die Dauer des Hochladens zurück
+        float getDurationUpload(){
+            return upload;
+        };
+
+        //Gebe die Dauer der Ausführung zurück
+        float getDurationRun(){
+            return run;
+        };
+
+        //Gebe die Dauer des Herunterladens zurück
+        float getDurationDownload(){
+            return download;
+        };
+
+        //Gebe die Dauer der Kernelausführung zurück
+        float getDurationTotal(){
+            return total;
+        };
+
+        //Gebe die Anzahl aller gesuchten Schlüssel zurück
+        size_t getSumFound(){
+            return sum_found;
+        };
+
         //Drucke Zeitmessung
         void print(){
             if (type_operation == insert_hash_table){

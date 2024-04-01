@@ -7,13 +7,20 @@
 #include <../include/base.h>
 #include <../tools/timer.cuh>
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//Laufzeitvergleich zwischen verschiedener Anzahl von Schlüsseln,
+//deren Werte keine Primzahlen sind, bei  
+//a. einer gegebenen 1. und 2. Hashfunktionen, und
+//b. gegebenen Hashverfahren, z.B. linearem Sondieren
+/////////////////////////////////////////////////////////////////////////////////////////
+
 //Führe Hashverfahren mit verschiedenen Datentypen aus
 template <typename T1, typename T2>
-void runMain(hash_type type, hash_function function1, hash_function function2, size_t keySize){
+void runMain(hash_type type, hash_function function1, hash_function function2, size_t keyNum){
     int deviceID{0};
     struct cudaDeviceProp props;
-    const size_t matrix_size{keySize * sizeof(T1)};
-    const size_t hashTableSize{(size_t) (keySize*120/100)};
+    const size_t matrix_size{keyNum * sizeof(T1)};
+    const size_t hashTableSize{(size_t) (keyNum*120/100)};
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -33,10 +40,10 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
         std::cout << "1. Hashfunktion: Murmer Hash" << std::endl;
     }else if (function1 == universal0){
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
     }else if (function1 == universal1){
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
     }else if (function1 == universal2){
         std::cout << "1. Hashfunktion: Universelle Hashfunktion" << std::endl;
         std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
@@ -60,10 +67,10 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
         std::cout << "2. Hashfunktion: Murmer Hash" << std::endl;
     }else if (function2 == universal0){
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 34999950  b: 34999960  Primzahl: 34999969)" << std::endl;
+        std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
     }else if (function2 == universal1){
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
-        std::cout << "                 (a: 15999950  b: 15999990  Primzahl: 15999989)" << std::endl;
+        std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
     }else if (function2 == universal2){
         std::cout << "2. Hashfunktion: Universelle Hashfunktion" << std::endl;
         std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
@@ -83,7 +90,7 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
     std::cout << std::endl;
 
     std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << keySize << std::endl;
+    std::cout << keyNum << std::endl;
     if (type != cuckoo_probe){
         std::cout << "Größe der Hashtabelle                       : ";
         std::cout << hashTableSize << std::endl;
@@ -93,14 +100,14 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<T1,T2> example_hash_table(keySize,hashTableSize,function1,function2);
-    example_hash_table.createCells(1,(int)keySize*2);
-    example_hash_table.insertTestCells(type);
+    Example_Hash_Table<T1,T2> example_hash_table(keyNum,hashTableSize,function1,function2);
+    example_hash_table.createCells(1,(int)keyNum*2);
+    example_hash_table.insertTestCells2(type);
 };
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    const size_t * key_size = new size_t[5]{32000000,25000000,20000000,15000000,10000000};
+    const size_t * key_num = new size_t[5]{320000,250000,200000,150000,100000};
     size_t * exampleHashTableSize = new size_t[5];
     int function_code1, function_code2, hash_type_code;
     hash_function hash_function1, hash_function2;
@@ -191,7 +198,7 @@ int main(int argc, char** argv){
     CPUTimer timer;
     timer.start();
 
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, key_size[i]);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, key_num[i]);
   
     //Fasse Resultate zusammen
     timer.stop();
