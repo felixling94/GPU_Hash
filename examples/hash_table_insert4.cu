@@ -203,7 +203,7 @@ int main(int argc, char** argv){
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;
-    std::cout << "Gesamtdauer (ns)                            : ";
+    std::cout << "Gesamtdauer (in Mikrosekunden)              : ";
     std::cout << timer.getDuration() << std::endl;
     
     return 0;

@@ -171,7 +171,7 @@ int main(int argc, char** argv){
     std::cout << std::endl;
     std::cout << "Gesamtdauer für alle Hashfunktionen ohne    : ";
     std::cout << timer.getDuration() << std::endl;
-    std::cout << "Kollionsauflösung (in Nanosekunden)" << std::endl;
+    std::cout << "Kollionsauflösung (in Mikrosekunden)" << std::endl;
     
     return 0;
 };

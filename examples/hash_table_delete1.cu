@@ -187,7 +187,7 @@ int main(int argc, char** argv){
     std::cout << std::endl;
     std::cout << "Gesamtdauer für alle offenen Hashverfahren  : ";
     std::cout << timer.getDuration() << std::endl;
-    std::cout << "(in Nanosekunden)" << std::endl;
+    std::cout << "(in Mikrosekunden)" << std::endl;
     
     return 0;
 };
