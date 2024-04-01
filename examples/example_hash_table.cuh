@@ -148,14 +148,14 @@ class Example_Hash_Table{
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
 
-            std::cout << "Dauer zum Hochladen (ms)                    : ";
-            std::cout <<  averageDurationUpload << std::endl;
-            std::cout << "Dauer zur Ausführung (ms)                   : ";
-            std::cout <<  averageDurationRun << std::endl;
-            std::cout << "Dauer zum Herunterladen (ms)                : ";
-            std::cout <<  averageDurationDownload << std::endl;
-            std::cout << "Gesamtdauer (ms)                            : ";
-            std::cout <<  averageDurationTotal << std::endl;
+            std::cout << "Dauer zum Hochladen (ns)                    : ";
+            std::cout <<  averageDurationUpload * 1000000 << std::endl;
+            std::cout << "Dauer zur Ausführung (ns)                   : ";
+            std::cout <<  averageDurationRun * 1000000 << std::endl;
+            std::cout << "Dauer zum Herunterladen (ns)                : ";
+            std::cout <<  averageDurationDownload * 1000000 << std::endl;
+            std::cout << "Gesamtdauer (ns)                            : ";
+            std::cout <<  averageDurationTotal * 1000000 << std::endl;
         };
 
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ class Example_Hash_Table{
 
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Gesamtdauer (ms)                            : ";
+            std::cout << "Gesamtdauer (ns)                            : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
@@ -328,7 +328,7 @@ class Example_Hash_Table{
             //Fasse Resultate für jede Hashverfahren zusammen
             std::cout << "Anzahl der gesuchten Zellen                 : ";
             std::cout << sum_found << std::endl;
-            std::cout << "Gesamtdauer (ms)                            : ";
+            std::cout << "Gesamtdauer (ns)                            : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
@@ -440,7 +440,7 @@ class Example_Hash_Table{
 
             //hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Gesamtdauer (ms)                            : ";
+            std::cout << "Gesamtdauer (ns)                            : ";
             std::cout << timer.getDuration() << std::endl;
             std::cout << std::endl;
 

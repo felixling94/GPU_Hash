@@ -24,8 +24,8 @@ class CPUTimer{
 
         float getDuration(){
             std::chrono::duration<double> difference = end - begin;
-            std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(difference);
-            return (float) ms.count();
+            std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(difference);
+            return (float) ns.count();
         };
 };
 
