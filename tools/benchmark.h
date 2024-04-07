@@ -82,14 +82,14 @@ class Benchmark{
                 std::cout << "Berechnung der Hashwerte" << std::endl;
                 std::cout << std::endl;
             }
-            std::cout << "Dauer zum Hochladen (in Mikrosekunden)      : ";
-            std::cout <<  upload * 1000000 << std::endl;
-            std::cout << "Dauer zur Ausführung (in Mikrosekunden)     : ";
-            std::cout <<  run * 1000000 << std::endl;
-            std::cout << "Dauer zum Herunterladen (in Mikrosekunden)  : ";
-            std::cout <<  download * 1000000 << std::endl;
-            std::cout << "Gesamtdauer (in Mikrosekunden)              : ";
-            std::cout <<  total * 1000000 << std::endl;
+            std::cout << "Dauer zum Hochladen (in Sekunden)           : ";
+            std::cout <<  upload << std::endl;
+            std::cout << "Dauer zur Ausführung (in Sekunden)          : ";
+            std::cout <<  run  << std::endl;
+            std::cout << "Dauer zum Herunterladen (in Sekunden)       : ";
+            std::cout <<  download  << std::endl;
+            std::cout << "Gesamtdauer (in Sekunden)                   : ";
+            std::cout <<  total  << std::endl;
         };
 };
 

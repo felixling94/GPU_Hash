@@ -155,7 +155,7 @@ class Example_Hash{
             for (size_t i = 0; i<array_size; ++i) resultArray[i] = static_cast<T>(getHashValue(exampleArray[i],function));
 
             timer.stop();
-            std::cout << "Dauer zur Ausführung (in Mikrosekunden)     : ";
+            std::cout << "Dauer zur Ausführung (in Sekunden)          : ";
             std::cout <<  timer.getDuration() << std::endl;
         };
 
