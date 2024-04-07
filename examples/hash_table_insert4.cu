@@ -8,8 +8,7 @@
 #include <../tools/timer.cuh>
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//Laufzeitvergleich zwischen verschiedener Anzahl von Schlüsseln,
-//deren Werte Primzahlen sind, bei  
+//Laufzeitvergleich zwischen verschiedener Anzahl von Schlüsseln bei  
 //a. einer gegebenen 1. und 2. Hashfunktionen, und
 //b. gegebenen Hashverfahren, z.B. linearem Sondieren
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +106,7 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    const size_t * key_num = new size_t[5]{320114,250049,200029,149969,100019};
+    const size_t * key_num = new size_t[5]{320114,25000,200000,140000,100019};
     size_t * exampleHashTableSize = new size_t[5];
     int function_code1, function_code2, hash_type_code;
     hash_function hash_function1, hash_function2;

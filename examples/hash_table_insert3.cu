@@ -14,7 +14,7 @@
 //c. gegebenen Hashverfahren, z.B. linearem Sondieren
 /////////////////////////////////////////////////////////////////////////////////////////
 
-const size_t key_num{320114};
+const size_t key_num{320000};
 
 template <typename T>
 void runKernel(){
