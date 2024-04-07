@@ -194,7 +194,6 @@ int main(int argc, char** argv){
     std::cout << std::endl;
     std::cout << "Gesamtdauer für alle offenen Hashverfahren  : ";
     std::cout << timer.getDuration() << std::endl;
-    std::cout << "(in Sekunden)" << std::endl;
     
     return 0;
 };

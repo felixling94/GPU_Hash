@@ -191,7 +191,7 @@ int main(int argc, char** argv){
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;
-    std::cout << "Gesamtdauer (in Sekunden)                   : ";
+    std::cout << "Gesamtdauer                                 : ";
     std::cout << timer.getDuration() << std::endl;
     
     return 0;
