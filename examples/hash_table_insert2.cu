@@ -13,36 +13,39 @@
 //Laufzeitvergleich zwischen verschiedenen Hashverfahren bei
 //a. einer gegebenen 1. und 2. Hashfunktionen, 
 //b. einer gegebenen Anzahl von Schlüsseln, 
-//c. unterschiedlichen Schlüsselgrößen, und
+//c. unterschiedlichen oder gleichen Schlüsselgrößen, und
 //d. einem gegebenen Auslastungsgrad von einer oder zwei Hashtabellen
 /////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    int exampleKeyMinSize, exampleKeyMaxSize;
-    
     size_t exampleHashTableSize, exampleKeyNum;
     double occupancy;
-    int function_code1, function_code2;
+    int function_code1, function_code2, int_key_length_same;
+    bool key_length_same;
     hash_function hash_function1, hash_function2; 
 
     int deviceID{0};
     struct cudaDeviceProp props;
 
-    if(argc < 7){
+    if(argc < 6){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
-    exampleKeyMinSize = atoi(argv[1]);
-    exampleKeyMaxSize = atoi(argv[2]);
-    exampleKeyNum = (size_t) atoi(argv[3]);
-    occupancy = atof(argv[4]);
-    function_code1 = atoi(argv[5]);
-    function_code2 = atoi(argv[6]);
+    exampleKeyNum = (size_t) atoi(argv[1]);
+    int_key_length_same = atoi(argv[2]);
+    occupancy = atof(argv[3]);
+    function_code1 = atoi(argv[4]);
+    function_code2 = atoi(argv[5]);
 
     if (exampleKeyNum <=0){
         std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
+        return -1;
+    }
+
+    if (int_key_length_same<0 || int_key_length_same>1){
+        std::cout << "Der Kode der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
         return -1;
     }
 
@@ -61,21 +64,6 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    if (exampleKeyMinSize <0){
-        std::cout << "Die minimale Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-
-    if (exampleKeyMaxSize <=0){
-        std::cout << "Die maximale Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-
-    if (exampleKeyMinSize > exampleKeyMaxSize){
-        std::cout << "Die maximale Größe einer Schlüssel muss mehr als die minimale Größe einer Schlüssel betragen." << std::endl;
-        return -1;
-    }
-
     const size_t matrix_size{exampleKeyNum * sizeof(uint32_t)};
 
     cudaSetDevice(deviceID);
@@ -89,6 +77,12 @@ int main(int argc, char** argv){
               << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
     exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
+
+    if (int_key_length_same == 1){
+        key_length_same = true;
+    }else{
+        key_length_same = false;     
+    }
 
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;   
@@ -177,8 +171,8 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
-    example_hash_table.createCells(exampleKeyMinSize,exampleKeyMaxSize);
+    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
+    example_hash_table.createCells(key_length_same);
 
     CPUTimer timer;
     timer.start();

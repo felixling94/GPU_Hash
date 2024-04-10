@@ -11,28 +11,33 @@
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    int exampleKeyMinSize, exampleKeyMaxSize;
-
     size_t exampleHashTableSize, exampleKeyNum;
     double occupancy;
-    int function_code1, function_code2;
-    hash_function hash_function1, hash_function2; 
+    int function_code1, function_code2, int_key_length_same;
+    hash_function hash_function1, hash_function2;
+    bool key_length_same; 
 
     int deviceID{0};
     struct cudaDeviceProp props;
 
-    if(argc < 5){
+    if(argc < 6){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
     exampleKeyNum = (size_t) atoi(argv[1]);
-    occupancy = atof(argv[2]);
-    function_code1 = atoi(argv[3]);
-    function_code2 = atoi(argv[4]);
+    int_key_length_same = atoi(argv[2]);
+    occupancy = atof(argv[3]);
+    function_code1 = atoi(argv[4]);
+    function_code2 = atoi(argv[5]);
     
     if (exampleKeyNum <=0){
         std::cout << "Die Größe einer Schlüssel muss mehr als Null betragen." << std::endl;
+        return -1;
+    }
+
+    if (int_key_length_same<0 || int_key_length_same>1){
+        std::cout << "Der Kode der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
         return -1;
     }
 
@@ -52,8 +57,6 @@ int main(int argc, char** argv){
     }
 
     const size_t matrix_size{exampleKeyNum * sizeof(uint32_t)};
-    exampleKeyMinSize = 0;
-    exampleKeyMaxSize = (int) exampleKeyNum;
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -66,6 +69,12 @@ int main(int argc, char** argv){
               << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
     exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
+
+    if (int_key_length_same == 1){
+        key_length_same = true;
+    }else{
+        key_length_same = false;     
+    }
 
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;   
@@ -154,8 +163,8 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
-    example_hash_table.createCells(exampleKeyMinSize,exampleKeyMaxSize);
+    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
+    example_hash_table.createCells(key_length_same);
 
     CPUTimer timer;
     timer.start();

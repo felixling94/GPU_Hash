@@ -9,12 +9,13 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //Laufzeitvergleich zwischen verschiedenen Auslastungsgraden einer Hashtabelle bei
-//a. einer festen Anzahl von Schlüsseln von 320.114
-//b. einer gegebenen 1. und 2. Hashfunktionen, und
-//c. gegebenen Hashverfahren, z.B. linearem Sondieren
+//a. einer gegebenen Anzahl von Schlüsseln, 
+//b. gleichen oder unterschiedlichen Schlüsselgrößen, 
+//c. einer gegebenen 1. und 2. Hashfunktionen, und
+//d. gegebenen Hashverfahren, z.B. linearem Sondieren
 /////////////////////////////////////////////////////////////////////////////////////////
 
-const size_t key_num{320000};
+const size_t key_num{576};
 
 template <typename T>
 void runKernel(){
@@ -35,8 +36,8 @@ void runKernel(){
 };
 
 //Führe Hashverfahren mit verschiedenen Datentypen aus
-template <typename T1, typename T2>
-void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy){
+template <typename T>
+void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy, bool key_length_same){
     const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
    
     std::cout << "Anzahl der gespeicherten Zellen             : ";
@@ -52,8 +53,8 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
     std::cout << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2);
-    example_hash_table.createCells(1,(int)key_num*2);
+    Example_Hash_Table<T> example_hash_table(key_num,hashTableSize,function1,function2);
+    example_hash_table.createCells(key_length_same);
     example_hash_table.insertTestCells2(type);
     
     std::cout << "****************************************************************";
@@ -64,18 +65,25 @@ int main(int argc, char** argv){
     //1. Deklariere die Variablen
     const double * occupancy = new double[5]{1.0,0.8,0.6,0.4,0.2};
     size_t * exampleHashTableSize = new size_t[5];
-    int function_code1, function_code2, hash_type_code;
+    int function_code1, function_code2, hash_type_code, int_key_length_same;
     hash_function hash_function1, hash_function2;
-    hash_type hash_type1; 
+    hash_type hash_type1;
+    bool key_length_same; 
     
-    if(argc < 4){
+    if(argc < 5){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
-    hash_type_code = atoi(argv[1]);
-    function_code1 = atoi(argv[2]);
-    function_code2 = atoi(argv[3]);
+    int_key_length_same = atoi(argv[1]);
+    hash_type_code = atoi(argv[2]);
+    function_code1 = atoi(argv[3]);
+    function_code2 = atoi(argv[4]);
+
+    if (int_key_length_same<0 || int_key_length_same>1){
+        std::cout << "Der Kode der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
+        return -1;
+    }
 
     if (hash_type_code<0 || hash_type_code>3){
         std::cout << "Der Kode eines Hashtyps muss innerhalb des Bereiches von 0 bis 3 sein." << std::endl;
@@ -103,6 +111,12 @@ int main(int argc, char** argv){
     }
 
     runKernel<uint32_t>();
+    
+    if (int_key_length_same == 1){
+        key_length_same = true;
+    }else{
+        key_length_same = false;     
+    }
       
     std::cout << "****************************************************************";
     std::cout << "***************" << std::endl;
@@ -186,7 +200,7 @@ int main(int argc, char** argv){
     CPUTimer timer;
     timer.start();
     
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i]);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i],key_length_same);
   
     //Fasse Resultate zusammen
     timer.stop();

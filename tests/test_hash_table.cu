@@ -1,5 +1,6 @@
 #include <vector>
 #include <random>
+#include <algorithm>
 #include <iostream>
 #include <catch2/catch_test_macros.hpp>
 
@@ -7,28 +8,64 @@
 #include <../core/hash_table.cuh>
 
 //Erzeuge verschiedene Werte für die Schlüssel und Werte zufällig
-template <typename T1, typename T2>
-std::vector<cell<T1,T2>> createCells(size_t cells_size, int min=0, int max=100){
-    std::vector<cell<T1,T2>> cells_vector;
-    cells_vector.reserve(cells_size);
+template <typename T>
+std::vector<cell<T>> createCells(size_t cells_size, bool key_length_same=false){
+    if (key_length_same == false){
+        std::vector<cell<T>> cells_vector;
+        cells_vector.reserve(cells_size);
+        
+        T key = (T) 1;
+        T key_length = (T) 1; 
+        
+        for (size_t i = 0; i < cells_size; i++){
+            cells_vector.push_back(cell<T>{key,key_length});
+            
+            ++key;
+            ++key_length;
+        }
+        
+        return shuffleKeys(cells_vector);
+
+    }else{
+        std::vector<cell<T>> cells_vector;
+        cells_vector.reserve(cells_size);
+        
+        std::random_device generator;
+        size_t seed = generator();
+        std::mt19937 rnd(seed);
+        
+        std::uniform_int_distribution<T> dist(1,cells_size);
+
+        T key = (T) 1;
+        T key_length = dist(rnd); 
+        
+        for (size_t i = 0; i < cells_size; i++){
+            cells_vector.push_back(cell<T>{key,key_length});
+            ++key;
+        }
+        return shuffleKeys(cells_vector);
+    }
+};
+
+//Mische verschiedene Schlüssel
+template <typename T>
+std::vector<cell<T>> shuffleKeys(std::vector<cell<T>> cells){
+    std::vector<cell<T>> cells_vector;
+    cells_vector.reserve(cells.size());
     
     std::random_device generator;
     size_t seed = generator();
     std::mt19937 rnd(seed);
+    
+    std::copy(cells.begin(), cells.end(),cells_vector.begin());
+    std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
+    
+    std::copy(cells_vector.begin(),cells_vector.end(),cells.begin());
 
-    std::uniform_int_distribution<T1> dist1(1,max);
-    std::uniform_int_distribution<T2> dist2(min,max);
-
-    for (size_t i = 0; i < cells_size; i++){
-        T1 rand1 = dist1(rnd);
-        T2 rand2 = dist2(rnd);
-
-        cells_vector.push_back(cell<T1,T2>{rand1,rand2});
-    }
-    return cells_vector;
+    return cells;
 };
 
-Hash_Table<uint32_t,uint32_t> hash_table0, hash_table1(no_probe,modulo,modulo,30), 
+Hash_Table<uint32_t> hash_table0, hash_table1(no_probe,modulo,modulo,30), 
 hash_table2(linear_probe,multiplication,modulo,30), hash_table3(quadratic_probe,murmer,modulo,30), 
 hash_table4(double_probe,universal0,modulo,30), hash_table5(double_probe,universal1,multiplication,30),
 hash_table6(double_probe,universal2,murmer,30), hash_table7(double_probe,universal3,universal0,30), 
@@ -116,15 +153,15 @@ TEST_CASE("Hashtabellen mit keinen Zellen werden erstellt.", "[Hash_Table_Num_Ce
 };
 
 TEST_CASE("Hashtabellen mit keinen Zellen werden erstellt.", "[Hash_Table_Num_Cells2]"){
-    std::vector<cell<uint32_t,uint32_t>> cellsVector = createCells<uint32_t,uint32_t>(30,0,30);
-    cell<uint32_t,uint32_t> * cells = cellsVector.data();
+    std::vector<cell<uint32_t>> cellsVector = createCells<uint32_t>(30,false);
+    cell<uint32_t> * cells = cellsVector.data();
 
     for (int i=0; i<30; i++){
-        hash_table1.insert(cells[i].key,cells[i].value);
-        hash_table2.insert(cells[i].key,cells[i].value);
-        hash_table3.insert(cells[i].key,cells[i].value);
-        hash_table4.insert(cells[i].key,cells[i].value);
-        hash_table8.insert(cells[i].key,cells[i].value);
+        hash_table1.insert(cells[i].key,cells[i].key_length);
+        hash_table2.insert(cells[i].key,cells[i].key_length);
+        hash_table3.insert(cells[i].key,cells[i].key_length);
+        hash_table4.insert(cells[i].key,cells[i].key_length);
+        hash_table8.insert(cells[i].key,cells[i].key_length);
     }
 
     REQUIRE(hash_table1.getNumCell() > 0);

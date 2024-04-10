@@ -19,11 +19,11 @@ enum hash_type{no_probe=0, linear_probe, quadratic_probe, double_probe, cuckoo_p
 enum hash_function{modulo, multiplication, universal0, universal1, universal2, universal3, murmer, 
                    dycuckoo_hash1, dycuckoo_hash2,dycuckoo_hash3,dycuckoo_hash4,dycuckoo_hash5};
 
-//Ein Paar von einem Schlüssel und einem Wert
-template <typename T1, typename T2>
+//Ein Paar von einem Schlüssel und dessen Länge
+template <typename T>
 struct cell{
-    T1 key = BLANK;
-    T2 value;
+    T key = BLANK;
+    T key_length = BLANK;
 };
 
 #endif

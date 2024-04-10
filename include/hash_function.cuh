@@ -149,16 +149,16 @@ __device__  __host__   size_t getHash(T key, size_t table_size, hash_function fu
 /////////////////////////////////////////////////////////////////////////////////////////
 //Vertausche zwischen zwei Zellen in einer der zwei Hashtabellen bei Cuckoo-Hashverfahren
 /////////////////////////////////////////////////////////////////////////////////////////
-template <typename T1, typename T2>
-__device__  __host__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
-    T1 temp_key = hash_table[i].key;
-    T2 temp_value = hash_table[i].value;
-            
+template <typename T>
+__device__  __host__ void swapCells(T key, T key_length, int i, cell<T> * hash_table){
+    T temp_key = hash_table[i].key;
+    T temp_key_length = hash_table[i].key_length;
+    
     hash_table[i].key = key;
-    hash_table[i].value = value;
+    hash_table[i].key_length = key_length;
 
     key = temp_key;
-    value = temp_key;
+    key_length = temp_key_length;
 };
 
 //Vertausche zwischen zwei Schlüsseln
@@ -177,8 +177,8 @@ template <typename T>
 /////////////////////////////////////////////////////////////////////////////////////////
 //Berechne einen Sondierungswert eines Schlüssels durch eine andere Hashfunktion
 template <typename T>
-__device__  __host__   size_t getHashProbe(T key, size_t i, size_t table_size, hash_function function){
-    return i*getHash(key,table_size,function);
+__device__  __host__   size_t getHashProbe(T key_length, size_t i, size_t table_size, hash_function function){
+    return i*getHash(key_length,table_size,function);
 };
 
 //Quadratische Sondierungsfunktion
