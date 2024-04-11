@@ -12,6 +12,7 @@ string(APPEND CMAKE_CUDA_FLAGS " -gencode arch=compute_61,code=sm_61")
 include_directories(${CMAKE_SOURCE_DIR}/include   /core   /examples   /tools)
 
 add_subdirectory(examples)
+add_subdirectory(tools)
 
 add_subdirectory(extern/Catch2)
 add_subdirectory(extern/DyCuckoo/dynamicHash)

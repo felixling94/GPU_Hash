@@ -4,7 +4,9 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <fstream>
 #include <algorithm>
+#include <stdlib.h>
 
 #include <../include/base.h>
 #include <../include/hash_table.h>
@@ -64,12 +66,45 @@ class Example_Hash_Table{
             return exampleCellList;
         };
 
+        //Lese eine Liste von Schlüsseln von einer Datei
+        void readCells(char *file_name){
+            std::ifstream readfile(file_name, std::ios::out | std::ios::binary);
+            
+            if (!readfile) {
+                std::cout << "Die Datei wird nicht gefunden." << std::endl;
+                return exit(EXIT_FAILURE);
+            }
+
+            std::random_device generator;
+            size_t seed = generator();
+            std::mt19937 rnd(seed);
+    
+            std::vector<cell<T>> cells_vector;
+            cell<T> key;
+
+            cells_vector.reserve(exampleCellSize);
+
+            for (size_t i = 0; i < exampleCellSize; i++){
+                readfile.read((char*) &key, sizeof(cell<T>));
+                cells_vector.push_back(cell<T>{key.key,key.key_length});
+            }
+            
+            readfile.close();
+            
+            std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
+            std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());       
+        };
+
         //Erzeuge verschiedene Werte für die Schlüssel und deren Längen zufällig
         void createCells(bool key_length_same = false){
+            std::random_device generator;
+            size_t seed = generator();
+            std::mt19937 rnd(seed);
+            
+            std::vector<cell<T>> cells_vector;
+            cells_vector.reserve(exampleCellSize);
+
             if (key_length_same == false){
-                std::vector<cell<T>> cells_vector;
-                cells_vector.reserve(exampleCellSize);
-                
                 T key = 0;
                 T key_length = 0; 
         
@@ -77,19 +112,11 @@ class Example_Hash_Table{
                     ++key;
                     ++key_length;
                     cells_vector.push_back(cell<T>{key,key_length});
-                }
-                
+                }                
+                std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
                 std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());
-                shuffleKeys();
 
             }else{
-                std::vector<cell<T>> cells_vector;
-                cells_vector.reserve(exampleCellSize);
-        
-                std::random_device generator;
-                size_t seed = generator();
-                std::mt19937 rnd(seed);
-        
                 std::uniform_int_distribution<T> dist(1,exampleCellSize);
 
                 T key = 0;
@@ -98,10 +125,9 @@ class Example_Hash_Table{
                 for (size_t i = 0; i < exampleCellSize; i++){
                     ++key;
                     cells_vector.push_back(cell<T>{key,key_length});
-                }
-                
+                }          
+                std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
                 std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());
-                shuffleKeys();
             }
         };
 
