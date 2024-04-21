@@ -48,19 +48,19 @@ int main(){
     /////////////////////////////////////////////////////////////////////////////////////////
     //1. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    Example_Hash<uint32_t>  example_hash3(example_array_size,example_table_size,290000,320000,320114);
+    Example_Hash<uint32_t>  example_hash3(example_array_size,example_table_size, 20019, 20025,20029);
     example_hash3.createKeys();
     example_hash3.compare_host_device(universal0);
     /////////////////////////////////////////////////////////////////////////////////////////
     //2. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    Example_Hash<uint32_t>  example_hash4(example_array_size,example_table_size,149400,149500,149969);
+    Example_Hash<uint32_t>  example_hash4(example_array_size,example_table_size,10023,10037,10039);
     example_hash4.createKeys();
     example_hash4.compare_host_device(universal1);
     /////////////////////////////////////////////////////////////////////////////////////////
     //3. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    Example_Hash<uint32_t>  example_hash5(example_array_size,example_table_size,135,140,149);
+    Example_Hash<uint32_t>  example_hash5(example_array_size,example_table_size,5029,5038,5039);
     example_hash5.createKeys();
     example_hash5.compare_host_device(universal2);
     /////////////////////////////////////////////////////////////////////////////////////////

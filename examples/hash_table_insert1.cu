@@ -12,9 +12,9 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //Leistungsvergleich zwischen verschiedenen Hashfunktionen
 /////////////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char** argv){
+int main(){
     //1. Deklariere die Variablen
-    const size_t exampleKeyNum{576};
+    const size_t exampleKeyNum{128*128};
     const size_t exampleHashTableSize{exampleKeyNum};
     const size_t matrix_size{exampleKeyNum * sizeof(uint32_t)};
 
@@ -79,7 +79,7 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
     std::cout << "4. Hashfunktion: Universelle Hashfunktion" << std::endl;
-    std::cout << "                 (a: 290000  b: 320000  Primzahl: 320114)" << std::endl;
+    std::cout << "                 (a:  20019  b:  20025  Primzahl: 20029)" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table4(exampleKeyNum,exampleHashTableSize,universal0);
@@ -91,7 +91,7 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
     std::cout << "5. Hashfunktion: Universelle Hashfunktion" << std::endl;
-    std::cout << "                 (a: 149400  b: 149500  Primzahl: 149969)" << std::endl;
+    std::cout << "                 (a: 10023  b: 10037  Primzahl: 10039)" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table5(exampleKeyNum,exampleHashTableSize,universal1);
@@ -103,7 +103,7 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
     std::cout << "6. Hashfunktion: Universelle Hashfunktion" << std::endl;
-    std::cout << "                 (a: 135  b: 140  Primzahl: 149)" << std::endl;
+    std::cout << "                 (a: 5029  b: 5038  Primzahl: 5039)" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table6(exampleKeyNum,exampleHashTableSize,universal2);

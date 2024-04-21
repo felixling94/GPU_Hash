@@ -124,11 +124,11 @@ __device__  __host__   size_t getHash(T key, size_t table_size, hash_function fu
     if (function == multiplication){
         return multiplication_hash<T>(key,table_size);
     }else if (function == universal0 || function == universal3){
-        return universal_hash<T>(key, table_size,290000,320000,320114);
+        return universal_hash<T>(key, table_size, 20019, 20025, 20029);
     }else if (function == universal1){
-        return universal_hash<T>(key, table_size,149400,149500,149969);
+        return universal_hash<T>(key, table_size, 10023, 10037, 10039);
     }else if (function == universal2){
-        return universal_hash<T>(key, table_size,135,140,149);
+        return universal_hash<T>(key, table_size, 5029, 5038, 5039);
     }else if (function == murmer){
         return murmer_hash<T>(key, table_size);
     }else if (function == dycuckoo_hash1){

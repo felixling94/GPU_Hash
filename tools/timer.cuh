@@ -24,7 +24,7 @@ class CPUTimer{
 
         float getDuration(){
             std::chrono::duration<double> difference = end - begin;
-            std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(difference);
+            std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(difference);
             return (float) duration.count();
         };
 };
@@ -63,7 +63,7 @@ class GPUTimer{
         float getGPUDuration(){
             float duration;
 		    cudaEventElapsedTime(&duration, begin, stop);
-		    return duration / 1000;
+		    return duration;
         };
 };
 

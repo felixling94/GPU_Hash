@@ -83,13 +83,13 @@ class Benchmark{
                 std::cout << std::endl;
             }
             std::cout << "Dauer zum Hochladen                         : ";
-            std::cout <<  upload *1000000 << std::endl;
+            std::cout <<  upload << std::endl;
             std::cout << "Dauer zur Ausführung                        : ";
-            std::cout <<  run *1000000 << std::endl;
+            std::cout <<  run << std::endl;
             std::cout << "Dauer zum Herunterladen                     : ";
-            std::cout <<  download *1000000 << std::endl;
+            std::cout <<  download << std::endl;
             std::cout << "Gesamtdauer                                 : ";
-            std::cout <<  total *1000000 << std::endl;
+            std::cout <<  total << std::endl;
         };
 };
 
