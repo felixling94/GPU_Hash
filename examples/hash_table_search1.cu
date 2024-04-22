@@ -56,28 +56,27 @@ int main(int argc, char** argv){
         return -1;
     }
 
+    matrix_size = exampleKeyNum * sizeof(uint32_t);
+    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
+
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
 
-    matrix_size = exampleKeyNum * sizeof(uint32_t);
-
-    std::cout << "Ausgewähltes " << props.name << " mit ";
-    std::cout << (props.totalGlobalMem/1024)/1024 << "mb VRAM" << std::endl;
+    std::cout << "GPU" << "," << props.name << std::endl;
+    std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
-
-    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
+    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
+    std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
+    std::cout << "Größe der Cuckoo-Hashtabellen" << "," << 2*exampleHashTableSize << std::endl;
+    std::cout << std::endl;
 
     if (int_key_length_same == 1){
         key_length_same = true;
     }else{
         key_length_same = false;     
     }
-
-    std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
-    std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
-    std::cout << "Größe der Cuckoo-Hashtabellen" << "," << 2*exampleHashTableSize << std::endl;
-    std::cout << std::endl;
 
     if (function_code1 == 2){
         hash_function1 = multiplication;

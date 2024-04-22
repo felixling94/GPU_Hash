@@ -222,6 +222,7 @@ class Example_Hash{
             std::cout << "Kernel_Name" << ", " << "Upload_Dauer" << ", " << "Run_Dauer" << ", ";
             std::cout << "Download_Dauer" << ", " << "Total_Dauer" << std::endl;
             Benchmark_Calculate.print();
+            std::cout << std::endl;
 
             cudaFree(exampleArray_Device);
             cudaFree(exampleResultArray_Device);
@@ -238,7 +239,7 @@ class Example_Hash{
                 std::cout << "Multiplikative Methode" << std::endl;
             }else if (function == universal0 || function == universal1 || function == universal2 || function == universal3){
                 std::cout << "Universelle Hashfunktion" << std::endl;
-                std::cout << "," << "a: " << a << "," << " b: " << b << "," << " Primzahl: " << prime_num << std::endl;
+                std::cout << "a: " << a << "," << " b: " << b << "," << " Primzahl: " << prime_num << std::endl;
                 std::cout << std::endl;
             }else if (function == murmer){
                 std::cout << "Murmer-Hashfunktion" << std::endl;

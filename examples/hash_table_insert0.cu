@@ -64,28 +64,27 @@ int main(int argc, char** argv){
         return -1;
     }
 
+    matrix_size = exampleKeyNum * sizeof(uint32_t);
+    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
+
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
 
-    matrix_size = exampleKeyNum * sizeof(uint32_t);
-
-    std::cout << "Ausgewähltes " << props.name << " mit " << (props.totalGlobalMem/1024)/1024;
-    std::cout << "mb VRAM" << std::endl;
+    std::cout << "GPU" << "," << props.name << std::endl;
+    std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
-
-    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
-
+    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
+    std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
+    std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*exampleHashTableSize << std::endl;
+    
     if (int_key_length_same == 1){
         key_length_same = true;
     }else{
         key_length_same = false;     
     }
 
-    std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
-    std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
-    std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*exampleHashTableSize << std::endl;
-    
     std::cout << std::endl;
     if (function_code1 == 2){
         hash_function1 = multiplication;
@@ -95,13 +94,19 @@ int main(int argc, char** argv){
         std::cout << "1. Hashfunktion" << "," << "Murmer-Hashfunktion" << std::endl;
     }else if (function_code1 == 4){
         hash_function1 = universal0;
-        std::cout << "1. Hashfunktion" << "," << "Universelle Hashfunktion (a: 20019  b: 20025  Primzahl: 20029)" << std::endl;
+        std::cout << "1. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+        std::cout << "," << "a: 20019" << "," << "b: 20025" << "," <<  "Primzahl: 20029" << std::endl;
+        std::cout << std::endl;
     }else if (function_code1 == 5){
         hash_function1 = universal1;
-        std::cout << "1. Hashfunktion" << "," << "Universelle Hashfunktion (a: 10023  b: 10037  Primzahl: 10039)" << std::endl;
+        std::cout << "1. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+        std::cout << "," << "a: 10023" << "," << "b: 10037" << "," <<  "Primzahl: 10039" << std::endl;
+        std::cout << std::endl;
     }else if (function_code1 == 6){
         hash_function1 = universal2;
-        std::cout << "1. Hashfunktion" << "," << "Universelle Hashfunktion (a: 5029  b: 5038  Primzahl: 5039)" << std::endl;
+        std::cout << "1. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+        std::cout << "," << "a: 5029" << "," << "b: 5038" << "," <<  "Primzahl: 5039" << std::endl;
+        std::cout << std::endl;
     }else if (function_code1 == 7){
         hash_function1 = dycuckoo_hash1;
         std::cout << "1. Hashfunktion" << "," << "DyCuckoo-1" << std::endl;
@@ -130,13 +135,19 @@ int main(int argc, char** argv){
         std::cout << "2. Hashfunktion" << "," << "Murmer-Hashfunktion" << std::endl;
     }else if (function_code2 == 4){
         hash_function2 = universal0;
-        std::cout << "2. Hashfunktion" << "," << "Universelle Hashfunktion (a: 20019  b: 20025  Primzahl: 20029)" << std::endl;
+        std::cout << "2. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+        std::cout << "," << "a: 20019" << "," << "b: 20025" << "," <<  "Primzahl: 20029" << std::endl;
+        std::cout << std::endl;
     }else if (function_code2 == 5){
         hash_function2 = universal1;
-        std::cout << "2. Hashfunktion" << "," << "Universelle Hashfunktion (a: 10023  b: 10037  Primzahl: 10039)" << std::endl;
+        std::cout << "2. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+        std::cout << "," << "a: 10023" << "," << "b: 10037" << "," <<  "Primzahl: 10039" << std::endl;
+        std::cout << std::endl;
     }else if (function_code2 == 6){
         hash_function2 = universal2;
-        std::cout << "2. Hashfunktion" << "," << "Universelle Hashfunktion (a: 5029  b: 5038  Primzahl: 5039)" << std::endl;
+        std::cout << "2. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+        std::cout << "," << "a: 5029" << "," << "b: 5038" << "," <<  "Primzahl: 5039" << std::endl;
+        std::cout << std::endl;
     }else if (function_code2 == 7){
         hash_function2 = dycuckoo_hash1;
         std::cout << "2. Hashfunktion" << "," << "DyCuckoo-1" << std::endl;

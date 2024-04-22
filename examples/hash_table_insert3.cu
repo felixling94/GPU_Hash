@@ -26,11 +26,11 @@ void runKernel(){
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
     
-    std::cout << "Ausgewähltes " << props.name << " mit ";
-    std::cout << (props.totalGlobalMem/1024)/1024 << "mb VRAM" << std::endl;
+    std::cout << "GPU" << "," << props.name << std::endl;
+    std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << (( matrix_size * 3 + sizeof(T)) / 1024 / 1024) << "mb\n" << std::endl;
-
+    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << std::endl;   
 };
 
 //Führe Hashverfahren mit verschiedenen Datentypen aus
