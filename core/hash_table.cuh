@@ -446,7 +446,7 @@ void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize)
         duration_download = download.getGPUDuration();
         duration_total = total.getGPUDuration();
 
-        Benchmark_Insert.record(insert_hash_table,duration_upload,duration_run,duration_download,duration_total);
+        Benchmark_Insert.record(insert_hash_table,duration_upload,duration_run,duration_download,duration_total,type_hash);
         benchmark_hash_table[0] = Benchmark_Insert;
     
         cudaFree(hash_table_device1);
@@ -700,7 +700,7 @@ void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize)
         duration_download = download.getGPUDuration();
         duration_total = total.getGPUDuration();
 
-        Benchmark_Search.record(search_hash_table,duration_upload,duration_run,duration_download,duration_total,sum_found);
+        Benchmark_Search.record(search_hash_table,duration_upload,duration_run,duration_download,duration_total,type_hash,sum_found);
         benchmark_hash_table[1] = Benchmark_Search;
     
         cudaFree(hash_table_device1);
@@ -851,6 +851,7 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
         std::vector<cell<T>> cells_vector;
         
         float duration_upload, duration_run, duration_download, duration_total;
+        size_t num_cells_prev, num_cells_deleted;
         int min_grid_size, grid_size, block_size;
         
         GPUTimer upload, run, download, total;
@@ -861,6 +862,8 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
         duration_total = 0;
 
         Benchmark Benchmark_Delete;
+
+        num_cells_prev = getNumCell();
 
         cells_vector.reserve(cellSize);
         
@@ -991,7 +994,9 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
         duration_download = download.getGPUDuration();
         duration_total = total.getGPUDuration();
 
-        Benchmark_Delete.record(delete_hash_table,duration_upload,duration_run,duration_download,duration_total);
+        num_cells_deleted = num_cells_prev - getNumCell();
+
+        Benchmark_Delete.record(delete_hash_table,duration_upload,duration_run,duration_download,duration_total,type_hash,0,num_cells_deleted);
         benchmark_hash_table[2] = Benchmark_Delete;
     
         cudaFree(hash_table_device1);

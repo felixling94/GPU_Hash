@@ -217,7 +217,10 @@ class Example_Hash{
             duration_download = download.getGPUDuration();
             duration_total = total.getGPUDuration();
 
-            Benchmark_Calculate.record(calculate_hash_value,duration_upload,duration_run,duration_download,duration_total);
+            Benchmark_Calculate.record(calculate_hash_value,duration_upload,duration_run,duration_download,duration_total,no_probe,0,0,function);
+            
+            std::cout << "Kernel_Name" << ", " << "Upload_Dauer" << ", " << "Run_Dauer" << ", ";
+            std::cout << "Download_Dauer" << ", " << "Total_Dauer" << std::endl;
             Benchmark_Calculate.print();
 
             cudaFree(exampleArray_Device);
