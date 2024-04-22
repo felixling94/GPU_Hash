@@ -9,8 +9,8 @@ enum operation_type{calculate_hash_value=0, insert_hash_table, search_hash_table
 
 //Arten der offenen Hashverfahren
 //0: Keine Kollisionsauflösung
-//1: Lineare Hashverfahren
-//2: Quadratische Hashverfahren
+//1: Lineares Sondieren
+//2: Quadratisches Sondieren
 //3: Doppelte Hashverfahren
 //4: Cuckoo-Hashverfahren
 enum hash_type{no_probe=0, linear_probe, quadratic_probe, double_probe, cuckoo_probe};

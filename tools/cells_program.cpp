@@ -60,7 +60,7 @@ void readFile(char * file_name, size_t key_num){
     for (size_t i = 0; i < key_num; i++){
         cell<T> key;
         readfile.read((char*) &key, sizeof(cell<T>));
-        std::cout << key.key << "  "  << key.key_length << std::endl;
+        std::cout << key.key << ","  << key.key_length << std::endl;
     }
     
     

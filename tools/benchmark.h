@@ -73,8 +73,7 @@ class Benchmark{
             }else if(type_operation == search_hash_table){
                 std::cout << "Suche nach Schlüsseln in der Hashtabelle" << std::endl;
                 std::cout << std::endl;
-                std::cout << "Anzahl der gesuchten Zellen                 : ";
-                std::cout << sum_found << std::endl;
+                std::cout << "Anzahl der gesuchten Zellen" << "," << sum_found << std::endl;
             }else if(type_operation == delete_hash_table){
                 std::cout << "Löschung von Schlüsseln in der Hashtabelle" << std::endl;
                 std::cout << std::endl;
@@ -82,14 +81,10 @@ class Benchmark{
                 std::cout << "Berechnung der Hashwerte" << std::endl;
                 std::cout << std::endl;
             }
-            std::cout << "Dauer zum Hochladen                         : ";
-            std::cout <<  upload << std::endl;
-            std::cout << "Dauer zur Ausführung                        : ";
-            std::cout <<  run << std::endl;
-            std::cout << "Dauer zum Herunterladen                     : ";
-            std::cout <<  download << std::endl;
-            std::cout << "Gesamtdauer                                 : ";
-            std::cout <<  total << std::endl;
+            std::cout << "Dauer zum Hochladen" << "," << upload << std::endl;
+            std::cout << "Dauer zur Ausführung" << "," <<  run << std::endl;
+            std::cout << "Dauer zum Herunterladen" << "," << download << std::endl;
+            std::cout << "Gesamtdauer" << "," <<  total << std::endl;
         };
 };
 

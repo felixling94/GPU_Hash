@@ -146,23 +146,59 @@ class Example_Hash_Table{
             std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());
         };
 
-        void printBenchmark(float Upload, float Run, float Download, float Total,
-                            float SumFound=0, float DeletedCells=0){
+        void printBenchmark(hash_type HashType, float Upload, float Run, float Download, 
+                            float Total, float SumFound=0, float DeletedCells=0){
+            std::string HashTypeString;
+
             if (benchmark_kernel.OperationType == insert_hash_table){
-                std::cout << "insert_hash_table" << ", " << Upload;
+                if (HashType == linear_probe){
+                    HashTypeString.append("insert_linear<T>");
+                }else if (HashType == quadratic_probe){
+                    HashTypeString.append("insert_quadratic<T>");
+                }else if (HashType == double_probe){
+                    HashTypeString.append("insert_double<T>");
+                }else if (HashType == cuckoo_probe){
+                    HashTypeString.append("insert_cuckoo<T>");
+                }else{
+                    HashTypeString.append("insert_normal<T>");
+                }
+                std::cout << HashTypeString << ", " << Upload;
                 std::cout << ", " << Run << ", " << Download  << ", ";
                 std::cout <<  Total  << std::endl;
 
             }else if (benchmark_kernel.OperationType == search_hash_table){
-                std::cout << "search_hash_table" << ", " << Upload ;
+                if (HashType == linear_probe){
+                    HashTypeString.append("search_linear<T>");
+                }else if (HashType == quadratic_probe){
+                    HashTypeString.append("search_quadratic<T>");
+                }else if (HashType == double_probe){
+                    HashTypeString.append("search_double<T>");
+                }else if (HashType == cuckoo_probe){
+                    HashTypeString.append("search_cuckoo<T>");
+                }else{
+                    HashTypeString.append("search_normal<T>");
+                }
+                std::cout << HashTypeString << ", " << Upload ;
                 std::cout << ", " << Run << ", " << Download  << ", ";
                 std::cout <<  Total << "," << SumFound << std::endl;
         
             }else{
-                std::cout << "delete_hash_table" << ", " << Upload;
+                if (HashType == linear_probe){
+                    HashTypeString.append("delete_linear<T>");
+                }else if (HashType == quadratic_probe){
+                    HashTypeString.append("delete_quadratic<T>");
+                }else if (HashType == double_probe){
+                    HashTypeString.append("delete_double<T>");
+                }else if (HashType == cuckoo_probe){
+                    HashTypeString.append("delete_cuckoo<T>");
+                }else{
+                    HashTypeString.append("delete_normal<T>");
+                }
+                std::cout << HashTypeString << ", " << Upload;
                 std::cout << ", " << Run << ", " << Download << ", ";
                 std::cout <<  Total << "," << DeletedCells << std::endl;
             }
+
         };
 
         //Drucke Gesamtzeitmessung für den Kernel
@@ -177,9 +213,9 @@ class Example_Hash_Table{
                 std::cout << "Suche nach Schlüsseln in der Hashtabelle bei ";
                 std::cout << Test_Num << " Versuchen" << std::endl;
                 std::cout << std::endl;
-                std::cout << "Gesamtanzahl der gesuchten Zellen           : ";
+                std::cout << "Gesamtanzahl der gesuchten Zellen" << ", ";
                 std::cout << benchmark_kernel.SumFound << std::endl;
-                std::cout << "Durchschnitt der gesuchten Zellen           : ";
+                std::cout << "Durchschnitt der gesuchten Zellen" << ", ";
                 std::cout << averageSumFound << std::endl;
                 std::cout << std::endl;
 
@@ -188,9 +224,9 @@ class Example_Hash_Table{
                 std::cout << "Löschung von Schlüsseln in der Hashtabelle bei ";
                 std::cout << Test_Num << " Versuchen" << std::endl;
                 std::cout << std::endl;
-                std::cout << "Gesamtanzahl der gelöschten Zellen          : ";
+                std::cout << "Gesamtanzahl der gelöschten Zellen" << ", ";
                 std::cout << benchmark_kernel.sum_num_deleted_cells << std::endl;
-                std::cout << "Anzahl der gelöschten Zellen                : ";
+                std::cout << "Anzahl der gelöschten Zellen" << ", ";
                 std::cout << averageDeletedCells << std::endl;
                 std::cout << std::endl;
             }
@@ -202,23 +238,23 @@ class Example_Hash_Table{
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
 
-            std::cout << "Gesamtdauer zum Hochladen                   : ";
+            std::cout << "Gesamtdauer zum Hochladen" << ", ";
             std::cout <<  benchmark_kernel.upload << std::endl;
-            std::cout << "Gesamtdauer zur Ausführung                  : ";
+            std::cout << "Gesamtdauer zur Ausführung" << ", ";
             std::cout <<  benchmark_kernel.run << std::endl;
-            std::cout << "Gesamtdauer zum Herunterladen               : ";
+            std::cout << "Gesamtdauer zum Herunterladen" << ", ";
             std::cout <<  benchmark_kernel.download << std::endl;
-            std::cout << "Gesamtdauer                                 : ";
+            std::cout << "Gesamtdauer" << ", ";
             std::cout <<  benchmark_kernel.total << std::endl;
             std::cout << std::endl;
 
-            std::cout << "Durchschnittsdauer zum Hochladen            : ";
+            std::cout << "Durchschnittsdauer zum Hochladen" << ", ";
             std::cout <<  averageDurationUpload << std::endl;
-            std::cout << "Durchschnittsdauer zur Ausführung           : ";
+            std::cout << "Durchschnittsdauer zur Ausführung" << ", ";
             std::cout <<  averageDurationRun << std::endl;
-            std::cout << "Durchschnittsdauer zum Herunterladen        : ";
+            std::cout << "Durchschnittsdauer zum Herunterladen" << ", ";
             std::cout <<  averageDurationDownload << std::endl;
-            std::cout << "Gesamtdurchschnittsdauer                    : ";
+            std::cout << "Gesamtdurchschnittsdauer" << ", ";
             std::cout <<  averageDurationTotal << std::endl;
         };
 
@@ -249,22 +285,18 @@ class Example_Hash_Table{
             
             keyListArray = key_vector.data();
             keyLengthListArray = key_length_vector.data();
-        
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
+            
             if (HashType == no_probe){
-                std::cout << "Ohne Kollisionauflösung" << std::endl;
+                std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
             }else if(HashType == linear_probe){
-                std::cout << "Lineare Hashverfahren" << std::endl;
+                std::cout << "LINEARES SONDIEREN" << std::endl;
             }else if(HashType== quadratic_probe){
-                std::cout << "Quadratische Hashverfahren" << std::endl;
+                std::cout << "QUADRATISCHES SONDIEREN" << std::endl;
             }else if(HashType == double_probe){
-                std::cout << "Doppelte Hashverfahren" << std::endl;
+                std::cout << "DOPPELTE HASHVERFAHREN" << std::endl;
             }else if(HashType == cuckoo_probe){
-                std::cout << "Cuckoo-Hashverfahren" << std::endl;
+                std::cout << "CUCKOO-HASHVERFAHREN" << std::endl;
             }
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
@@ -276,9 +308,10 @@ class Example_Hash_Table{
             timer.stop();
 
             hash_table1.print();
+
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Gesamtdauer                                 : ";
-            std::cout << timer.getDuration() << std::endl;
+            std::cout << std::endl;
+            std::cout << "Gesamtdauer" << "," << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
             /////////////////////////////////////////////////////////////////////////////////////////
@@ -287,6 +320,7 @@ class Example_Hash_Table{
             Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
+
             hash_table2.insert_List(key_vector.data(),key_length_vector.data(),exampleCellSize);
             Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
             Benchmark_Insert.print();
@@ -299,17 +333,14 @@ class Example_Hash_Table{
             
             if (numCells1 == numCells2){
                 std::cout << std::endl;
-                std::cout << "Anzahl der Zellen in der Hashtabelle bei    : ";
-                std::cout << numCells1 << std::endl;
+                std::cout << "Anzahl der Zellen in der Hashtabelle bei" << "," << numCells1 << std::endl;
                 std::cout << "sequentiellen und parallelen Ausführungen" << std::endl;
                 std::cout << std::endl;
             }else{
                 std::cout << std::endl;
                 std::cout << "Anzahl der Zellen in der Hashtabelle bei" << std::endl;
-                std::cout << "a) sequentiellen Ausführungen               : ";
-                std::cout << numCells1 << std::endl;
-                std::cout << "b) parallelen Ausführungen                  : ";
-                std::cout << numCells2 << std::endl;
+                std::cout << "a) sequentiellen Ausführungen" << "," << numCells1 << std::endl;
+                std::cout << "b) parallelen Ausführungen" << "," << numCells2 << std::endl;
                 std::cout << std::endl;
             }
         
@@ -340,34 +371,17 @@ class Example_Hash_Table{
             keyListArray = key_vector.data();
             keyLengthListArray = key_length_vector.data();
 
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
-            if (HashType == no_probe){
-                std::cout << "Ohne Kollisionauflösung" << std::endl;
-            }else if(HashType == linear_probe){
-                std::cout << "Lineare Hashverfahren" << std::endl;
-            }else if(HashType== quadratic_probe){
-                std::cout << "Quadratische Hashverfahren" << std::endl;
-            }else if(HashType == double_probe){
-                std::cout << "Doppelte Hashverfahren" << std::endl;
-            }else if(HashType == cuckoo_probe){
-                std::cout << "Cuckoo-Hashverfahren" << std::endl;
-            }
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
-            std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
-            std::cout << std::endl;
             benchmark_kernel.OperationType = insert_hash_table;
 
-            std::cout << "OperationType" << ", " << "Upload_Duration" << ", " << "Run_Duration" << ", ";
-            std::cout << "Download_Duration" << ", " << "Total_Duration" << std::endl;
+            std::cout << "Kernel_Name" << ", " << "Upload_Dauer" << ", " << "Run_Dauer" << ", ";
+            std::cout << "Download_Dauer" << ", " << "Total_Dauer" << std::endl;
 
             for (int i = 0; i < Test_Num; i++){
                 Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
                 hash_table2.insert_List(key_vector.data(),key_length_vector.data(),exampleCellSize);
                 Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
                 
-                printBenchmark(Benchmark_Insert.getDurationUpload(),Benchmark_Insert.getDurationRun(),
+                printBenchmark(HashType, Benchmark_Insert.getDurationUpload(),Benchmark_Insert.getDurationRun(),
                                Benchmark_Insert.getDurationDownload(),Benchmark_Insert.getDurationTotal());
          
                 benchmark_kernel.upload+=Benchmark_Insert.getDurationUpload();
@@ -410,21 +424,17 @@ class Example_Hash_Table{
 
             Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             if (HashType == no_probe){
-                std::cout << "Ohne Kollisionauflösung" << std::endl;
+                std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
             }else if(HashType == linear_probe){
-                std::cout << "Lineare Hashverfahren" << std::endl;
+                std::cout << "LINEARES SONDIEREN" << std::endl;
             }else if(HashType== quadratic_probe){
-                std::cout << "Quadratische Hashverfahren" << std::endl;
+                std::cout << "QUADRATISCHES SONDIEREN" << std::endl;
             }else if(HashType == double_probe){
-                std::cout << "Doppelte Hashverfahren" << std::endl;
+                std::cout << "DOPPELTE HASHVERFAHREN" << std::endl;
             }else if(HashType == cuckoo_probe){
-                std::cout << "Cuckoo-Hashverfahren" << std::endl;
+                std::cout << "CUCKOO-HASHVERFAHREN" << std::endl;
             }
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
@@ -456,10 +466,8 @@ class Example_Hash_Table{
             hash_table.print();
 
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Anzahl der gesuchten Zellen                 : ";
-            std::cout << sum_found << std::endl;
-            std::cout << "Gesamtdauer                                 : ";
-            std::cout << timer.getDuration() << std::endl;
+            std::cout << "Anzahl der gesuchten Zellen" << "," << sum_found << std::endl;
+            std::cout << "Gesamtdauer" << "," << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
             /////////////////////////////////////////////////////////////////////////////////////////
@@ -497,27 +505,10 @@ class Example_Hash_Table{
             keyListArray = key_vector.data();
             keyLengthListArray = key_length_vector.data();
 
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
-            if (HashType == no_probe){
-                std::cout << "Ohne Kollisionauflösung" << std::endl;
-            }else if(HashType == linear_probe){
-                std::cout << "Lineare Hashverfahren" << std::endl;
-            }else if(HashType== quadratic_probe){
-                std::cout << "Quadratische Hashverfahren" << std::endl;
-            }else if(HashType == double_probe){
-                std::cout << "Doppelte Hashverfahren" << std::endl;
-            }else if(HashType == cuckoo_probe){
-                std::cout << "Cuckoo-Hashverfahren" << std::endl;
-            }
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
-            std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
-            std::cout << std::endl;
             benchmark_kernel.OperationType = search_hash_table;
 
-            std::cout << "OperationType" << ", " << "Upload_Duration" << ", " << "Run_Duration" << ", ";
-            std::cout << "Download_Duration" << ", " << "Total_Duration" << ", " << "SumFound"<< std::endl;
+            std::cout << "Kernel_Name" << ", " << "Upload_Dauer" << ", " << "Run_Dauer" << ", ";
+            std::cout << "Download_Dauer" << ", " << "Total_Dauer" << ", " << "SummeGefunden"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
                 Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
@@ -527,7 +518,7 @@ class Example_Hash_Table{
                 hash_table.search_List(key_vector.data(),key_length_vector.data(),exampleCellSize);
                 Benchmark Benchmark_Search = hash_table.getBenchmark(search_hash_table);
                 
-                printBenchmark(Benchmark_Search.getDurationUpload(),Benchmark_Search.getDurationRun(),Benchmark_Search.getDurationDownload(),
+                printBenchmark(HashType, Benchmark_Search.getDurationUpload(),Benchmark_Search.getDurationRun(),Benchmark_Search.getDurationDownload(),
                                Benchmark_Search.getDurationTotal(),Benchmark_Search.getSumFound());
          
                 benchmark_kernel.upload+=Benchmark_Search.getDurationUpload();
@@ -537,8 +528,10 @@ class Example_Hash_Table{
                 
                 benchmark_kernel.SumFound+=Benchmark_Search.getSumFound();
             }
+
             std::cout << std::endl;
             printTotalBenchmark();
+            
         };
 
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -573,21 +566,17 @@ class Example_Hash_Table{
 
             Hash_Table<T> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             if (HashType == no_probe){
-                std::cout << "Ohne Kollisionauflösung" << std::endl;
+                std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
             }else if(HashType == linear_probe){
-                std::cout << "Lineare Hashverfahren" << std::endl;
+                std::cout << "LINEARES SONDIEREN" << std::endl;
             }else if(HashType== quadratic_probe){
-                std::cout << "Quadratische Hashverfahren" << std::endl;
+                std::cout << "QUADRATISCHES SONDIEREN" << std::endl;
             }else if(HashType == double_probe){
-                std::cout << "Doppelte Hashverfahren" << std::endl;
+                std::cout << "DOPPELTE HASHVERFAHREN" << std::endl;
             }else if(HashType == cuckoo_probe){
-                std::cout << "Cuckoo-Hashverfahren" << std::endl;
+                std::cout << "CUCKOO-HASHVERFAHREN" << std::endl;
             }
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
@@ -618,8 +607,7 @@ class Example_Hash_Table{
 
             hash_table1.print();
             //Fasse Resultate für jede Hashverfahren zusammen
-            std::cout << "Gesamtdauer                                 : ";
-            std::cout << timer.getDuration() << std::endl;
+            std::cout << "Gesamtdauer" << "," << timer.getDuration() << std::endl;
             std::cout << std::endl;
 
             /////////////////////////////////////////////////////////////////////////////////////////
@@ -658,17 +646,14 @@ class Example_Hash_Table{
 
             if (num_cells_curr1 == num_cells_curr2){
                 std::cout << std::endl;
-                std::cout << "Anzahl der gelöschten Zellen bei            : ";
+                std::cout << "Anzahl der gelöschten Zellen bei sequentiellen und parallelen Ausführungen" << ",";
                 std::cout << num_cells_curr1 << std::endl;
-                std::cout << "sequentiellen und parallelen Ausführungen" << std::endl;
                 std::cout << std::endl;
             }else{
                 std::cout << std::endl;
                 std::cout << "Anzahl der gelöschten Zellen in der Hashtabelle bei" << std::endl;
-                std::cout << "a) sequentiellen Ausführungen               : ";
-                std::cout << num_cells_curr1 << std::endl;
-                std::cout << "b) parallelen Ausführungen                  : ";
-                std::cout << num_cells_curr2 << std::endl;
+                std::cout << "a) sequentiellen Ausführungen" << "," << num_cells_curr1 << std::endl;
+                std::cout << "b) parallelen Ausführungen" << "," << num_cells_curr2 << std::endl;
                 std::cout << std::endl;
             }
 
@@ -699,27 +684,10 @@ class Example_Hash_Table{
             keyListArray = key_vector.data();
             keyLengthListArray = key_length_vector.data();
 
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
-            if (HashType == no_probe){
-                std::cout << "Ohne Kollisionauflösung" << std::endl;
-            }else if(HashType == linear_probe){
-                std::cout << "Lineare Hashverfahren" << std::endl;
-            }else if(HashType== quadratic_probe){
-                std::cout << "Quadratische Hashverfahren" << std::endl;
-            }else if(HashType == double_probe){
-                std::cout << "Doppelte Hashverfahren" << std::endl;
-            }else if(HashType == cuckoo_probe){
-                std::cout << "Cuckoo-Hashverfahren" << std::endl;
-            }
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
-            std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
-            std::cout << std::endl;
             benchmark_kernel.OperationType = delete_hash_table;
 
-            std::cout << "OperationType" << ", " << "Upload_Duration" << ", " << "Run_Duration" << ", ";
-            std::cout << "Download_Duration" << ", " << "Total_Duration" << ", " << "DeletedCells"<< std::endl;
+            std::cout << "Kernel_Name" << ", " << "Upload_Dauer" << ", " << "Run_Dauer" << ", ";
+            std::cout << "Download_Dauer" << ", " << "Total_Dauer" << ", " << "Zellen_Gelöscht"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
                 size_t num_cells_prev, num_cells_curr;
@@ -734,7 +702,7 @@ class Example_Hash_Table{
                 Benchmark Benchmark_Delete = hash_table.getBenchmark(delete_hash_table);
                 num_cells_curr = num_cells_prev - hash_table.getNumCell();
 
-                printBenchmark(Benchmark_Delete.getDurationUpload(),Benchmark_Delete.getDurationRun(),Benchmark_Delete.getDurationDownload(),
+                printBenchmark(HashType, Benchmark_Delete.getDurationUpload(),Benchmark_Delete.getDurationRun(),Benchmark_Delete.getDurationDownload(),
                                Benchmark_Delete.getDurationTotal(),num_cells_curr);
 
                 benchmark_kernel.upload+=Benchmark_Delete.getDurationUpload();

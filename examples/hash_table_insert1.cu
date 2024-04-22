@@ -24,19 +24,13 @@ int main(){
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
 
-    std::cout << "****************************************************************";
-    std::cout << "***************" << std::endl;
-    std::cout << "Ausgewähltes " << props.name << " mit "
-              << (props.totalGlobalMem/1024)/1024 << "mb VRAM" << std::endl;
-    std::cout << "Gesamtgröße von Kernelargumenten: "
-              << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
+    std::cout << "Ausgewähltes " << props.name << " mit ";
+    std::cout << (props.totalGlobalMem/1024)/1024 << "mb VRAM" << std::endl;
+    std::cout << "Gesamtgröße von Kernelargumenten" << ",";
+    std::cout << (( matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
 
-    std::cout << "****************************************************************";
-    std::cout << "***************" << std::endl;   
-    std::cout << "Anzahl der gespeicherten Zellen             : ";
-    std::cout << exampleKeyNum << std::endl;
-    std::cout << "Größe der Hashtabelle                       : ";
-    std::cout << exampleHashTableSize << std::endl;
+    std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
+    std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
 
     CPUTimer timer;
     timer.start();
@@ -45,7 +39,7 @@ int main(){
     //Modulo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "1. Hashfunktion: Divisions-Rest-Methode" << std::endl;
+    std::cout << "1. Hashfunktion" << "," << "Divisions-Rest-Methode" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table1(exampleKeyNum,exampleHashTableSize,modulo);
@@ -56,7 +50,7 @@ int main(){
     //Multiplikative Methode
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "2. Hashfunktion: Multiplikative Methode" << std::endl;
+    std::cout << "2. Hashfunktion" << "," << "Multiplikative Methode" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table2(exampleKeyNum,exampleHashTableSize,multiplication);
@@ -67,7 +61,7 @@ int main(){
     //Murmer-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "3. Hashfunktion: Murmer-Hashfunktion" << std::endl;
+    std::cout << "3. Hashfunktion" << "," << "Murmer-Hashfunktion" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table3(exampleKeyNum,exampleHashTableSize,murmer);
@@ -78,8 +72,8 @@ int main(){
     //1. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "4. Hashfunktion: Universelle Hashfunktion" << std::endl;
-    std::cout << "                 (a:  20019  b:  20025  Primzahl: 20029)" << std::endl;
+    std::cout << "4. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+    std::cout << "," << "a: 20019" << "," << "b: 20025" << "," <<  "Primzahl: 20029" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table4(exampleKeyNum,exampleHashTableSize,universal0);
@@ -90,8 +84,8 @@ int main(){
     //2. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "5. Hashfunktion: Universelle Hashfunktion" << std::endl;
-    std::cout << "                 (a: 10023  b: 10037  Primzahl: 10039)" << std::endl;
+    std::cout << "5. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+    std::cout << "," << "a: 10023" << "," << "b: 10037" << "," <<  "Primzahl: 10039" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table5(exampleKeyNum,exampleHashTableSize,universal1);
@@ -102,8 +96,8 @@ int main(){
     //3. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "6. Hashfunktion: Universelle Hashfunktion" << std::endl;
-    std::cout << "                 (a: 5029  b: 5038  Primzahl: 5039)" << std::endl;
+    std::cout << "6. Hashfunktion" << "," << "Universelle Hashfunktion" << std::endl;
+    std::cout << "," << "a: 5029" << "," << "b: 5038" << "," <<  "Primzahl: 5039" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table6(exampleKeyNum,exampleHashTableSize,universal2);
@@ -114,7 +108,7 @@ int main(){
     //1. DyCuckoo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "7. Hashfunktion: DyCuckoo-Hash 1" << std::endl;
+    std::cout << "7. Hashfunktion" << "," << "DyCuckoo-1" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table7(exampleKeyNum,exampleHashTableSize,dycuckoo_hash1);
@@ -125,7 +119,7 @@ int main(){
     //2. DyCuckoo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "9. Hashfunktion: DyCuckoo-Hash 2" << std::endl;
+    std::cout << "9. Hashfunktion" << "," << "DyCuckoo-2" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table8(exampleKeyNum,exampleHashTableSize,dycuckoo_hash2);
@@ -136,7 +130,7 @@ int main(){
     //3. DyCuckoo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "9. Hashfunktion: DyCuckoo-Hash 3" << std::endl;
+    std::cout << "9. Hashfunktion" << "," << "DyCuckoo-3" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table9(exampleKeyNum,exampleHashTableSize,dycuckoo_hash3);
@@ -148,7 +142,7 @@ int main(){
     //4. DyCuckoo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "10. Hashfunktion: DyCuckoo-Hash 4" << std::endl;
+    std::cout << "10. Hashfunktion" << "," << "DyCuckoo-4" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table10(exampleKeyNum,exampleHashTableSize,dycuckoo_hash4);
@@ -159,7 +153,7 @@ int main(){
     //5. DyCuckoo-Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl;
-    std::cout << "11. Hashfunktion: DyCuckoo-Hash 5" << std::endl;
+    std::cout << "11. Hashfunktion" << "," << "DyCuckoo-5" << std::endl;
     std::cout << std::endl;
 
     Example_Hash_Table<uint32_t> example_hash_table11(exampleKeyNum,exampleHashTableSize,dycuckoo_hash5);
@@ -168,10 +162,10 @@ int main(){
 
     //Fasse Resultate zusammen
     timer.stop();
+
     std::cout << std::endl;
-    std::cout << "Gesamtdauer für alle Hashfunktionen ohne    : ";
-    std::cout << timer.getDuration() << std::endl;
-    std::cout << "Kollionsauflösung" << std::endl;
-    
+    std::cout << "Gesamtdauer" << "," << timer.getDuration() << std::endl;
+    std::cout << std::endl;
+   
     return 0;
 };

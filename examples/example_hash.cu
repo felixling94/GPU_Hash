@@ -6,7 +6,7 @@
 
 int main(){
     //1. Deklariere und initialisiere Variablen
-    const size_t example_array_size{800*200*200};
+    const size_t example_array_size{1024*1024};
     size_t example_table_size{(size_t) (example_array_size*120/100)};
     const size_t matrix_size{example_array_size*sizeof(uint32_t)};
     
@@ -16,19 +16,14 @@ int main(){
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
 
-    std::cout << "****************************************************************";
-    std::cout << "****************************************************************" << std::endl;
-    std::cout << "Ausgewähltes " << props.name << " mit "
-              << (props.totalGlobalMem/1024)/1024 << "mb VRAM" << std::endl;
-    std::cout << "Gesamtgröße von Kernelargumenten: "
-              << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
-    
-    std::cout << "****************************************************************";
-    std::cout << "***************" << std::endl;   
-    std::cout << "Anzahl der Schlüssel                        : ";
-    std::cout << example_array_size << std::endl;
-    std::cout << "Größe der Hashtabelle                       : ";
-    std::cout << example_table_size << std::endl;
+    std::cout << "Ausgewähltes " << props.name << " mit ";
+    std::cout << (props.totalGlobalMem/1024)/1024 << "mb VRAM" << std::endl;
+    std::cout << "Gesamtgröße von Kernelargumenten" << ",";
+    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "mb\n" << std::endl;
+    std::cout << std::endl;   
+
+    std::cout << "Anzahl der Schlüssel" << "," << example_array_size << std::endl;
+    std::cout << "Größe der Hashtabelle" << "," << example_table_size << std::endl;
 
     CPUTimer timer;
     timer.start();
@@ -48,7 +43,7 @@ int main(){
     /////////////////////////////////////////////////////////////////////////////////////////
     //1. Universelle Hashfunktion
     /////////////////////////////////////////////////////////////////////////////////////////
-    Example_Hash<uint32_t>  example_hash3(example_array_size,example_table_size, 20019, 20025,20029);
+    Example_Hash<uint32_t>  example_hash3(example_array_size,example_table_size,20019,20025,20029);
     example_hash3.createKeys();
     example_hash3.compare_host_device(universal0);
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -114,8 +109,7 @@ int main(){
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;
-    std::cout << "Gesamtdauer für alle offenen Hashverfahren  : ";
-    std::cout << timer.getDuration() << std::endl;
+    std::cout << "Gesamtdauer" << "," << timer.getDuration() << std::endl;
 
     return 0;
 };

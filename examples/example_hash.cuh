@@ -155,8 +155,7 @@ class Example_Hash{
             for (size_t i = 0; i<array_size; ++i) resultArray[i] = static_cast<T>(getHashValue(exampleArray[i],function));
 
             timer.stop();
-            std::cout << "Dauer zur Ausführung                        : ";
-            std::cout <<  timer.getDuration() << std::endl;
+            std::cout << "Dauer zur Ausführung" << "," << timer.getDuration() << std::endl;
         };
 
         void getHashArrayOnDevice(hash_function function){
@@ -191,20 +190,18 @@ class Example_Hash{
                 dim3 block(block_size);
                 dim3 grid(grid_size);
                 
-                void *args[6] = {&exampleArray_Device, &exampleResultArray_Device, &table_size,&a,&b,&prime_num};
                 run.GPUstart();
-                cudaLaunchKernel((void*)calculate_universal_hash_kernel<T>,grid,block,args,0,run.getStream());
+                calculate_universal_hash_kernel<T><<<grid,block,0,run.getStream()>>>(exampleArray_Device,exampleResultArray_Device,table_size,a,b,prime_num);
                 run.GPUstop(); 
-
+            
             }else{
                 cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, calculate_hash_kernel<T>, 0, 0);
                 grid_size = ((size_t)(array_size)+block_size-1)/block_size;
                 dim3 block(block_size);
                 dim3 grid(grid_size);
                 
-                void *args[4] = {&exampleArray_Device, &exampleResultArray_Device, &table_size,&function};
                 run.GPUstart();
-                cudaLaunchKernel((void*)calculate_hash_kernel<T>,grid,block,args,0,run.getStream());
+                calculate_hash_kernel<T><<<grid,block,0,run.getStream()>>>(exampleArray_Device,exampleResultArray_Device,table_size,function);
                 run.GPUstop(); 
             }
 
@@ -234,30 +231,28 @@ class Example_Hash{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Sequentielle Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             if (function == multiplication){
                 std::cout << "Multiplikative Methode" << std::endl;
             }else if (function == universal0 || function == universal1 || function == universal2 || function == universal3){
-                std::cout << "Universelle Hashfunktion (a: " << a << "  b: " << b << "  Primzahl: " << prime_num << ")" << std::endl;
+                std::cout << "Universelle Hashfunktion" << std::endl;
+                std::cout << "," << "a: " << a << "," << " b: " << b << "," << " Primzahl: " << prime_num << std::endl;
+                std::cout << std::endl;
             }else if (function == murmer){
-                std::cout << "Murmer Hash" << std::endl;
+                std::cout << "Murmer-Hashfunktion" << std::endl;
             }else if (function == dycuckoo_hash1){
-                std::cout << "DyCuckoo Hash 1" << std::endl;
+                std::cout << "DyCuckoo-1" << std::endl;
             }else if (function == dycuckoo_hash2){
-                std::cout << "DyCuckoo Hash 2" << std::endl;
+                std::cout << "DyCuckoo-2" << std::endl;
             }else if (function ==dycuckoo_hash3){
-                std::cout << "DyCuckoo Hash 3" << std::endl;
+                std::cout << "DyCuckoo-3" << std::endl;
             }else if (function ==dycuckoo_hash4){
-                std::cout << "DyCuckoo Hash 4" << std::endl;
+                std::cout << "DyCuckoo-4" << std::endl;
             }else if (function ==dycuckoo_hash5){
-                std::cout << "DyCuckoo Hash 5" << std::endl;
+                std::cout << "DyCuckoo-5" << std::endl;
             }else{
-                std::cout << "Divisionsmethode" << std::endl;
+                std::cout << "Divisions-Rest-Methode" << std::endl;
             }
             
-            std::cout << "****************************************************************";
-            std::cout << "***************" << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
         
@@ -279,4 +274,7 @@ class Example_Hash{
         };
 };
 
+//void *args[6] = {&exampleArray_Device, &exampleResultArray_Device, &table_size,&a,&b,&prime_num};
+//cudaLaunchKernel((void*)calculate_universal_hash_kernel<T>,grid,block,args,0,run.getStream());
+                
 #endif

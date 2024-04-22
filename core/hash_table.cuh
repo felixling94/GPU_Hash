@@ -43,10 +43,12 @@ std::string Hash_Table<T>::getCell(size_t i, int j){
         if (i < (table_size)){
             if (hash_table1[i].key!= BLANK){
                 string.append(std::to_string(hash_table1[i].key));
-                string.append("  ");
+                string.append(",");
                 string.append(std::to_string(hash_table1[i].key_length));
             }else{
-                string.append("Leer      Leer");
+                string.append("Leer");
+                string.append(",");
+                string.append("Leer");
             } 
         }else{
             string.append("Der Index muss mindestens 0 und weniger als die Größe der Hashtabelle sein.");
@@ -55,10 +57,12 @@ std::string Hash_Table<T>::getCell(size_t i, int j){
     }else{
         if (hash_table2[i].key!= BLANK){
             string.append(std::to_string(hash_table2[i].key));
-            string.append("  ");
+            string.append(",");
             string.append(std::to_string(hash_table2[i].key_length));
         }else{
-            string.append("Leer      Leer");
+            string.append("Leer");
+            string.append(",");
+            string.append("Leer");
         } 
     }
 
@@ -138,17 +142,17 @@ template <typename T>
 void Hash_Table<T>::print(){
     if (type_hash == cuckoo_probe){
         std::cout << "1. Hashtabelle " << std::endl;
-        std::cout << "Index" << "  " << "Schlüsselcode" << "  " << "Länge" << std::endl;
-        for(size_t i = 0; i < table_size; i++) std::cout << i << "  " << getCell(i,0) << std::endl;  
+        std::cout << "Index" << "," << "Schlüsselcode" << "," << "Länge" << std::endl;
+        for(size_t i = 0; i < table_size; i++) std::cout << i << "," << getCell(i,0) << std::endl;  
         std::cout << std::endl;
         
         std::cout << "2. Hashtabelle " << std::endl;
-        std::cout << "Index" << "  " << "Schlüsselcode" << "  " << "Länge" << std::endl;
-        for(size_t i = 0; i < table_size; i++) std::cout << i << "  " << getCell(i,1) << std::endl; 
+        std::cout << "Index" << "," << "Schlüsselcode" << "," << "Länge" << std::endl;
+        for(size_t i = 0; i < table_size; i++) std::cout << i << "," << getCell(i,1) << std::endl; 
 
     }else{
-        std::cout << "Index" << "  " << "Schlüsselcode" << "  " << "Länge" << std::endl;
-        for(size_t i = 0; i < table_size; i++) std::cout << i << "  " << getCell(i,0) << std::endl;  
+        std::cout << "Index" << "," << "Schlüsselcode" << "," << "Länge" << std::endl;
+        for(size_t i = 0; i < table_size; i++) std::cout << i << "," << getCell(i,0) << std::endl;  
     }
 };
 
