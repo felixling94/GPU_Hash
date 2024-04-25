@@ -293,7 +293,9 @@ void Hash_Table<T>::insert(T key, T key_length){
 
 //Fuege der Hashtabelle ein Array von Schlüsseln und deren Werten gleichzeitig hinzu.
 template <typename T>
-void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize){
+void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, int numBlocks, int numThreadsProBlock){
+    size_t cellSize{(size_t)(numBlocks*numThreadsProBlock)};
+
     if(cellSize > table_size){
         std::cout << "Die Größe der der Hashtabelle hinzufügenden Schlüssel muss mindestens 0 und höchstens ";
         std::cout << " die Größe der Hashtabelle betragen." << std::endl;
@@ -306,7 +308,6 @@ void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize)
         std::vector<cell<T>> cells_vector;
 
         float duration_upload, duration_run, duration_download, duration_total;
-        int min_grid_size, grid_size, block_size;
         size_t num_insert;
 
         GPUTimer upload, run, download, total;
@@ -324,6 +325,9 @@ void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize)
             cells_vector.push_back(cell<T>{keyList[i],keyLengthList[i]});
 
         cells = cells_vector.data();
+ 
+        dim3 num_Blocks(numBlocks);
+        dim3 num_ThreadsPerBlock(numThreadsProBlock);
 
         //Ohne Kollisionsauflösung, mit linearen Hashverfahren, mit quadratischen Hashverfahren
         if (type_hash == no_probe || type_hash == linear_probe || type_hash == quadratic_probe){
@@ -339,37 +343,17 @@ void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
+            run.GPUstart();
+
             if (type_hash == linear_probe){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_linear<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                insert_linear<T><<<grid,block,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
-                run.GPUstop(); 
-
+                insert_linear<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }else if (type_hash == quadratic_probe){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_quadratic<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                insert_quadratic<T><<<grid,block,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
-                run.GPUstop();
-
+                insert_quadratic<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }else{
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_normal<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                insert_normal<T><<<grid,block,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
-                run.GPUstop(); 
-
+                insert_normal<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }
+
+            run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
@@ -392,13 +376,8 @@ void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_double<T>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
             run.GPUstart();
-            insert_double<T><<<grid,block,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1, function2);
+            insert_double<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1, function2);
             run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -424,13 +403,8 @@ void Hash_Table<T>::insert_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Fuege der Hashtabelle alle eingegebenen Zellen hinzu
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, insert_cuckoo<T>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-
             run.GPUstart();
-            insert_cuckoo<T><<<grid,block,0,run.getStream()>>>(cells_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
+            insert_cuckoo<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
             run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -538,7 +512,9 @@ bool Hash_Table<T>::search(T key, T key_length){
 
 //Suche nach einem Array von Schlüsseln in der Hashtabelle gleichzeitig.
 template <typename T>
-void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize){
+void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, int numBlocks, int numThreadsProBlock){
+    size_t cellSize{(size_t)(numBlocks*numThreadsProBlock)};
+
     if(cellSize > table_size){
         std::cout << "Die Größe der nach suchenden Schlüsseln in der Hashtabelle muss mindestens 0 und höchstens ";
         std::cout << " die Größe der Hashtabelle betragen." << std::endl;
@@ -553,7 +529,6 @@ void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize)
         std::vector<cell<T>> cells_vector;
         
         float duration_upload, duration_run, duration_download, duration_total;
-        int min_grid_size, grid_size, block_size;
         size_t sum_found;
         
         GPUTimer upload, run, download, total;
@@ -572,6 +547,9 @@ void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize)
 
         cells = cells_vector.data();
 
+        dim3 num_Blocks(numBlocks);
+        dim3 num_ThreadsPerBlock(numThreadsProBlock);
+
         //Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
         if (type_hash == no_probe || type_hash == linear_probe || type_hash == quadratic_probe){
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
@@ -588,37 +566,17 @@ void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
+            run.GPUstart();
+
             if (type_hash == linear_probe){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_linear<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                search_linear<T><<<grid,block,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1);
-                run.GPUstop(); 
-
+                search_linear<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1);
             }else if (type_hash == quadratic_probe){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_quadratic<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                search_quadratic<T><<<grid,block,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1);
-                run.GPUstop();
-
+                search_quadratic<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1);
             }else{
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_normal<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                search_normal<T><<<grid,block,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1);
-                run.GPUstop(); 
-
+                search_normal<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1);
             }
+
+            run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
@@ -643,13 +601,8 @@ void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_double<T>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
             run.GPUstart();
-            search_double<T><<<grid,block,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1, function2);
+            search_double<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, table_size, function1, function2);
             run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -677,13 +630,8 @@ void Hash_Table<T>::search_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
             
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, search_cuckoo<T>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
             run.GPUstart();
-            search_cuckoo<T><<<grid,block,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
+            search_cuckoo<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, keyListResult_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
             run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -837,10 +785,12 @@ void Hash_Table<T>::deleteKey(T key, T key_length){
         }
     }
 };
-
+ 
 //Lösche eine Liste von Schlüssel von der Hashtabelle    
 template <typename T>
-void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize){
+void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, int numBlocks, int numThreadsProBlock){
+    size_t cellSize{(size_t)(numBlocks*numThreadsProBlock)};
+
     if(cellSize > table_size){
         std::cout << "Die Größe der zu löschenden Schlüsseln in der Hashtabelle muss mindestens 0 und höchstens ";
         std::cout << " die Größe der Hashtabelle betragen." << std::endl;
@@ -854,7 +804,6 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
         
         float duration_upload, duration_run, duration_download, duration_total;
         size_t num_cells_prev, num_cells_deleted;
-        int min_grid_size, grid_size, block_size;
         
         GPUTimer upload, run, download, total;
         
@@ -873,6 +822,9 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
             cells_vector.push_back(cell<T>{keyList[i],keyLengthList[i]});
 
         cells = cells_vector.data();
+        
+        dim3 num_Blocks(numBlocks);
+        dim3 num_ThreadsPerBlock(numThreadsProBlock);
 
         //Ohne Kollisionsauflösung, mit linearem und quadratischem Sondieren
         if (type_hash == no_probe || type_hash == linear_probe || type_hash == quadratic_probe){
@@ -888,37 +840,17 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Lösche eine Liste von Schlüsseln in der Hashtabelle
+            run.GPUstart();
+
             if (type_hash == linear_probe){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_linear<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                delete_linear<T><<<grid,block,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1);
-                run.GPUstop(); 
-
+                delete_linear<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1);
             }else if (type_hash == quadratic_probe){
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_quadratic<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                delete_quadratic<T><<<grid,block,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1);
-                run.GPUstop();
-
+                delete_quadratic<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1);
             }else{
-                cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_normal<T>, 0, 0);
-                grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-                dim3 block(block_size);
-                dim3 grid(grid_size);
-            
-                run.GPUstart();
-                delete_normal<T><<<grid,block,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1);
-                run.GPUstop(); 
-
+                delete_normal<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1);
             }
+
+            run.GPUstop();
             
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
@@ -941,13 +873,8 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
 
             //Lösche eine Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_double<T>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
             run.GPUstart();
-            delete_double<T><<<grid,block,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1, function2);
+            delete_double<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, hash_table_device1, table_size, function1, function2);
             run.GPUstop(); 
 
             //Kopiere Daten aus der GPU zur Hashtabelle
@@ -973,13 +900,8 @@ void Hash_Table<T>::delete_List(T * keyList, T * keyLengthList, size_t cellSize)
             upload.GPUstop();
             
             //Lösche eine Liste von Schlüsseln in der Hashtabelle
-            cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, delete_cuckoo<T>, 0, 0);
-            grid_size = ((size_t)(cellSize)+block_size-1)/block_size;
-            dim3 block(block_size);
-            dim3 grid(grid_size);
-            
             run.GPUstart();
-            delete_cuckoo<T><<<grid,block,0,run.getStream()>>>(keyList_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
+            delete_cuckoo<T><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(keyList_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
             run.GPUstop(); 
             
             //Kopiere Daten aus der GPU zur Hashtabelle

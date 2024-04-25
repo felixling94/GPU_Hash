@@ -39,13 +39,13 @@ class Hash_Table{
         void print();
         
         void insert(T key, T key_length);
-        void insert_List(T * keyList, T * keyLengthList, size_t cellSize);
+        void insert_List(T * keyList, T * keyLengthList, int numBlocks, int numThreadsProBlock);
         
         bool search(T key, T key_length);
-        void search_List(T * keyList, T * keyLengthList, size_t cellSize);
+        void search_List(T * keyList, T * keyLengthList, int numBlocks, int numThreadsProBlock);
 
         void deleteKey(T key, T key_length);
-        void delete_List(T * keyList, T * keyLengthList, size_t cellSize);
+        void delete_List(T * keyList, T * keyLengthList, int numBlocks, int numThreadsProBlock);
 };
 
 #endif

@@ -20,7 +20,9 @@
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
     char* fileName;
+    int exampleBlockNum, exampleThreadsPerBlock;
     size_t exampleHashTableSize, exampleKeyNum, matrix_size;
+
     double occupancy;
     int function_code1, function_code2;
     hash_function hash_function1, hash_function2; 
@@ -28,19 +30,25 @@ int main(int argc, char** argv){
     int deviceID{0};
     struct cudaDeviceProp props;
 
-    if(argc < 6){
+    if(argc < 7){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
     fileName = argv[1];
-    exampleKeyNum = (size_t) atoi(argv[2]);
-    occupancy = atof(argv[3]);
-    function_code1 = atoi(argv[4]);
-    function_code2 = atoi(argv[5]);
+    exampleBlockNum = atoi(argv[2]);
+    exampleThreadsPerBlock= atoi(argv[3]);
+    occupancy = atof(argv[4]);
+    function_code1 = atoi(argv[5]);
+    function_code2 = atoi(argv[6]);
 
-    if (exampleKeyNum <=0){
-        std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
+    if (exampleBlockNum <=0){
+        std::cout << "Die Anzahl an Blöcke muss mehr als Null betragen." << std::endl;
+        return -1;
+    }
+
+    if (exampleThreadsPerBlock <=0){
+        std::cout << "Die Anzahl an Threads pro Block muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
@@ -59,6 +67,7 @@ int main(int argc, char** argv){
         return -1;
     }
 
+    exampleKeyNum = (size_t) (exampleBlockNum*exampleThreadsPerBlock);
     matrix_size = exampleKeyNum * sizeof(uint32_t);
     exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
 
@@ -69,7 +78,9 @@ int main(int argc, char** argv){
     std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
     std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
-    std::cout << std::endl;
+    std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
+    std::cout << exampleBlockNum << "," << exampleThreadsPerBlock << std::endl;
+    std::cout << std::endl;   
     std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
     std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
     std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*exampleHashTableSize << std::endl;
@@ -158,7 +169,7 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
+    Example_Hash_Table<uint32_t> example_hash_table(exampleBlockNum, exampleThreadsPerBlock,exampleHashTableSize,hash_function1,hash_function2);
     example_hash_table.readCells(fileName);
 
     CPUTimer timer;

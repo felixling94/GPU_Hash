@@ -14,8 +14,9 @@
 //c. einer gegebenen 1. und 2. Hashfunktionen, und
 //d. gegebenen Hashverfahren, z.B. linearem Sondieren
 /////////////////////////////////////////////////////////////////////////////////////////
+const size_t block_num{128}, num_threads_per_block{128};
 
-const size_t key_num{128*128};
+const size_t key_num{block_num*num_threads_per_block};
 
 template <typename T>
 void runKernel(){
@@ -30,6 +31,8 @@ void runKernel(){
     std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
     std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
+    std::cout << block_num << "," << num_threads_per_block << std::endl;
     std::cout << std::endl;   
 };
 
@@ -47,7 +50,7 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
     std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T> example_hash_table(key_num,hashTableSize,function1,function2);
+    Example_Hash_Table<T> example_hash_table(num_threads_per_block,block_num,hashTableSize,function1,function2);
     example_hash_table.createCells(key_length_same);
     example_hash_table.insertTestCells2(type);
 };
