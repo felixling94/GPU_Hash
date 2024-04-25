@@ -36,8 +36,7 @@ class Example_Hash_Table{
             float download{0};
             float total{0};
 
-            size_t SumFound{0};
-            size_t sum_num_deleted_cells{0};
+            size_t num_cells{0};
 
         } benchmark_kernel;
 
@@ -213,7 +212,7 @@ class Example_Hash_Table{
             Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
             
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ",";
-            std::cout << "Download_Dauer" << "," << "Total_Dauer" << std::endl;
+            std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "ZahlGespeichert"<< std::endl;
             Benchmark_Insert.print();
 
             size_t numCells1 = 0;
@@ -250,7 +249,7 @@ class Example_Hash_Table{
             std::vector<T> key_vector, key_length_vector;
             
             std::string HashTypeString;
-            float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal;
+            float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal, averageNumCellsInsert;
             
             cellArray = exampleCellList.data();
             
@@ -268,7 +267,7 @@ class Example_Hash_Table{
             benchmark_kernel.OperationType = insert_hash_table;
 
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << ", " << "Run_Dauer" << ",";
-            std::cout << "Download_Dauer" << "," << "Total_Dauer" << std::endl;
+            std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "ZahlGespeichert"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
                 Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
@@ -281,6 +280,8 @@ class Example_Hash_Table{
                 benchmark_kernel.run+=Benchmark_Insert.getDurationRun(); 
                 benchmark_kernel.download+=Benchmark_Insert.getDurationDownload();
                 benchmark_kernel.total+=Benchmark_Insert.getDurationTotal();
+
+                benchmark_kernel.num_cells+=Benchmark_Insert.getNumCells();
             }
             std::cout << std::endl;
 
@@ -288,8 +289,10 @@ class Example_Hash_Table{
             averageDurationRun = benchmark_kernel.run/Test_Num;
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
+            averageNumCellsInsert = benchmark_kernel.num_cells/Test_Num;
 
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
+
             if (HashType == linear_probe){
                 HashTypeString.append("insert_linear<T>");    
             }else if (HashType == quadratic_probe){
@@ -302,16 +305,15 @@ class Example_Hash_Table{
                 HashTypeString.append("insert_normal<T>");    
             }
             std::cout << HashTypeString << ", " << Test_Num << std::endl;
-            std::cout << std::endl;
-            
-            std::cout << "Upload_Gesamtdauer" << "," << "Run_Gesamtdauer" << ",";
-            std::cout << "Download_Gesamtdauer" << "," << "Total_Gesamtdauer" << std::endl;
-            std::cout <<  benchmark_kernel.upload << "," << benchmark_kernel.run << ",";
-            std::cout <<  benchmark_kernel.download << "," << benchmark_kernel.total << std::endl;
-            std::cout << "Upload_Durchschnittsdauer" << "," << "Run_Durchschnittsdauer" << ",";
-            std::cout << "Download_Durchschnittsdauer" << "," << "Total_Durchschnittsdauer" << std::endl;
-            std::cout <<  averageDurationUpload << "," << averageDurationRun << ",";
-            std::cout <<  averageDurationDownload << "," << averageDurationTotal << std::endl;
+
+            std::cout << "Upload_Gesamtdauer" << "," << "Run_Gesamtdauer" << "," << "Download_Gesamtdauer" << ",";
+            std::cout << "Total_Gesamtdauer" <<  "," << "Gesamt_Gespeichert" << std::endl;
+            std::cout <<  benchmark_kernel.upload << "," << benchmark_kernel.run << "," <<  benchmark_kernel.download << ",";
+            std::cout << benchmark_kernel.total << "," << benchmark_kernel.num_cells << std::endl;
+            std::cout << "Upload_Durchschnittsdauer" << "," << "Run_Durchschnittsdauer" << "," << "Download_Durchschnittsdauer" << ",";
+            std::cout << "Total_Durchschnittsdauer" << "," << "Durchschnitt_Gespeichert" << std::endl;
+            std::cout <<  averageDurationUpload << "," << averageDurationRun << "," <<  averageDurationDownload << ",";
+            std::cout << averageDurationTotal << "," << averageNumCellsInsert << std::endl;
             std::cout << std::endl;
         };
 
@@ -454,7 +456,7 @@ class Example_Hash_Table{
                 benchmark_kernel.download+=Benchmark_Search.getDurationDownload();
                 benchmark_kernel.total+=Benchmark_Search.getDurationTotal();
                 
-                benchmark_kernel.SumFound+=Benchmark_Search.getSumFound();
+                benchmark_kernel.num_cells+=Benchmark_Search.getNumCells();
             }
 
             std::cout << std::endl;
@@ -463,10 +465,9 @@ class Example_Hash_Table{
             averageDurationRun = benchmark_kernel.run/Test_Num;
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
-            averageSumFound = benchmark_kernel.SumFound/Test_Num;
+            averageSumFound = benchmark_kernel.num_cells/Test_Num;
 
-            std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << ",";
-            std::cout << "Gesamt_Gefunden" << "," << "Durchschnitt_Gefunden" << std::endl;
+            std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
             if (HashType == linear_probe){
                 HashTypeString.append("search_linear<T>");    
@@ -480,18 +481,16 @@ class Example_Hash_Table{
                 HashTypeString.append("search_normal<T>");    
             }
 
-            std::cout << HashTypeString << "," << Test_Num << ",";
-            std::cout << benchmark_kernel.SumFound << "," << averageSumFound << std::endl;
-            std::cout << std::endl;
+            std::cout << HashTypeString << "," << Test_Num << "," << std::endl;
             
-            std::cout << "Upload_Gesamtdauer" << "," << "Run_Gesamtdauer" << ",";
-            std::cout << "Download_Gesamtdauer" << "," << "Total_Gesamtdauer" << std::endl;
-            std::cout <<  benchmark_kernel.upload << "," << benchmark_kernel.run << ",";
-            std::cout <<  benchmark_kernel.download << "," << benchmark_kernel.total << std::endl;
-            std::cout << "Upload_Durchschnittsdauer" << "," << "Run_Durchschnittsdauer" << ",";
-            std::cout << "Download_Durchschnittsdauer" << "," << "Total_Durchschnittsdauer" << std::endl;
-            std::cout <<  averageDurationUpload << "," << averageDurationRun << ",";
-            std::cout <<  averageDurationDownload << "," << averageDurationTotal << std::endl;
+            std::cout << "Upload_Gesamtdauer" << "," << "Run_Gesamtdauer" << "," << "Download_Gesamtdauer" << ",";
+            std::cout << "Total_Gesamtdauer" << "," << "Gesamt_Gefunden" << std::endl;
+            std::cout <<  benchmark_kernel.upload << "," << benchmark_kernel.run << "," <<  benchmark_kernel.download << ",";
+            std::cout << benchmark_kernel.total << "," << benchmark_kernel.num_cells << std::endl;
+            std::cout << "Upload_Durchschnittsdauer" << "," << "Run_Durchschnittsdauer" << "," << "Download_Durchschnittsdauer" << ","; 
+            std::cout << "Total_Durchschnittsdauer" << "," << "Durchschnitt_Gefunden" << std::endl;
+            std::cout <<  averageDurationUpload << "," << averageDurationRun << "," <<  averageDurationDownload << ",";
+            std::cout << averageDurationTotal << "," << averageSumFound << std::endl;
             std::cout << std::endl;
         };
 
@@ -605,7 +604,7 @@ class Example_Hash_Table{
             Benchmark_Delete.print();
 
             num_cells_deleted1 = num_cells_prev1 - hash_table1.getNumCell();
-            num_cells_deleted2 = Benchmark_Delete.getNumCellsDeleted();
+            num_cells_deleted2 = Benchmark_Delete.getNumCells();
 
             if (num_cells_deleted1 == num_cells_deleted2){
                 std::cout << std::endl;
@@ -671,7 +670,7 @@ class Example_Hash_Table{
                 benchmark_kernel.download+=Benchmark_Delete.getDurationDownload();
                 benchmark_kernel.total+=Benchmark_Delete.getDurationTotal();
                
-                benchmark_kernel.sum_num_deleted_cells+=Benchmark_Delete.getNumCellsDeleted();
+                benchmark_kernel.num_cells+=Benchmark_Delete.getNumCells();
             }
             std::cout << std::endl;
             
@@ -679,10 +678,9 @@ class Example_Hash_Table{
             averageDurationRun = benchmark_kernel.run/Test_Num;
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
-            averageDeletedCells = benchmark_kernel.sum_num_deleted_cells/Test_Num;
+            averageDeletedCells = benchmark_kernel.num_cells/Test_Num;
 
-            std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << ",";
-            std::cout << "Gesamt_Gelöscht" << "," << "Durchschnitt_Gelöscht" << std::endl;
+            std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
             if (HashType == linear_probe){
                 HashTypeString.append("delete_linear<T>");    
@@ -696,18 +694,16 @@ class Example_Hash_Table{
                 HashTypeString.append("delete_normal<T>");    
             }
 
-            std::cout << HashTypeString << "," << Test_Num << ",";
-            std::cout << benchmark_kernel.sum_num_deleted_cells << "," << averageDeletedCells << std::endl;
-            std::cout << std::endl;
+            std::cout << HashTypeString << "," << Test_Num << std::endl;
             
-            std::cout << "Upload_Gesamtdauer" << "," << "Run_Gesamtdauer" << ",";
-            std::cout << "Download_Gesamtdauer" << "," << "Total_Gesamtdauer" << std::endl;
-            std::cout <<  benchmark_kernel.upload << "," << benchmark_kernel.run << ",";
-            std::cout <<  benchmark_kernel.download << "," << benchmark_kernel.total << std::endl;
-            std::cout << "Upload_Durchschnittsdauer" << "," << "Run_Durchschnittsdauer" << ",";
-            std::cout << "Download_Durchschnittsdauer" << "," << "Total_Durchschnittsdauer" << std::endl;
-            std::cout <<  averageDurationUpload << "," << averageDurationRun << ",";
-            std::cout <<  averageDurationDownload << "," << averageDurationTotal << std::endl;
+            std::cout << "Upload_Gesamtdauer" << "," << "Run_Gesamtdauer" << ","<< "Download_Gesamtdauer" << ",";
+            std::cout << "Total_Gesamtdauer" << "," << "Gesamt_Gelöscht" << std::endl;
+            std::cout <<  benchmark_kernel.upload << "," << benchmark_kernel.run << "," <<  benchmark_kernel.download << ",";
+            std::cout << benchmark_kernel.total << "," << benchmark_kernel.num_cells << std::endl;
+            std::cout << "Upload_Durchschnittsdauer" << "," << "Run_Durchschnittsdauer" << "," << "Download_Durchschnittsdauer" << ",";
+            std::cout << "Total_Durchschnittsdauer" << "," << "Durchschnitt_Gelöscht" << std::endl;
+            std::cout <<  averageDurationUpload << "," << averageDurationRun << "," <<  averageDurationDownload << ",";
+            std::cout << averageDurationTotal << "," << averageDeletedCells << std::endl;
             std::cout << std::endl;
         };
 };

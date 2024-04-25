@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <vector>
+#include <random>
 #include <stdint.h>
 
 #include "example_hash_table.cuh"
@@ -8,72 +10,45 @@
 #include <../tools/timer.cuh>
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//Laufzeitvergleich von einer Datei zwischen verschiedenen Auslastungsgraden einer Hashtabelle bei
-//a. einer gegebenen Anzahl von Schlüsseln, 
-//b. gleichen oder unterschiedlichen Schlüsselgrößen, 
-//c. einer gegebenen 1. und 2. Hashfunktionen, und
-//d. gegebenen Hashverfahren, z.B. linearem Sondieren
+//Laufzeitvergleich von einer gegegeben Datei zwischen verschiedenen Hashverfahren bei
+//a. einer gegebenen 1. und 2. Hashfunktionen, 
+//b. einer gegebenen Anzahl von Schlüsseln, 
+//c. unterschiedlichen oder gleichen Schlüsselgrößen, und
+//d. einem gegebenen Auslastungsgrad von einer oder zwei Hashtabellen
 /////////////////////////////////////////////////////////////////////////////////////////
-
-template <typename T>
-void runKernel(size_t key_num){
-    int deviceID{0};
-    struct cudaDeviceProp props;
-    const size_t matrix_size{key_num * sizeof(T)};
-
-    cudaSetDevice(deviceID);
-	cudaGetDeviceProperties(&props, deviceID);
-    
-    std::cout << "GPU" << "," << props.name << std::endl;
-    std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
-    std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
-    std::cout << std::endl;   
-};
-
-//Führe Hashverfahren mit verschiedenen Datentypen aus
-template <typename T>
-void runMain(hash_type type, hash_function function1, hash_function function2, size_t key_num, double occupancy, char* fileName){
-    const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
-   
-    std::cout << "Anzahl der gespeicherten Zellen" << "," << key_num << std::endl;
-    if (type != cuckoo_probe){
-        std::cout << "Größe der Hashtabelle" << "," << hashTableSize << std::endl;
-    }else{
-        std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*hashTableSize << std::endl;
-    }
-    std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
-    std::cout << std::endl;
-
-    Example_Hash_Table<T> example_hash_table(key_num,hashTableSize,function1,function2);
-    example_hash_table.readCells(fileName);
-    example_hash_table.insertTestCells2(type);
-};
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
     char* fileName;
-    const double * occupancy = new double[5]{1.0,0.8,0.6,0.4,0.2};
-    size_t exampleKeyNum;
-    size_t * exampleHashTableSize = new size_t[5];
+    size_t exampleHashTableSize, exampleKeyNum, matrix_size;
+    double occupancy;
     int function_code1, function_code2;
-    hash_function hash_function1, hash_function2;
-    
-    if(argc < 5){
+    hash_function hash_function1, hash_function2; 
+
+    int deviceID{0};
+    struct cudaDeviceProp props;
+
+    if(argc < 6){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
     fileName = argv[1];
     exampleKeyNum = (size_t) atoi(argv[2]);
-    function_code1 = atoi(argv[3]);
-    function_code2 = atoi(argv[4]);
+    occupancy = atof(argv[3]);
+    function_code1 = atoi(argv[4]);
+    function_code2 = atoi(argv[5]);
 
     if (exampleKeyNum <=0){
         std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
+    if (occupancy <=0){
+        std::cout << "Der Auslastungsfaktor der Hashtabelle muss mehr als Null betragen." << std::endl;
+        return -1;
+    }
+    
     if (function_code1<1 || function_code1>11){
         std::cout << "Der Code einer 1. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
         return -1;
@@ -84,8 +59,22 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    runKernel<uint32_t>(exampleKeyNum);
+    matrix_size = exampleKeyNum * sizeof(uint32_t);
+    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
 
+    cudaSetDevice(deviceID);
+	cudaGetDeviceProperties(&props, deviceID);
+
+    std::cout << "GPU" << "," << props.name << std::endl;
+    std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
+    std::cout << "Gesamtgröße von Kernelargumenten" << ",";
+    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Anzahl der gespeicherten Zellen" << "," << exampleKeyNum << std::endl;
+    std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
+    std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*exampleHashTableSize << std::endl;
+
+    std::cout << std::endl;
     if (function_code1 == 2){
         hash_function1 = multiplication;
         std::cout << "1. Hashfunktion" << "," << "Multiplikative Methode" << std::endl;
@@ -168,32 +157,39 @@ int main(int argc, char** argv){
         std::cout << "2. Hashfunktion" << "," << "Divisions-Rest-Methode" << std::endl;
     }
     std::cout << std::endl;
-    
+
+    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2);
+    example_hash_table.readCells(fileName);
+
     CPUTimer timer;
     timer.start();
 
     /////////////////////////////////////////////////////////////////////////////////////////
+    //Keine Kollionsauflösung
+    /////////////////////////////////////////////////////////////////////////////////////////
+    example_hash_table.insertTestCells2(no_probe);
+    /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName);
+    example_hash_table.insertTestCells2(linear_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName);
+    example_hash_table.insertTestCells2(quadratic_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName);
+    example_hash_table.insertTestCells2(double_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName);
+    example_hash_table.insertTestCells2(cuckoo_probe);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;
-    std::cout << "Gesamtdauer" << "," << timer.getDuration() << std::endl;
+    std::cout << "Gesamtdauer" << "," <<  timer.getDuration() << std::endl;
     
     return 0;
 };

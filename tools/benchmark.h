@@ -12,13 +12,12 @@ class Benchmark{
         float download;
         float total;
 
-        size_t sum_found;
-        size_t num_cells_deleted;
-
         operation_type type_operation;
 
         hash_type hashtype;
         hash_function hashfunction;
+
+         size_t num_cells;
 
     public:
         Benchmark():upload(0),run(0),download(0),total(0){
@@ -43,8 +42,7 @@ class Benchmark{
         //Erfasse Daten
         void record(operation_type TypeOperation, 
         float UploadOperation, float RunOperation, float DownloadOperation, float TotalOperation,
-        hash_type HashType = no_probe, size_t SumFound = 0, size_t NumCellsDeleted = 0,
-        hash_function HashFunction = modulo){
+        size_t NumCells = 0, hash_type HashType = no_probe, hash_function HashFunction = modulo){
             type_operation = TypeOperation;
 
             upload = UploadOperation;
@@ -52,12 +50,12 @@ class Benchmark{
             download = DownloadOperation;
             total = TotalOperation;
 
-            if (TypeOperation == insert_hash_table || TypeOperation == search_hash_table || TypeOperation == delete_hash_table)
+            if (TypeOperation == insert_hash_table || TypeOperation == search_hash_table || TypeOperation == delete_hash_table){
                 hashtype = HashType;
-            if (TypeOperation == calculate_hash_value)  hashfunction = HashFunction;
+                num_cells = NumCells;
+            }
 
-            if (TypeOperation == search_hash_table) sum_found = SumFound;
-            if (TypeOperation == delete_hash_table) num_cells_deleted = NumCellsDeleted;
+            if (TypeOperation == calculate_hash_value)  hashfunction = HashFunction;
         };
 
         //Gebe die Dauer des Hochladens zurück
@@ -80,14 +78,9 @@ class Benchmark{
             return total;
         };
 
-        //Gebe die Anzahl aller gesuchten Schlüssel zurück
-        size_t getSumFound(){
-            return sum_found;
-        };
-
-        //Gebe die Anzahl aller gelöschten Schlüssel zurück
-        size_t getNumCellsDeleted(){
-            return num_cells_deleted;
+        //Gebe die Anzahl aller gespeicherten, gesuchten und gelöschten Schlüssel zurück
+        size_t getNumCells(){
+            return num_cells;
         };
 
         //Drucke Zeitmessung
@@ -108,7 +101,7 @@ class Benchmark{
                 }
                 std::cout << HashTypeString << ", " << upload;
                 std::cout << ", " << run << ", " << download  << ", ";
-                std::cout <<  total  << std::endl;
+                std::cout <<  total << "," << num_cells << std::endl;
 
             }else if (type_operation == search_hash_table){
                 if (hashtype == linear_probe){
@@ -124,7 +117,7 @@ class Benchmark{
                 }
                 std::cout << HashTypeString << ", " << upload ;
                 std::cout << ", " << run << ", " << download  << ", ";
-                std::cout <<  total << "," << sum_found << std::endl;
+                std::cout <<  total << "," << num_cells << std::endl;
         
             }else if (type_operation == delete_hash_table){
                 if (hashtype == linear_probe){
@@ -140,7 +133,7 @@ class Benchmark{
                 }
                 std::cout << HashTypeString << ", " << upload;
                 std::cout << ", " << run << ", " << download << ", ";
-                std::cout <<  total << "," << num_cells_deleted << std::endl;
+                std::cout <<  total << "," << num_cells << std::endl;
             }else{
                 if (hashfunction == universal0 || hashfunction == universal1 ||hashfunction == universal2 || hashfunction == universal3){
                     HashTypeString.append("calculate_universal_hash_kernel<T>");
