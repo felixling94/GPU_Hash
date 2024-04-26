@@ -21,14 +21,13 @@ class Example_Hash_Table{
     private:
         std::vector<cell<T>> exampleCellList;
 
-        int exampleBlockNum = 2;
-        int exampleThreadsPerBlock = 4;
-        
-        size_t exampleCellSize = (size_t)(exampleBlockNum*exampleThreadsPerBlock);
+        size_t exampleCellSize = 11;
         size_t exampleHashTableSize = exampleCellSize + 5;
 
         hash_function examplefunction1 = modulo;
         hash_function examplefunction2;
+
+        kernel_dimension exampleKernelDimension;
 
         //Zeitmessung für Kernels
         struct Sum_Benchmark{
@@ -46,18 +45,25 @@ class Example_Hash_Table{
     public:
         //Konstruktor
         Example_Hash_Table(){
-            exampleCellList.reserve((size_t)(exampleBlockNum*exampleThreadsPerBlock));
+            exampleCellList.reserve(exampleCellSize);
         };
         
-        Example_Hash_Table(int test_block_num, int test_threads_num_per_block, size_t test_table_size,hash_function function1, hash_function function2=modulo):
-        exampleBlockNum(test_block_num), exampleThreadsPerBlock(test_threads_num_per_block),exampleHashTableSize(test_table_size),examplefunction1(function1),examplefunction2(function2){
-            if ((test_block_num*test_threads_num_per_block)>test_table_size){
+        Example_Hash_Table(size_t test_cell_size, size_t test_table_size,hash_function function1, hash_function function2=modulo,
+                           int test_block_num = 0, int test_threads_num_per_block = 0):
+        exampleCellSize(test_cell_size), exampleHashTableSize(test_table_size), examplefunction1(function1), examplefunction2(function2){
+            if (test_cell_size>test_table_size){
                 std::cout << "Die Hashtabelle darf höchstens maximal " << test_table_size;
                 std::cout << " Datenelemente enthalten." << std::endl;
-                std::cout << "Leider beträgt die Zahl der Zellen " << test_block_num*test_threads_num_per_block << "." << std::endl;
+                std::cout << "Leider beträgt die Zahl der Zellen " << test_cell_size << "." << std::endl;
                 exit (EXIT_FAILURE);
             }
-            exampleCellSize = test_block_num*test_threads_num_per_block;
+
+            if (test_block_num> 0 && test_threads_num_per_block > 0){
+                exampleKernelDimension.num_blocks = test_block_num;
+                exampleKernelDimension.num_threads_per_block = test_threads_num_per_block;
+            }
+
+            exampleCellSize = test_cell_size;
             exampleCellList.reserve(exampleCellSize);
         };
 
@@ -208,11 +214,12 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Parallele Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
+                                      exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
 
-            hash_table2.insert_List(key_vector.data(), key_length_vector.data(), exampleBlockNum, exampleThreadsPerBlock);
+            hash_table2.insert_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
             Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
             
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ",";
@@ -274,8 +281,9 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "ZahlGespeichert"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
-                Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
-                hash_table2.insert_List(key_vector.data(), key_length_vector.data(), exampleBlockNum, exampleThreadsPerBlock);
+                Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
+                                          exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
+                hash_table2.insert_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
                 
                 Benchmark_Insert.print();
@@ -293,7 +301,7 @@ class Example_Hash_Table{
             averageDurationRun = benchmark_kernel.run/Test_Num;
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
-            averageNumCellsInsert = benchmark_kernel.num_cells/Test_Num;
+            averageNumCellsInsert = ((float) benchmark_kernel.num_cells)/Test_Num;
 
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
@@ -350,7 +358,8 @@ class Example_Hash_Table{
             keyListArray = key_vector.data();
             keyLengthListArray = key_length_vector.data();
 
-            Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+                                     exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
 
             if (HashType == no_probe){
                 std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
@@ -403,7 +412,7 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table.search_List(key_vector.data(), key_length_vector.data(), exampleBlockNum, exampleThreadsPerBlock);
+            hash_table.search_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
             Benchmark Benchmark_Search = hash_table.getBenchmark(search_hash_table);
 
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ",";
@@ -446,11 +455,12 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "SummeGefunden"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
-                Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+                Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+                                         exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
                 for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],keyLengthListArray[i]);
                 shuffleKeys();
 
-                hash_table.search_List(key_vector.data(), key_length_vector.data(), exampleBlockNum, exampleThreadsPerBlock);
+                hash_table.search_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Search = hash_table.getBenchmark(search_hash_table);
                 
                 Benchmark_Search.print();
@@ -469,7 +479,7 @@ class Example_Hash_Table{
             averageDurationRun = benchmark_kernel.run/Test_Num;
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
-            averageSumFound = benchmark_kernel.num_cells/Test_Num;
+            averageSumFound = ((float)benchmark_kernel.num_cells)/Test_Num;
 
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
@@ -577,7 +587,8 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Parallele Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+                                      exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
             for (size_t i=0; i<exampleCellSize; i++) hash_table2.insert(keyListArray[i],keyLengthListArray[i]);
 
             shuffleKeys();
@@ -600,7 +611,7 @@ class Example_Hash_Table{
 
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table2.delete_List(key_vector.data(), key_length_vector.data(), exampleBlockNum, exampleThreadsPerBlock);
+            hash_table2.delete_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
             Benchmark Benchmark_Delete = hash_table2.getBenchmark(delete_hash_table);
 
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ", ";
@@ -659,12 +670,13 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "Zellen_Gelöscht"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
-                Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+                Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+                                         exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
                 for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],keyLengthListArray[i]);
 
                 createCells(key_length_same);
                 
-                hash_table.delete_List(key_vector.data(), key_length_vector.data(), exampleBlockNum, exampleThreadsPerBlock);
+                hash_table.delete_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Delete = hash_table.getBenchmark(delete_hash_table);
 
                 Benchmark_Delete.print();
@@ -682,7 +694,7 @@ class Example_Hash_Table{
             averageDurationRun = benchmark_kernel.run/Test_Num;
             averageDurationDownload = benchmark_kernel.download/Test_Num;
             averageDurationTotal = benchmark_kernel.total/Test_Num;
-            averageDeletedCells = benchmark_kernel.num_cells/Test_Num;
+            averageDeletedCells = ((float)benchmark_kernel.num_cells)/Test_Num;
 
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
@@ -711,5 +723,20 @@ class Example_Hash_Table{
             std::cout << std::endl;
         };
 };
+
+
+//#include <cuda.h>
+//#include <cuda_runtime.h>
+//#include <cuda_runtime_api.h>
+
+// //1. Deklariere die Variablen
+// int i_inBlock, blockID, i;
+// size_t j;
+// T key, prev, key_length; 
+
+// //2. Bestimme die globale ID eines Threads
+// i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;
+// blockID = blockIdx.x;
+// i = i_inBlock + blockID * (blockDim.x * blockDim.y* blockDim.z);
 
 #endif

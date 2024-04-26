@@ -1,16 +1,12 @@
 #ifndef HASH_FUNCTION_CUH
 #define HASH_FUNCTION_CUH
 
-#include <stdint.h>
-
 #include "base.h"
-
-#define PRIME_uint 294967291u
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //Normale Hashfunktionen
 /////////////////////////////////////////////////////////////////////////////////////////
-//Modulo-Funktion
+//Divisions-Rest-Methode
 template <typename T>
 __device__  __host__   size_t modulo_hash(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
@@ -38,7 +34,7 @@ __device__  __host__   size_t universal_hash(T value, size_t tableSize, size_t a
     return ((a*hashed_key + b)%primeNum) % tableSize;
 };
 
-//Murmer-Hash
+//Murmer-Hashfunktion
 template <typename T>
 __device__  __host__   size_t murmer_hash(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
@@ -55,6 +51,7 @@ __device__  __host__   size_t murmer_hash(T value, size_t tableSize){
 /////////////////////////////////////////////////////////////////////////////////////////
 //DyCuckoo-Hashfunktionen
 /////////////////////////////////////////////////////////////////////////////////////////
+//DyCuckoo-1
 template <typename T>
 __device__  __host__   size_t hash1(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
@@ -69,6 +66,7 @@ __device__  __host__   size_t hash1(T value, size_t tableSize){
     return hashed_key % tableSize;
 };
 
+//DyCuckoo-2
 template <typename T>
 __device__  __host__   size_t hash2(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
@@ -83,12 +81,14 @@ __device__  __host__   size_t hash2(T value, size_t tableSize){
     return hashed_key % tableSize;
 };
 
+//DyCuckoo-3
 template <typename T>
 __device__  __host__   size_t hash3(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
-    return (((hashed_key ^ 59064253) + 72355969) % PRIME_uint) % tableSize;
+    return (((hashed_key ^ 59064253) + 72355969) % 294967291u) % tableSize;
 };
 
+//DyCuckoo-4
 template <typename T>
 __device__  __host__   size_t hash4(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
@@ -102,6 +102,7 @@ __device__  __host__   size_t hash4(T value, size_t tableSize){
     return hashed_key % tableSize;
 };
 
+//DyCuckoo-5
 template <typename T>
 __device__  __host__   size_t hash5(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
@@ -147,7 +148,7 @@ __device__  __host__   size_t getHash(T key, size_t table_size, hash_function fu
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//Vertausche zwischen zwei Zellen in einer der zwei Hashtabellen bei Cuckoo-Hashverfahren
+//Vertausche eine Zelle mit der anderen in einer Hashtabelle bei Cuckoo-Hashverfahren
 /////////////////////////////////////////////////////////////////////////////////////////
 template <typename T>
 __device__  __host__ void swapCells(T key, T key_length, int i, cell<T> * hash_table){
@@ -161,7 +162,9 @@ __device__  __host__ void swapCells(T key, T key_length, int i, cell<T> * hash_t
     key_length = temp_key_length;
 };
 
-//Vertausche zwischen zwei Schlüsseln
+/* Vertausche eine Zelle mit der anderen in einer Hashtabelle, 
+    wobei die Funktionalität der von atomicCAS auf der GPU gleich ist 
+*/
 template <typename T>
  __host__ T swapHash(T currentKey, T reference, T key){
     if (currentKey==reference){
@@ -175,13 +178,18 @@ template <typename T>
 /////////////////////////////////////////////////////////////////////////////////////////
 //Sondierungsfunktionen
 /////////////////////////////////////////////////////////////////////////////////////////
-//Berechne einen Sondierungswert eines Schlüssels durch eine andere Hashfunktion
+/* Sondierungsfunktion bei doppelten Hashverfahren:
+    - einen Sondierungswert eines Schlüssels durch eine andere Hashfunktion ermitteln
+*/
 template <typename T>
 __device__  __host__   size_t getHashProbe(T key_length, size_t i, size_t table_size, hash_function function){
     return i*getHash(key_length,table_size,function);
 };
 
-//Quadratische Sondierungsfunktion
+/* Quadratische Sondierungsfunktion
+    - einen Sondierungswert eines Schlüssels durch quadratische Erhöhung vom
+      Hashwert des Schlüssels ermitteln
+*/
 __device__  __host__ __forceinline__  int getProbe2(size_t i){
     int j = pow(ceil((double)i/2),2.0);
     int k = pow(-1.0,(double)i);

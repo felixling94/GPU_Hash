@@ -30,25 +30,21 @@ int main(int argc, char** argv){
     int deviceID{0};
     struct cudaDeviceProp props;
 
-    if(argc < 7){
+    if(argc < 8){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
-    exampleBlockNum = atoi(argv[1]);
-    exampleThreadsPerBlock= atoi(argv[2]);
-    int_key_length_same = atoi(argv[3]);
-    occupancy = atof(argv[4]);
-    function_code1 = atoi(argv[5]);
-    function_code2 = atoi(argv[6]);
+    exampleKeyNum = (size_t) atoi(argv[1]);
+    int_key_length_same = atoi(argv[2]);
+    occupancy = atof(argv[3]);
+    function_code1 = atoi(argv[4]);
+    function_code2 = atoi(argv[5]);
+    exampleBlockNum = atoi(argv[6]);
+    exampleThreadsPerBlock= atoi(argv[7]);
 
-    if (exampleBlockNum <=0){
-        std::cout << "Die Anzahl an Blöcke muss mehr als Null betragen." << std::endl;
-        return -1;
-    }
-
-    if (exampleThreadsPerBlock <=0){
-        std::cout << "Die Anzahl an Threads pro Block muss mehr als Null betragen." << std::endl;
+    if (exampleKeyNum <=0){
+        std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
@@ -72,7 +68,12 @@ int main(int argc, char** argv){
         return -1;
     }    
     
-    exampleKeyNum = (size_t) (exampleBlockNum*exampleThreadsPerBlock);
+    if (exampleBlockNum < 1 || exampleThreadsPerBlock < 1 || 
+        exampleKeyNum != (size_t)(exampleBlockNum*exampleThreadsPerBlock)){
+        exampleBlockNum = (int) exampleKeyNum;
+        exampleThreadsPerBlock = 1;
+    }
+
     matrix_size = exampleKeyNum * sizeof(uint32_t);
     exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
 
@@ -180,7 +181,8 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t> example_hash_table(exampleBlockNum,exampleThreadsPerBlock,exampleHashTableSize,hash_function1,hash_function2);
+    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
+                                                    exampleBlockNum,exampleThreadsPerBlock);
     example_hash_table.createCells(key_length_same);
 
     CPUTimer timer;

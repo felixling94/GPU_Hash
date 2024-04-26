@@ -53,6 +53,8 @@ class Example_Hash{
         size_t b;
         size_t prime_num;
 
+        kernel_dimension exampleKernelDimension;
+
     public:
         Example_Hash(){
             exampleArray = new T[11];
@@ -60,11 +62,17 @@ class Example_Hash{
             resultArray_device = new T[11];
         };
 
-        Example_Hash(size_t keyNum, size_t tableSize, size_t p_a=15999950, size_t p_b=15999990,size_t primNum= 15999989):
+        Example_Hash(size_t keyNum, size_t tableSize, size_t p_a=15999950, size_t p_b=15999990,size_t primNum= 15999989,
+                    int blockNum = 0, int threadsNumPerBlock = 0):
         array_size(keyNum),table_size(tableSize),a(p_a),b(p_b),prime_num(primNum){
             exampleArray = new T[keyNum];
             resultArray = new T[keyNum];
             resultArray_device = new T[keyNum];
+
+            if (blockNum > 0 && threadsNumPerBlock > 0){
+                exampleKernelDimension.num_blocks = blockNum;
+                exampleKernelDimension.num_threads_per_block = threadsNumPerBlock;
+            }
         };
 
         ~Example_Hash(){
@@ -158,7 +166,7 @@ class Example_Hash{
             std::cout << "Dauer zur Ausführung" << "," << timer.getDuration() << std::endl;
         };
 
-        void getHashArrayOnDevice(hash_function function, int thread_num, int block_num){
+        void getHashArrayOnDevice(hash_function function){
             float duration_upload, duration_run, duration_download, duration_total;
             GPUTimer upload, run, download, total;
             Benchmark Benchmark_Calculate;
@@ -182,9 +190,15 @@ class Example_Hash{
             cudaMemcpyAsync(exampleResultArray_Device,resultArray_device,(sizeof(T))*array_size,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
-            dim3 numThreadsPerBlock(thread_num);
-            dim3 numBlocks(block_num);
+            if (exampleKernelDimension.num_blocks < 1 || exampleKernelDimension.num_threads_per_block  < 1 ||
+                array_size != (size_t)(exampleKernelDimension.num_blocks *exampleKernelDimension.num_threads_per_block )){
+                exampleKernelDimension.num_blocks = (int) array_size;
+                exampleKernelDimension.num_threads_per_block = 1;
+            }
 
+            dim3 numBlocks(exampleKernelDimension.num_blocks);
+            dim3 numThreadsPerBlock(exampleKernelDimension.num_threads_per_block );
+            
             //Berechnen die Hashwerte durch Device
             if (function == universal0 || function == universal1 ||function == universal2 || function == universal3){
                 run.GPUstart();
@@ -220,7 +234,7 @@ class Example_Hash{
             cudaFree(exampleResultArray_Device);
         };
 
-        void compare_host_device(hash_function function, int thread_num, int block_num){
+        void compare_host_device(hash_function function){
             //1. Deklariere und initialisiere alle Variablen
             bool equalHashArray;
 
@@ -260,7 +274,7 @@ class Example_Hash{
             std::cout << std::endl;
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            getHashArrayOnDevice(function, thread_num, block_num);
+            getHashArrayOnDevice(function);
 
             //Vergleiche zwischen zwei Arrays
             equalHashArray = std::equal(resultArray_device, resultArray_device + (array_size), resultArray, comparator);

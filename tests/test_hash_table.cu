@@ -72,7 +72,10 @@ hash_table6(double_probe,universal2,murmer,30), hash_table7(double_probe,univers
 hash_table8(cuckoo_probe,dycuckoo_hash1,universal1,30), hash_table9(cuckoo_probe,dycuckoo_hash2,universal2,30),
 hash_table10(cuckoo_probe,dycuckoo_hash3,universal3,30), hash_table11(cuckoo_probe,dycuckoo_hash4,dycuckoo_hash1,30),
 hash_table12(cuckoo_probe,dycuckoo_hash5,dycuckoo_hash2,30), hash_table13(cuckoo_probe,dycuckoo_hash1,dycuckoo_hash3,30),
-hash_table14(cuckoo_probe,dycuckoo_hash1,dycuckoo_hash4,30), hash_table15(cuckoo_probe,dycuckoo_hash1,dycuckoo_hash5,30);
+hash_table14(cuckoo_probe,dycuckoo_hash1,dycuckoo_hash4,30), hash_table15(cuckoo_probe,dycuckoo_hash1,dycuckoo_hash5,30),
+hash_table16(linear_probe,dycuckoo_hash4,dycuckoo_hash5,30,50,20), hash_table17(linear_probe,dycuckoo_hash4,dycuckoo_hash5,30,50,30),
+hash_table18(linear_probe,dycuckoo_hash4,dycuckoo_hash5,30,0,0), hash_table19(linear_probe,dycuckoo_hash4,dycuckoo_hash5,30,5,6),
+hash_table20(linear_probe,dycuckoo_hash4,dycuckoo_hash5,30,6,5);
 
 TEST_CASE("Hashtabellen von verschiedenen Typen werden erstellt.","[Hash_Table_Hash_Type]"){
     REQUIRE(hash_table0.getHashType() == no_probe);
@@ -171,18 +174,16 @@ TEST_CASE("Hashtabellen mit keinen Zellen werden erstellt.", "[Hash_Table_Num_Ce
     REQUIRE(hash_table8.getNumCell() > 0);
 };
 
+TEST_CASE("Hashtabellen mit verschiedenen Kerneldimensionen werden erstellt.", "[Hash_Table_Kernel_Dimension1]"){
+    REQUIRE(hash_table16.getKernelDimension().num_blocks == 50);
+    REQUIRE(hash_table17.getKernelDimension().num_blocks == 50);
+    REQUIRE(hash_table18.getKernelDimension().num_blocks == 0);
+    REQUIRE(hash_table19.getKernelDimension().num_blocks == 5);
+    REQUIRE(hash_table20.getKernelDimension().num_blocks == 6);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    REQUIRE(hash_table16.getKernelDimension().num_threads_per_block == 20);
+    REQUIRE(hash_table17.getKernelDimension().num_threads_per_block == 30);
+    REQUIRE(hash_table18.getKernelDimension().num_threads_per_block == 0);
+    REQUIRE(hash_table19.getKernelDimension().num_threads_per_block == 6);
+    REQUIRE(hash_table20.getKernelDimension().num_threads_per_block == 5);
+};

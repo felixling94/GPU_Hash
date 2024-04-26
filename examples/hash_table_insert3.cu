@@ -15,7 +15,6 @@
 //d. gegebenen Hashverfahren, z.B. linearem Sondieren
 /////////////////////////////////////////////////////////////////////////////////////////
 const size_t block_num{128}, num_threads_per_block{128};
-
 const size_t key_num{block_num*num_threads_per_block};
 
 template <typename T>
@@ -50,7 +49,8 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
     std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T> example_hash_table(num_threads_per_block,block_num,hashTableSize,function1,function2);
+    Example_Hash_Table<T> example_hash_table(key_num,hashTableSize,function1,function2,
+                                             num_threads_per_block,block_num);
     example_hash_table.createCells(key_length_same);
     example_hash_table.insertTestCells2(type);
 };
