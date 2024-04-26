@@ -1,29 +1,22 @@
-set(TS_H   ../../examples/example_hash.cu)
+################################################################################
+#Kleine Anzahl an Schlüsseln
+################################################################################
+add_executable(exampleHash ../../examples/example_hash.cu)
+add_executable(exampleInsert0A ../../examples/hash_table_insert0A.cu)
+add_executable(exampleInsert0B ../../examples/hash_table_insert0B.cu)
 
-set(TS_I0   ../../examples/hash_table_insert0.cu)
-set(TS_I1   ../../examples/hash_table_insert1.cu)
-set(TS_I2   ../../examples/hash_table_insert2.cu)
-set(TS_I3   ../../examples/hash_table_insert3.cu)
-set(TS_I4   ../../examples/hash_table_insert4.cu)
-set(TS_I5   ../../examples/hash_table_insert5.cu)
+add_executable(exampleSearch0 ../../examples/hash_table_search0.cu)
 
-set(TS_S0   ../../examples/hash_table_search0.cu)
-set(TS_S1   ../../examples/hash_table_search1.cu)
+add_executable(exampleDelete0 ../../examples/hash_table_delete0.cu)
 
-set(TS_D0   ../../examples/hash_table_delete0.cu)
-set(TS_D1   ../../examples/hash_table_delete1.cu)
+################################################################################
+#Große Anzahl an Schlüsseln
+################################################################################
+add_executable(exampleInsert1 ../../examples/hash_table_insert1.cu)
+add_executable(exampleInsert2 ../../examples/hash_table_insert2.cu)
+add_executable(exampleInsert3 ../../examples/hash_table_insert3.cu)
+add_executable(exampleInsert4 ../../examples/hash_table_insert4.cu)
 
-add_executable(exampleHash ${TS_H})
+add_executable(exampleSearch1 ../../examples/hash_table_search1.cu)
 
-add_executable(exampleInsert0 ${TS_I0})
-add_executable(exampleInsert1 ${TS_I1})
-add_executable(exampleInsert2 ${TS_I2})
-add_executable(exampleInsert3 ${TS_I3})
-add_executable(exampleInsert4 ${TS_I4})
-add_executable(exampleInsert5 ${TS_I5})
-
-add_executable(exampleSearch0 ${TS_S0})
-add_executable(exampleSearch1 ${TS_S1})
-
-add_executable(exampleDelete0 ${TS_D0})
-add_executable(exampleDelete1 ${TS_D1})
+add_executable(exampleDelete1 ../../examples/hash_table_delete1.cu)

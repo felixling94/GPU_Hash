@@ -8,11 +8,14 @@
 #include <../tools/timer.cuh>
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//Laufzeitvergleich von einer Datei zwischen verschiedenen Auslastungsgraden einer Hashtabelle bei
-//a. einer gegebenen Anzahl von Schlüsseln, 
-//b. gleichen oder unterschiedlichen Schlüsselgrößen, 
-//c. einer gegebenen 1. und 2. Hashfunktionen, und
-//d. gegebenen Hashverfahren, z.B. linearem Sondieren
+/* Laufzeitvergleich von einer Datei zwischen 
+    verschiedenen Auslastungsgraden einer Hashtabelle und
+    verschiedenen offenen Hashverfahren bei
+
+    a. einer gegebenen Anzahl von Schlüsseln, 
+    b. gleichen oder unterschiedlichen Schlüsselgrößen und 
+    c. einer gegebenen 1. und 2. Hashfunktionen
+ */
 /////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename T1, typename T2>
