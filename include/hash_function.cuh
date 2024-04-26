@@ -150,28 +150,28 @@ __device__  __host__   size_t getHash(T key, size_t table_size, hash_function fu
 /////////////////////////////////////////////////////////////////////////////////////////
 //Vertausche eine Zelle mit der anderen in einer Hashtabelle bei Cuckoo-Hashverfahren
 /////////////////////////////////////////////////////////////////////////////////////////
-template <typename T>
-__device__  __host__ void swapCells(T key, T key_length, int i, cell<T> * hash_table){
-    T temp_key = hash_table[i].key;
-    T temp_key_length = hash_table[i].key_length;
+template <typename T1, typename T2>
+__device__  __host__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
+    T1 temp_key = hash_table[i].key;
+    T2 temp_value = hash_table[i].value;
     
     hash_table[i].key = key;
-    hash_table[i].key_length = key_length;
-
+    hash_table[i].value = value;
+    
     key = temp_key;
-    key_length = temp_key_length;
+    value = temp_value;
 };
 
 /* Vertausche eine Zelle mit der anderen in einer Hashtabelle, 
     wobei die Funktionalität der von atomicCAS auf der GPU gleich ist 
 */
 template <typename T>
- __host__ T swapHash(T currentKey, T reference, T key){
-    if (currentKey==reference){
-        currentKey = key;
-        return currentKey;
+ __host__ T swapHash(T currentValue, T reference, T value){
+    if (currentValue==reference){
+        currentValue = value;
+        return currentValue;
     }else{
-        return currentKey;
+        return currentValue;
     }
 };
 
@@ -182,8 +182,8 @@ template <typename T>
     - einen Sondierungswert eines Schlüssels durch eine andere Hashfunktion ermitteln
 */
 template <typename T>
-__device__  __host__   size_t getHashProbe(T key_length, size_t i, size_t table_size, hash_function function){
-    return i*getHash(key_length,table_size,function);
+__device__  __host__   size_t getHashProbe(T key, size_t i, size_t table_size, hash_function function){
+    return i*getHash(key,table_size,function);
 };
 
 /* Quadratische Sondierungsfunktion

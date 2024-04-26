@@ -15,11 +15,11 @@
 //d. gegebenen Hashverfahren, z.B. linearem Sondieren
 /////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
+template <typename T1, typename T2>
 void runKernel(int block_num, int num_threads_per_block){
     int deviceID{0};
     struct cudaDeviceProp props;
-    const size_t matrix_size{block_num*num_threads_per_block * sizeof(T)};
+    const size_t matrix_size{block_num*num_threads_per_block * sizeof(cell<T1,T2>)};
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -27,14 +27,14 @@ void runKernel(int block_num, int num_threads_per_block){
     std::cout << "GPU" << "," << props.name << std::endl;
     std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << ((matrix_size * 3 + sizeof(cell<T1,T2>)) / 1024 / 1024) << "MB\n" << std::endl;
     std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
     std::cout << block_num << "," << num_threads_per_block << std::endl;
     std::cout << std::endl;     
 };
 
 //Führe Hashverfahren mit verschiedenen Datentypen aus
-template <typename T>
+template <typename T1, typename T2>
 void runMain(hash_type type, hash_function function1, hash_function function2, size_t key_num, double occupancy, char* fileName,
              int block_num = 0, int num_threads_per_block = 0){
     const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
@@ -48,8 +48,8 @@ void runMain(hash_type type, hash_function function1, hash_function function2, s
     std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T> example_hash_table(key_num,hashTableSize,function1,function2,
-                                             block_num, num_threads_per_block);
+    Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2,
+                                                 block_num, num_threads_per_block);
     example_hash_table.readCells(fileName);
     example_hash_table.insertTestCells2(type);
 };
@@ -98,7 +98,7 @@ int main(int argc, char** argv){
         exampleThreadsPerBlock = 1;
     }
 
-    runKernel<uint32_t>(exampleBlockNum, exampleThreadsPerBlock);
+    runKernel<uint32_t,uint32_t>(exampleBlockNum, exampleThreadsPerBlock);
 
     if (function_code1 == 2){
         hash_function1 = multiplication;
@@ -189,23 +189,23 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName,
-                                                   exampleBlockNum, exampleThreadsPerBlock);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName,
+                                                            exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
-                                                   exampleBlockNum, exampleThreadsPerBlock);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
+                                                            exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
-                                                   exampleBlockNum, exampleThreadsPerBlock);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
+                                                            exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
-                                                   exampleBlockNum, exampleThreadsPerBlock);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
+                                                            exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen

@@ -17,11 +17,11 @@
 const size_t block_num{128}, num_threads_per_block{128};
 const size_t key_num{block_num*num_threads_per_block};
 
-template <typename T>
+template <typename T1, typename T2>
 void runKernel(){
     int deviceID{0};
     struct cudaDeviceProp props;
-    const size_t matrix_size{key_num * sizeof(T)};
+    const size_t matrix_size{key_num * sizeof(cell<T1,T2>)};
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -29,15 +29,15 @@ void runKernel(){
     std::cout << "GPU" << "," << props.name << std::endl;
     std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << ((matrix_size * 3 + sizeof(cell<T1,T2>)) / 1024 / 1024) << "MB\n" << std::endl;
     std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
     std::cout << block_num << "," << num_threads_per_block << std::endl;
     std::cout << std::endl;   
 };
 
 //Führe Hashverfahren mit verschiedenen Datentypen aus
-template <typename T>
-void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy, bool key_length_same){
+template <typename T1, typename T2>
+void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy, bool key_same){
     const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
    
     std::cout << "Anzahl der gespeicherten Zellen" << "," << key_num << std::endl;
@@ -49,9 +49,9 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
     std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T> example_hash_table(key_num,hashTableSize,function1,function2,
-                                             num_threads_per_block,block_num);
-    example_hash_table.createCells(key_length_same);
+    Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2,
+                                                 num_threads_per_block,block_num);
+    example_hash_table.createCells(key_same);
     example_hash_table.insertTestCells2(type);
 };
 
@@ -59,22 +59,22 @@ int main(int argc, char** argv){
     //1. Deklariere die Variablen
     const double * occupancy = new double[5]{1.0,0.8,0.6,0.4,0.2};
     size_t * exampleHashTableSize = new size_t[5];
-    int function_code1, function_code2, hash_type_code, int_key_length_same;
+    int function_code1, function_code2, hash_type_code, int_key_same;
     hash_function hash_function1, hash_function2;
     hash_type hash_type1;
-    bool key_length_same; 
+    bool key_same; 
     
     if(argc < 5){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
-    int_key_length_same = atoi(argv[1]);
+    int_key_same = atoi(argv[1]);
     hash_type_code = atoi(argv[2]);
     function_code1 = atoi(argv[3]);
     function_code2 = atoi(argv[4]);
 
-    if (int_key_length_same<0 || int_key_length_same>1){
+    if (int_key_same<0 || int_key_same>1){
         std::cout << "Der Code der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
         return -1;
     }
@@ -104,12 +104,12 @@ int main(int argc, char** argv){
         hash_type1 = linear_probe;
     }
 
-    runKernel<uint32_t>();
+    runKernel<uint32_t,uint32_t>();
     
-    if (int_key_length_same == 1){
-        key_length_same = true;
+    if (int_key_same == 1){
+        key_same = true;
     }else{
-        key_length_same = false;     
+        key_same = false;     
     }
 
     if (function_code1 == 2){
@@ -198,7 +198,7 @@ int main(int argc, char** argv){
     CPUTimer timer;
     timer.start();
     
-    for (size_t i = 0; i<5; i++) runMain<uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i],key_length_same);
+    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i],key_same);
   
     //Fasse Resultate zusammen
     timer.stop();

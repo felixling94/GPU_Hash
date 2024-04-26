@@ -69,7 +69,7 @@ int main(int argc, char** argv){
         exampleThreadsPerBlock = 1;
     }
 
-    matrix_size = exampleKeyNum * sizeof(uint32_t);
+    matrix_size = exampleKeyNum * sizeof(cell<uint32_t,uint32_t>);
     exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
 
     cudaSetDevice(deviceID);
@@ -78,7 +78,7 @@ int main(int argc, char** argv){
     std::cout << "GPU" << "," << props.name << std::endl;
     std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << ((matrix_size * 3 + sizeof(cell<uint32_t,uint32_t>)) / 1024 / 1024) << "MB\n" << std::endl;
     std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
     std::cout << exampleBlockNum << "," << exampleThreadsPerBlock << std::endl;
     std::cout << std::endl;   
@@ -170,8 +170,8 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
-                                                    exampleBlockNum, exampleThreadsPerBlock);
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
+                                                             exampleBlockNum, exampleThreadsPerBlock);
     example_hash_table.readCells(fileName);
 
     CPUTimer timer;

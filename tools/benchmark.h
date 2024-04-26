@@ -89,15 +89,15 @@ class Benchmark{
             
             if (type_operation == insert_hash_table){
                 if (hashtype == linear_probe){
-                    HashTypeString.append("insert_linear<T>");
+                    HashTypeString.append("insert_linear<>");
                 }else if (hashtype == quadratic_probe){
-                    HashTypeString.append("insert_quadratic<T>");
+                    HashTypeString.append("insert_quadratic<>");
                 }else if (hashtype == double_probe){
-                    HashTypeString.append("insert_double<T>");
+                    HashTypeString.append("insert_double<>");
                 }else if (hashtype == cuckoo_probe){
-                    HashTypeString.append("insert_cuckoo<T>");
+                    HashTypeString.append("insert_cuckoo<>");
                 }else{
-                    HashTypeString.append("insert_normal<T>");
+                    HashTypeString.append("insert_normal<>");
                 }
                 std::cout << HashTypeString << ", " << upload;
                 std::cout << ", " << run << ", " << download  << ", ";
@@ -105,15 +105,15 @@ class Benchmark{
 
             }else if (type_operation == search_hash_table){
                 if (hashtype == linear_probe){
-                    HashTypeString.append("search_linear<T>");
+                    HashTypeString.append("search_linear<>");
                 }else if (hashtype == quadratic_probe){
-                    HashTypeString.append("search_quadratic<T>");
+                    HashTypeString.append("search_quadratic<>");
                 }else if (hashtype == double_probe){
-                    HashTypeString.append("search_double<T>");
+                    HashTypeString.append("search_double<>");
                 }else if (hashtype == cuckoo_probe){
-                    HashTypeString.append("search_cuckoo<T>");
+                    HashTypeString.append("search_cuckoo<>");
                 }else{
-                    HashTypeString.append("search_normal<T>");
+                    HashTypeString.append("search_normal<>");
                 }
                 std::cout << HashTypeString << ", " << upload ;
                 std::cout << ", " << run << ", " << download  << ", ";
@@ -121,24 +121,24 @@ class Benchmark{
         
             }else if (type_operation == delete_hash_table){
                 if (hashtype == linear_probe){
-                    HashTypeString.append("delete_linear<T>");
+                    HashTypeString.append("delete_linear<>");
                 }else if (hashtype == quadratic_probe){
-                    HashTypeString.append("delete_quadratic<T>");
+                    HashTypeString.append("delete_quadratic<>");
                 }else if (hashtype == double_probe){
-                    HashTypeString.append("delete_double<T>");
+                    HashTypeString.append("delete_double<>");
                 }else if (hashtype == cuckoo_probe){
-                    HashTypeString.append("delete_cuckoo<T>");
+                    HashTypeString.append("delete_cuckoo<>");
                 }else{
-                    HashTypeString.append("delete_normal<T>");
+                    HashTypeString.append("delete_normal<>");
                 }
                 std::cout << HashTypeString << ", " << upload;
                 std::cout << ", " << run << ", " << download << ", ";
                 std::cout <<  total << "," << num_cells << std::endl;
             }else{
                 if (hashfunction == universal0 || hashfunction == universal1 ||hashfunction == universal2 || hashfunction == universal3){
-                    HashTypeString.append("calculate_universal_hash_kernel<T>");
+                    HashTypeString.append("calculate_universal_hash_kernel<>");
                 }else{
-                    HashTypeString.append("calculate_hash_kernel<T>");
+                    HashTypeString.append("calculate_hash_kernel<>");
                 }
                 std::cout << HashTypeString << ", " << upload;
                 std::cout << ", " << run << ", " << download << ", ";

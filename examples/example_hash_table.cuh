@@ -16,10 +16,10 @@
 
 #define Test_Num 100
 
-template <typename T>
+template <typename T1, typename T2>
 class Example_Hash_Table{
     private:
-        std::vector<cell<T>> exampleCellList;
+        std::vector<cell<T1,T2>> exampleCellList;
 
         size_t exampleCellSize = 11;
         size_t exampleHashTableSize = exampleCellSize + 5;
@@ -71,7 +71,7 @@ class Example_Hash_Table{
         ~Example_Hash_Table(){};
 
         //Gebe Schlüssel und deren Längen zurück
-        std::vector<cell<T>> getKeys(){
+        std::vector<cell<T1,T2>> getKeys(){
             return exampleCellList;
         };
 
@@ -88,14 +88,14 @@ class Example_Hash_Table{
             size_t seed = generator();
             std::mt19937 rnd(seed);
     
-            std::vector<cell<T>> cells_vector;
-            cell<T> key;
+            std::vector<cell<T1,T2>> cells_vector;
+            cell<T1,T2> key;
 
             cells_vector.reserve(exampleCellSize);
 
             for (size_t i = 0; i < exampleCellSize; i++){
-                readfile.read((char*) &key, sizeof(cell<T>));
-                cells_vector.push_back(cell<T>{key.key,key.key_length});
+                readfile.read((char*) &key, sizeof(cell<T1,T2>));
+                cells_vector.push_back(cell<T1,T2>{key.key,key.value});
             }
             
             readfile.close();
@@ -105,35 +105,35 @@ class Example_Hash_Table{
         };
 
         //Erzeuge verschiedene Werte für die Schlüssel und deren Längen zufällig
-        void createCells(bool key_length_same = false){
+        void createCells(bool key_same = false){
             std::random_device generator;
             size_t seed = generator();
             std::mt19937 rnd(seed);
             
-            std::vector<cell<T>> cells_vector;
+            std::vector<cell<T1,T2>> cells_vector;
             cells_vector.reserve(exampleCellSize);
 
-            if (key_length_same == false){
-                T key = 0;
-                T key_length = 0; 
+            if (key_same == false){
+                T1 key = 0; 
+                T2 value = 0;
         
                 for (size_t i = 0; i < exampleCellSize; i++){
                     ++key;
-                    ++key_length;
-                    cells_vector.push_back(cell<T>{key,key_length});
+                    ++value;
+                    cells_vector.push_back(cell<T1,T2>{key,value});
                 }                
                 std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
                 std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());
 
             }else{
-                std::uniform_int_distribution<T> dist(1,exampleCellSize);
+                std::uniform_int_distribution<T1> dist(1,exampleCellSize);
 
-                T key = 0;
-                T key_length = dist(rnd); 
+                T1 key = dist(rnd);
+                T2 value = 0; 
         
                 for (size_t i = 0; i < exampleCellSize; i++){
                     ++key;
-                    cells_vector.push_back(cell<T>{key,key_length});
+                    cells_vector.push_back(cell<T1,T2>{key,value});
                 }          
                 std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
                 std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());
@@ -142,7 +142,7 @@ class Example_Hash_Table{
 
         //Mische verschiedene Schlüssel
         void shuffleKeys(){
-            std::vector<cell<T>> cells_vector;
+            std::vector<cell<T1,T2>> cells_vector;
             cells_vector.reserve(exampleCellList.size());
     
             std::random_device generator;
@@ -165,23 +165,24 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Sequentielle Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            cell<T> * cellArray;
-            T * keyListArray;
-            T * keyLengthListArray;
-            std::vector<T> key_vector, key_length_vector;
+            cell<T1,T2> * cellArray;
+            T1 * keyListArray;
+            T2 * valueListArray;
+            std::vector<T1> key_vector;
+            std::vector<T2> value_vector;
             
             cellArray = exampleCellList.data();
             
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);            
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
             
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();
             
             if (HashType == no_probe){
                 std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
@@ -197,11 +198,11 @@ class Example_Hash_Table{
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
-            Hash_Table<T> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            Hash_Table<T1,T2> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
             CPUTimer timer;
             timer.start();
-            for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],keyLengthListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
             timer.stop();
 
             hash_table1.print();
@@ -214,12 +215,12 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Parallele Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
+            Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
                                       exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
 
-            hash_table2.insert_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
+            hash_table2.insert_List(key_vector.data(), value_vector.data(), exampleCellSize);
             Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
             
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ",";
@@ -254,26 +255,27 @@ class Example_Hash_Table{
         //Fuege der Hashtabelle eine Liste von Paaren von Schlüsseln und Werten 
         //bei Test_Num Versuchen, d.h 100 Versuchen hinzu       
         void insertTestCells2(hash_type HashType){
-            cell<T> * cellArray;
-            T * keyListArray;
-            T * keyLengthListArray;
-            std::vector<T> key_vector, key_length_vector;
+            cell<T1,T2> * cellArray;
+            T1 * keyListArray;
+            T2 * valueListArray;
+            std::vector<T1> key_vector;
+            std::vector<T2> value_vector;
             
             std::string HashTypeString;
             float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal, averageNumCellsInsert;
             
             cellArray = exampleCellList.data();
             
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);            
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
-                key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                key_vector.push_back(cellArray[i].key); 
+                value_vector.push_back(cellArray[i].value);
             }
             
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();
 
             benchmark_kernel.OperationType = insert_hash_table;
 
@@ -281,9 +283,9 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "ZahlGespeichert"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
-                Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
+                Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
                                           exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
-                hash_table2.insert_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
+                hash_table2.insert_List(key_vector.data(), value_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
                 
                 Benchmark_Insert.print();
@@ -306,15 +308,15 @@ class Example_Hash_Table{
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
             if (HashType == linear_probe){
-                HashTypeString.append("insert_linear<T>");    
+                HashTypeString.append("insert_linear<>");    
             }else if (HashType == quadratic_probe){
-                HashTypeString.append("insert_quadratic<T>");
+                HashTypeString.append("insert_quadratic<>");
             }else if (HashType == double_probe){
-                HashTypeString.append("insert_double<T>");   
+                HashTypeString.append("insert_double<>");   
             }else if (HashType == cuckoo_probe){
-                HashTypeString.append("insert_cuckoo<T>");
+                HashTypeString.append("insert_cuckoo<>");
             }else{
-                HashTypeString.append("insert_normal<T>");    
+                HashTypeString.append("insert_normal<>");    
             }
             std::cout << HashTypeString << ", " << Test_Num << std::endl;
 
@@ -340,25 +342,26 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             size_t sum_found = 0;
 
-            cell<T> * cellArray;
-            T * keyListArray;
-            T * keyLengthListArray;
-            std::vector<T> key_vector, key_length_vector;
+            cell<T1,T2> * cellArray;
+            T1 * keyListArray;
+            T2 * valueListArray;
+            std::vector<T1> key_vector;
+            std::vector<T2> value_vector;
             
             cellArray = exampleCellList.data();
             
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
-                key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                key_vector.push_back(cellArray[i].key); 
+                value_vector.push_back(cellArray[i].value);
             }
-            
-            keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
 
-            Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+            valueListArray = key_vector.data();           
+            keyListArray = value_vector.data();
+
+            Hash_Table<T1,T2> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
                                      exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
 
             if (HashType == no_probe){
@@ -375,29 +378,29 @@ class Example_Hash_Table{
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
-            for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],keyLengthListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],valueListArray[i]);
             
             shuffleKeys();
 
             cellArray = exampleCellList.data();
 
             key_vector.clear();
-            key_length_vector.clear();
+            value_vector.clear();
 
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
-            
+
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();           
 
             CPUTimer timer;
             timer.start();
-            for (size_t i=0; i<exampleCellSize; i++) if (hash_table.search(keyListArray[i],keyLengthListArray[i]) == true) ++sum_found;
+            for (size_t i=0; i<exampleCellSize; i++) if (hash_table.search(keyListArray[i],valueListArray[i]) == true) ++sum_found;
             timer.stop();
 
             hash_table.print();
@@ -412,7 +415,7 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table.search_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
+            hash_table.search_List(key_vector.data(), value_vector.data(), exampleCellSize);
             Benchmark Benchmark_Search = hash_table.getBenchmark(search_hash_table);
 
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ",";
@@ -428,26 +431,27 @@ class Example_Hash_Table{
         //Suche nach einer Liste von Schlüsseln in der Hashtabelle
         //bei Test_Num Versuchen, d.h 100 Versuchen   
         void searchTestCells2(hash_type HashType){
-            cell<T> * cellArray;
-            T * keyListArray;
-            T * keyLengthListArray;
-            std::vector<T> key_vector, key_length_vector;
+            cell<T1,T2> * cellArray;
+            T1 * keyListArray;
+            T2 * valueListArray;
+            std::vector<T1> key_vector;
+            std::vector<T2> value_vector;
 
             std::string HashTypeString;
             float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal,averageSumFound;
             
             cellArray = exampleCellList.data();
-            
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+
+            key_vector.reserve(exampleCellSize);           
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
-            
+
+            valueListArray = value_vector.data();            
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
 
             benchmark_kernel.OperationType = search_hash_table;
 
@@ -455,12 +459,12 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "SummeGefunden"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
-                Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+                Hash_Table<T1,T2> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
                                          exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
-                for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],keyLengthListArray[i]);
+                for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],valueListArray[i]);
                 shuffleKeys();
 
-                hash_table.search_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
+                hash_table.search_List(key_vector.data(), value_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Search = hash_table.getBenchmark(search_hash_table);
                 
                 Benchmark_Search.print();
@@ -484,15 +488,15 @@ class Example_Hash_Table{
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
             if (HashType == linear_probe){
-                HashTypeString.append("search_linear<T>");    
+                HashTypeString.append("search_linear<>");    
             }else if (HashType == quadratic_probe){
-                HashTypeString.append("search_quadratic<T>");
+                HashTypeString.append("search_quadratic<>");
             }else if (HashType == double_probe){
-                HashTypeString.append("search_double<T>");   
+                HashTypeString.append("search_double<>");   
             }else if (HashType == cuckoo_probe){
-                HashTypeString.append("search_cuckoo<T>");
+                HashTypeString.append("search_cuckoo<>");
             }else{
-                HashTypeString.append("search_normal<T>");    
+                HashTypeString.append("search_normal<>");    
             }
 
             std::cout << HashTypeString << "," << Test_Num << "," << std::endl;
@@ -512,7 +516,7 @@ class Example_Hash_Table{
         //Sequentielle und parallele Ausführung
         /////////////////////////////////////////////////////////////////////////////////////////
         //Lösche eine Liste von Schlüsseln in der Hashtabelle bei einem Versuch
-        void deleteTestCells1(hash_type HashType, bool key_length_same = false){
+        void deleteTestCells1(hash_type HashType, bool key_same = false){
             //1. Deklariere und initialisiere alle Variablen
             /////////////////////////////////////////////////////////////////////////////////////////
             //Sequentielle Ausführung
@@ -520,25 +524,26 @@ class Example_Hash_Table{
             size_t num_cells_prev1, num_cells_deleted1;
             size_t num_cells_deleted2;
 
-            cell<T> * cellArray;
-            T * keyListArray;
-            T * keyLengthListArray;
-            std::vector<T> key_vector, key_length_vector;
+            cell<T1,T2> * cellArray;
+            T1 * keyListArray;
+            T2 * valueListArray;
+            std::vector<T1> key_vector;
+            std::vector<T2> value_vector;
             
             cellArray = exampleCellList.data();
             
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);           
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
             
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();
 
-            Hash_Table<T> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            Hash_Table<T1,T2> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
 
             if (HashType == no_probe){
                 std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
@@ -554,29 +559,29 @@ class Example_Hash_Table{
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
-            for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],keyLengthListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
             num_cells_prev1 = hash_table1.getNumCell();
-            createCells(key_length_same);
+            createCells(key_same);
             
             cellArray = exampleCellList.data();
 
             key_vector.clear();
-            key_length_vector.clear();
+            value_vector.clear();
 
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
             
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();
 
             CPUTimer timer;
             timer.start();
-            for (size_t i=0; i<exampleCellSize; i++) hash_table1.deleteKey(keyListArray[i],keyLengthListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table1.deleteKey(keyListArray[i],valueListArray[i]);
             timer.stop();
 
             hash_table1.print();
@@ -587,31 +592,31 @@ class Example_Hash_Table{
             /////////////////////////////////////////////////////////////////////////////////////////
             //Parallele Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
-            Hash_Table<T> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+            Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
                                       exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
-            for (size_t i=0; i<exampleCellSize; i++) hash_table2.insert(keyListArray[i],keyLengthListArray[i]);
+            for (size_t i=0; i<exampleCellSize; i++) hash_table2.insert(keyListArray[i],valueListArray[i]);
 
             shuffleKeys();
             
             cellArray = exampleCellList.data();
 
             key_vector.clear();
-            key_length_vector.clear();
+            value_vector.clear();
 
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
             
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();
 
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table2.delete_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
+            hash_table2.delete_List(key_vector.data(), value_vector.data(), exampleCellSize);
             Benchmark Benchmark_Delete = hash_table2.getBenchmark(delete_hash_table);
 
             std::cout << "Kernel_Name" << "," << "Upload_Dauer" << "," << "Run_Dauer" << ", ";
@@ -642,27 +647,28 @@ class Example_Hash_Table{
         /////////////////////////////////////////////////////////////////////////////////////////
         //Lösche eine Liste von Schlüsseln in der Hashtabelle
         //bei Test_Num Versuchen, d.h 100 Versuchen    
-        void deleteTestCells2(hash_type HashType, bool key_length_same = false){
-            cell<T> * cellArray;
-            T * keyListArray;
-            T * keyLengthListArray;
-            std::vector<T> key_vector, key_length_vector;
+        void deleteTestCells2(hash_type HashType, bool key_same = false){
+            cell<T1,T2> * cellArray;
+            T1 * keyListArray;
+            T2 * valueListArray;
+            std::vector<T1> key_vector;
+            std::vector<T2> value_vector;
             
             std::string HashTypeString;
             float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal, averageDeletedCells;
             
             cellArray = exampleCellList.data();
             
-            key_vector.reserve(exampleCellSize); 
-            key_length_vector.reserve(exampleCellSize);
+            key_vector.reserve(exampleCellSize);            
+            value_vector.reserve(exampleCellSize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
-                key_length_vector.push_back(cellArray[i].key_length);
+                value_vector.push_back(cellArray[i].value);
             }
             
             keyListArray = key_vector.data();
-            keyLengthListArray = key_length_vector.data();
+            valueListArray = value_vector.data();
 
             benchmark_kernel.OperationType = delete_hash_table;
 
@@ -670,13 +676,13 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "Zellen_Gelöscht"<< std::endl;
 
             for (int i = 0; i < Test_Num; i++){
-                Hash_Table<T> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
+                Hash_Table<T1,T2> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
                                          exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
-                for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],keyLengthListArray[i]);
+                for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],valueListArray[i]);
 
-                createCells(key_length_same);
+                createCells(key_same);
                 
-                hash_table.delete_List(key_vector.data(), key_length_vector.data(), exampleCellSize);
+                hash_table.delete_List(key_vector.data(), value_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Delete = hash_table.getBenchmark(delete_hash_table);
 
                 Benchmark_Delete.print();
@@ -699,15 +705,15 @@ class Example_Hash_Table{
             std::cout << "Kernel_Name" << "," << "Zahl_Versuche" << std::endl;
 
             if (HashType == linear_probe){
-                HashTypeString.append("delete_linear<T>");    
+                HashTypeString.append("delete_linear<>");    
             }else if (HashType == quadratic_probe){
-                HashTypeString.append("delete_quadratic<T>");
+                HashTypeString.append("delete_quadratic<>");
             }else if (HashType == double_probe){
-                HashTypeString.append("delete_double<T>");   
+                HashTypeString.append("delete_double<>");   
             }else if (HashType == cuckoo_probe){
-                HashTypeString.append("delete_cuckoo<T>");
+                HashTypeString.append("delete_cuckoo<>");
             }else{
-                HashTypeString.append("delete_normal<T>");    
+                HashTypeString.append("delete_normal<>");    
             }
 
             std::cout << HashTypeString << "," << Test_Num << std::endl;
@@ -732,7 +738,7 @@ class Example_Hash_Table{
 // //1. Deklariere die Variablen
 // int i_inBlock, blockID, i;
 // size_t j;
-// T key, prev, key_length; 
+// T key, prev, value; 
 
 // //2. Bestimme die globale ID eines Threads
 // i_inBlock = threadIdx.x + threadIdx.y * blockDim.x +threadIdx.z * blockDim.y * blockDim.x;

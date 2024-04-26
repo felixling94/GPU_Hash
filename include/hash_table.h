@@ -4,12 +4,12 @@
 #include <../include/base.h>
 #include <../tools/benchmark.h>
 
-template <typename T>
+template <typename T1 = uint32_t, typename T2 = uint32_t>
 class Hash_Table{
     private:
         size_t table_size;
-        cell<T> * hash_table1;
-        cell<T> * hash_table2;
+        cell<T1,T2> * hash_table1;
+        cell<T1,T2> * hash_table2;
 
         hash_type type_hash;
         hash_function function1;
@@ -28,7 +28,7 @@ class Hash_Table{
 
         size_t getNumCell();
         size_t getTableSize();
-        cell<T> * getTable(int i = 0);
+        cell<T1,T2> * getTable(int i = 0);
 
         hash_type getHashType();
         hash_function getHashFunction(int i = 0);
@@ -39,14 +39,14 @@ class Hash_Table{
 
         void print();
         
-        void insert(T key, T key_length);
-        void insert_List(T * keyList, T * keyLengthList, size_t cellSize);
+        void insert(T1 key, T2 value);
+        void insert_List(T1 * keyList, T2 * valueList, size_t cellSize);
         
-        bool search(T key, T key_length);
-        void search_List(T * keyList, T * keyLengthList, size_t cellSize);
+        bool search(T1 key, T2 value);
+        void search_List(T1 * keyList, T2 * valueList, size_t cellSize);
 
-        void deleteKey(T key, T key_length);
-        void delete_List(T * keyList, T * keyLengthList, size_t cellSize);
+        void deleteKey(T1 key, T2 value);
+        void delete_List(T1 * keyList, T2 * valueList, size_t cellSize);
 };
 
 #endif

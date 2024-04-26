@@ -20,10 +20,10 @@ enum hash_function{modulo, multiplication, universal0, universal1, universal2, u
                    dycuckoo_hash1, dycuckoo_hash2,dycuckoo_hash3,dycuckoo_hash4,dycuckoo_hash5};
 
 //Ein Paar von einem Schlüssel und seinem Wert
-template <typename T>
+template <typename T1 = uint32_t, typename T2 = uint32_t>
 struct cell{
-    T key = BLANK;
-    T key_length = BLANK;
+    T1 key = BLANK;
+    T2 value = BLANK;
 };
 
 //Dimension eines durchzuführenden Kernels für die:

@@ -15,9 +15,9 @@ int main(int argc, char** argv){
     int exampleBlockNum, exampleThreadsPerBlock;
     double occupancy;
     
-    int function_code1, function_code2, int_key_length_same;
+    int function_code1, function_code2, int_key_same;
     hash_function hash_function1, hash_function2; 
-    bool key_length_same;
+    bool key_same;
 
     int deviceID{0};
     struct cudaDeviceProp props;
@@ -28,7 +28,7 @@ int main(int argc, char** argv){
     }
 
     exampleKeyNum = (size_t) atoi(argv[1]);  
-    int_key_length_same = atoi(argv[2]);
+    int_key_same = atoi(argv[2]);
     occupancy = atof(argv[3]);
     function_code1 = atoi(argv[4]);
     function_code2 = atoi(argv[5]);
@@ -40,7 +40,7 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    if (int_key_length_same<0 || int_key_length_same>1){
+    if (int_key_same<0 || int_key_same>1){
         std::cout << "Der Code der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
         return -1;
     }
@@ -66,7 +66,7 @@ int main(int argc, char** argv){
         exampleThreadsPerBlock = 1;
     }
 
-    matrix_size = exampleKeyNum * sizeof(uint32_t);
+    matrix_size = exampleKeyNum * sizeof(cell<uint32_t,uint32_t>);
     exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
 
     cudaSetDevice(deviceID);
@@ -75,7 +75,7 @@ int main(int argc, char** argv){
     std::cout << "GPU" << "," << props.name << std::endl;
     std::cout << "VRAM" << "," << (props.totalGlobalMem/1024)/1024 << "MB" << std::endl;
     std::cout << "Gesamtgröße von Kernelargumenten" << ",";
-    std::cout << ((matrix_size * 3 + sizeof(uint32_t)) / 1024 / 1024) << "MB\n" << std::endl;
+    std::cout << ((matrix_size * 3 + sizeof(cell<uint32_t,uint32_t>)) / 1024 / 1024) << "MB\n" << std::endl;
     std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
     std::cout <<  exampleBlockNum << "," << exampleThreadsPerBlock << std::endl;
     std::cout << std::endl;   
@@ -83,10 +83,10 @@ int main(int argc, char** argv){
     std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
     std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*exampleHashTableSize << std::endl;
 
-    if (int_key_length_same == 1){
-        key_length_same = true;
+    if (int_key_same == 1){
+        key_same = true;
     }else{
-        key_length_same = false;     
+        key_same = false;     
     }
 
     std::cout << std::endl;
@@ -173,9 +173,9 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
-                                                    exampleBlockNum,exampleThreadsPerBlock);
-    example_hash_table.createCells(key_length_same);
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
+                                                             exampleBlockNum,exampleThreadsPerBlock);
+    example_hash_table.createCells(key_same);
 
     CPUTimer timer;
     timer.start();
@@ -183,23 +183,23 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Keine Kollionsauflösung
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells2(no_probe,key_length_same);
+    example_hash_table.deleteTestCells2(no_probe,key_same);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells2(linear_probe,key_length_same);
+    example_hash_table.deleteTestCells2(linear_probe,key_same);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells2(quadratic_probe,key_length_same);
+    example_hash_table.deleteTestCells2(quadratic_probe,key_same);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells2(double_probe,key_length_same);
+    example_hash_table.deleteTestCells2(double_probe,key_same);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    example_hash_table.deleteTestCells2(cuckoo_probe,key_length_same);
+    example_hash_table.deleteTestCells2(cuckoo_probe,key_same);
     /////////////////////////////////////////////////////////////////////////////////////////
 
     //Fasse Resultate zusammen
