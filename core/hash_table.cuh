@@ -421,7 +421,6 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
             if (type_hash == linear_probe){
                 //4d3. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU durch lineares Sondieren hinzu
-                //insert_linear<T1,T2><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
                 insert_linear<T1,T2><<<num_Blocks,num_ThreadsPerBlock,shared_memory_size,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }else if (type_hash == quadratic_probe){
                 //4d3. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU durch quadratisches Sondieren hinzu
