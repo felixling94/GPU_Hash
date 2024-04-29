@@ -27,8 +27,8 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    exampleKeyNum = (size_t) atoi(argv[1]);
-    int_key_same = atoi(argv[2]);
+    int_key_same = atoi(argv[1]);
+    exampleKeyNum = (size_t) atoi(argv[2]);
     occupancy = atof(argv[3]);
     function_code1 = atoi(argv[4]);
     function_code2 = atoi(argv[5]);

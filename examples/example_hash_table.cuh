@@ -195,6 +195,7 @@ class Example_Hash_Table{
             }else if(HashType == cuckoo_probe){
                 std::cout << "CUCKOO-HASHVERFAHREN" << std::endl;
             }
+            std::cout << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
@@ -227,6 +228,10 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "ZahlGespeichert"<< std::endl;
             Benchmark_Insert.print();
 
+            std::cout << std::endl;    
+            hash_table2.print();
+            std::cout << std::endl;    
+
             size_t numCells1 = 0;
             size_t numCells2 = 0;
 
@@ -234,19 +239,15 @@ class Example_Hash_Table{
             numCells2 = hash_table2.getNumCell();
             
             if (numCells1 == numCells2){
-                std::cout << std::endl;
                 std::cout << "Anzahl der Zellen in der Hashtabelle bei" << "," << numCells1 << std::endl;
                 std::cout << "sequentiellen und parallelen Ausführungen" << std::endl;
                 std::cout << std::endl;
             }else{
-                std::cout << std::endl;
                 std::cout << "Anzahl der Zellen in der Hashtabelle bei" << std::endl;
                 std::cout << "a) sequentiellen Ausführungen" << "," << numCells1 << std::endl;
                 std::cout << "b) parallelen Ausführungen" << "," << numCells2 << std::endl;
                 std::cout << std::endl;
             }
-        
-            hash_table2.print();
         };
 
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -375,6 +376,7 @@ class Example_Hash_Table{
             }else if(HashType == cuckoo_probe){
                 std::cout << "CUCKOO-HASHVERFAHREN" << std::endl;
             }
+            std::cout << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
@@ -422,7 +424,9 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "SummeGefunden"<< std::endl;
             Benchmark_Search.print();
 
+            std::cout << std::endl;
             hash_table.print();
+            std::cout << std::endl;
         };
 
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -556,6 +560,7 @@ class Example_Hash_Table{
             }else if(HashType == cuckoo_probe){
                 std::cout << "CUCKOO-HASHVERFAHREN" << std::endl;
             }
+            std::cout << std::endl;
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
@@ -623,23 +628,23 @@ class Example_Hash_Table{
             std::cout << "Download_Dauer" << "," << "Total_Dauer" << "," << "Zellen_Gelöscht"<< std::endl;
             Benchmark_Delete.print();
 
+            std::cout << std::endl;
+            hash_table2.print();
+            std::cout << std::endl;
+
             num_cells_deleted1 = num_cells_prev1 - hash_table1.getNumCell();
             num_cells_deleted2 = Benchmark_Delete.getNumCells();
 
             if (num_cells_deleted1 == num_cells_deleted2){
-                std::cout << std::endl;
                 std::cout << "Anzahl der gelöschten Zellen bei sequentiellen und parallelen Ausführungen" << ",";
                 std::cout << num_cells_deleted1 << std::endl;
                 std::cout << std::endl;
             }else{
-                std::cout << std::endl;
                 std::cout << "Anzahl der gelöschten Zellen in der Hashtabelle bei" << std::endl;
                 std::cout << "a) sequentiellen Ausführungen" << "," << num_cells_deleted1 << std::endl;
                 std::cout << "b) parallelen Ausführungen" << "," << num_cells_deleted2 << std::endl;
                 std::cout << std::endl;
             }
-
-            hash_table2.print();
         };
 
         /////////////////////////////////////////////////////////////////////////////////////////
