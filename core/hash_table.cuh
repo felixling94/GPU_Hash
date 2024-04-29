@@ -184,26 +184,26 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
     if (type_hash == no_probe){
         //2a. Deklariere die Variablen
         size_t i;
-        T2 prev;
+        T1 prev;
 
         //2b. Setze den Hashwert eines Schlüssels
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         //2c. Vertausche einen Schlüssel mit dem anderen in der Hashtabelle
-        prev = swapHash<T2>(hash_table1[i].value, BLANK, value);
+        prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
         //2d1. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
         //2d2. Belege die Zelle in der Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-        if (prev == BLANK || prev == value){
+        if (prev == BLANK || prev == key){
             hash_table1[i].key = key;
             hash_table1[i].value = value;
         }
     }else if(type_hash == linear_probe){
         //2a. Deklariere die Variablen
         size_t i, j;
-        T2 prev;
+        T1 prev;
         
         //2b. Setz den Hashwert eines Schlüssels
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         //2c. Schleifendurchlauf durch die Größe einer Hashtabelle
@@ -211,11 +211,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             //2c1. Berechne den neuen Hashwert eines Schlüssels durch lineare Sondierungsfunktion
             i = (i+j)%table_size;
             //2c2. Vertausche einen Schlüssel mit dem anderen in der Hashtabelle
-            prev = swapHash<T2>(hash_table1[i].value, BLANK, value);
+            prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
             
             //2c3a. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
             //2c3b. Belege die Zelle in der Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev == BLANK || prev == value){
+            if (prev == BLANK || prev == key){
                 hash_table1[i].key = key;
                 hash_table1[i].value = value;
                 break;
@@ -226,10 +226,10 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
     }else if(type_hash == quadratic_probe){
         //2a. Deklariere die Variablen
         size_t i, j;
-        T2 prev;
+        T1 prev;
         
         //2b. Setze den Hashwert eines Schlüssels
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         //2c. Führe einen Schleifendurchlauf durch die doppelte Größe einer Hashtabelle aus
@@ -237,11 +237,11 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             //2c1. Berechne den neuen Hashwert eines Schlüssels durch quadratische Sondierungsfunktion
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
             //2c2. Vertausche einen Schlüssel mit dem anderen in der Hashtabelle
-            prev = swapHash<T2>(hash_table1[i].value, BLANK, value);
+            prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
             //2c3a. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
             //2c3b. Belege die Zelle in der Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev == BLANK || prev == value){
+            if (prev == BLANK || prev == key){
                 hash_table1[i].key = key;
                 hash_table1[i].value = value;
                 break;
@@ -252,22 +252,22 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
     }else if (type_hash == double_probe){
         //2a. Deklariere die Variablen
         size_t i, j;
-        T2 prev;
+        T1 prev;
 
         //2b. Setze den Hashwert eines Schlüssels
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         //2c. Führe einen Schleifendurchlauf durch die Größe einer Hashtabelle aus
         while(j < table_size){
             //2c1. Berechne den neuen Hashwert eines Schlüssels durch eine andere Hashfunktion
-            i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
+            i = (i+getHashProbe<T2>(value,j,table_size,function2))%table_size;
             //2c2. Vertausche einen Schlüssel mit dem anderen in der Hashtabelle
-            prev = swapHash<T2>(hash_table1[i].value, BLANK, value);
+            prev = swapHash<T1>(hash_table1[i].key, BLANK, key);
 
             //2c3a. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
             //2c3b. Belege die Zelle in der Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev == BLANK || prev == value){
+            if (prev == BLANK || prev == key){
                 hash_table1[i].key = key;
                 hash_table1[i].value = value;
                 break;
@@ -278,30 +278,30 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
     }else{
         //2a. Deklariere die Variablen
         size_t i, j, k, max_hash_table;
-        T2 prev1, prev2;
+        T1 prev1, prev2;
         
         //2b. Setze die Hashwerte eines Schlüssels
-        i = getHash<T1>(key,table_size,function1);
-        j = getHash<T1>(key,table_size,function2);
+        i = getHash<T2>(value,table_size,function1);
+        j = getHash<T2>(value,table_size,function2);
         k = 1;
         max_hash_table = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*table_size);
  
         //2c. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-        prev1 = swapHash<T2>(hash_table1[i].value, BLANK, value);
+        prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
     
         //2d1. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
         //2d2. Belege die Zelle in der ersten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-        if (prev1 == BLANK || prev1 == value){
+        if (prev1 == BLANK || prev1 == key){
             hash_table1[i].key = key;
             hash_table1[i].value = value;
             return;
         }
         //2e. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-        prev2 = swapHash<T1>(hash_table2[j].value, BLANK, value);
+        prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
         
         //2f1. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
         //2f2. Belege die Zelle in der zweiten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-        if (prev2 == BLANK || prev2 == value){
+        if (prev2 == BLANK || prev2 == key){
             hash_table2[j].key = key;
             hash_table2[j].value = value;
             return;
@@ -314,23 +314,23 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
 
             //2g2. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
             swapCells<T1,T2>(key,value,i,hash_table1);
-            prev1 = swapHash<T2>(hash_table1[i].value, BLANK, value);
+            prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
             
             //2g3a. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
             //2g3b. Belege die Zelle in der ersten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev1 == BLANK || prev1 == value){
+            if (prev1 == BLANK || prev1 == key){
                 hash_table1[i].key = key;
                 hash_table1[i].value = value;
-                break;
+                return;
             }
 
             //2g4. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
             swapCells<T1,T2>(key,value,j,hash_table2);
-            prev2 = swapHash<T2>(hash_table2[j].value, BLANK, value);
+            prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
         
             //2g5a. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
             //2g5b. Belege die Zelle in der zweiten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev2 == BLANK || prev2 == value){
+            if (prev2 == BLANK || prev2 == key){
                 hash_table2[j].key = key;
                 hash_table2[j].value = value;
                 break;
@@ -548,9 +548,9 @@ bool Hash_Table<T1,T2>::search(T1 key, T2 value){
     //Ohne Kollisionsauflösung
     if (type_hash == no_probe){
         size_t i;
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         
-        if (hash_table1[i].value == value){
+        if (hash_table1[i].key == key){
             return true;
         }else{
             return false;
@@ -560,12 +560,12 @@ bool Hash_Table<T1,T2>::search(T1 key, T2 value){
     }else if(type_hash == linear_probe){
         size_t i, j;
         
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         while(j < table_size){
             i = (i+j)%table_size;
-            if (hash_table1[i].value == value) return true;
+            if (hash_table1[i].key == key) return true;
             ++j;
         }
         return false;
@@ -574,12 +574,12 @@ bool Hash_Table<T1,T2>::search(T1 key, T2 value){
     }else if(type_hash == quadratic_probe){
         size_t i, j;
         
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         while((j/2) < table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
-            if (hash_table1[i].value == value) return true;
+            if (hash_table1[i].key == key) return true;
             ++j;
         }
         return false;
@@ -588,24 +588,24 @@ bool Hash_Table<T1,T2>::search(T1 key, T2 value){
     }else if (type_hash == double_probe){
         size_t i, j;
         
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         while(j < table_size){
-            i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
-            if (hash_table1[i].value == value) return true;
+            i = (i+getHashProbe<T2>(value,j,table_size,function2))%table_size;
+            if (hash_table1[i].key == key) return true;
             ++j;
         }
         return false;
 
     //Cuckoo-Hashverfahren    
     }else{
-        size_t i = getHash<T1>(key,table_size,function1);
-        size_t j = getHash<T1>(key,table_size,function2);
+        size_t i = getHash<T2>(value,table_size,function1);
+        size_t j = getHash<T2>(value,table_size,function2);
         size_t k = 1;
 
-        if (hash_table1[i].value == value) return true;
-        if (hash_table2[j].value == value) return true;
+        if (hash_table1[i].key == key) return true;
+        if (hash_table2[j].key == key) return true;
 
         while (k < table_size){
             i = (i + k) % table_size;
@@ -639,8 +639,8 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
     }else{
         cell<T1,T2> * cells;
-        T2 * keyListResult = new T2[cellSize];
-        T2 * keyListResult_device;
+        T1 * keyListResult = new T1[cellSize];
+        T1 * keyListResult_device;
         cell<T1,T2> * keyList_device;
         cell<T1,T2> * hash_table_device1;
         cell<T1,T2> * hash_table_device2;
@@ -681,14 +681,14 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, T2 * valueList, size_t cellSiz
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
             cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(cell<T1,T2>)*cellSize);
-            cudaMalloc(&keyListResult_device,sizeof(T2)*cellSize);
+            cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
             
             upload.GPUstart();
             cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
-            cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T2)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
@@ -716,14 +716,14 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, T2 * valueList, size_t cellSiz
             //Reserviere und kopiere Daten aus der Hashtabelle und eingegebenen Zellen auf GPU
             cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(cell<T1,T2>)*cellSize);
-            cudaMalloc(&keyListResult_device,sizeof(T2)*cellSize);
+            cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
 
             total.GPUstart();
 
             upload.GPUstart();
             cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
-            cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T2)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
 
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
@@ -733,7 +733,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
             //Kopiere Daten aus der GPU zur Hashtabelle
             download.GPUstart();
-            cudaMemcpyAsync(keyListResult, keyListResult_device, sizeof(T2)*cellSize, cudaMemcpyDeviceToHost,download.getStream());
+            cudaMemcpyAsync(keyListResult, keyListResult_device, sizeof(T1)*cellSize, cudaMemcpyDeviceToHost,download.getStream());
             download.GPUstop();
 
             total.GPUstop();
@@ -744,7 +744,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, T2 * valueList, size_t cellSiz
             cudaMalloc(&hash_table_device1,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&hash_table_device2,sizeof(cell<T1,T2>)*table_size);
             cudaMalloc(&keyList_device,sizeof(cell<T1,T2>)*cellSize);
-            cudaMalloc(&keyListResult_device,sizeof(T2)*cellSize);
+            cudaMalloc(&keyListResult_device,sizeof(T1)*cellSize);
             
             total.GPUstart();
             
@@ -752,7 +752,7 @@ void Hash_Table<T1,T2>::search_List(T1 * keyList, T2 * valueList, size_t cellSiz
             cudaMemcpyAsync(hash_table_device1,hash_table1,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(hash_table_device2,hash_table2,sizeof(cell<T1,T2>)*table_size,cudaMemcpyHostToDevice,upload.getStream());
             cudaMemcpyAsync(keyList_device,cells,sizeof(cell<T1,T2>)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
-            cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T2)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
+            cudaMemcpyAsync(keyListResult_device,keyListResult,sizeof(T1)*cellSize,cudaMemcpyHostToDevice,upload.getStream());
             upload.GPUstop();
             
             //Suche nach einer Liste von Schlüsseln in der Hashtabelle
@@ -799,10 +799,10 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
     //Ohne Kollisionsauflösung
     if (type_hash == no_probe){
         size_t i;
-        T2 prev;
+        T1 prev;
 
-        i = getHash<T1>(key,table_size,function1);
-        prev = swapHash<T2>(hash_table1[i].value, value, BLANK);
+        i = getHash<T2>(value,table_size,function1);
+        prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
         if (prev == BLANK){
             hash_table1[i].key = BLANK;
@@ -812,14 +812,14 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
     //Lineare Hashverfahren
     }else if(type_hash == linear_probe){
         size_t i, j;
-        T2 prev;
+        T1 prev;
         
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         while(j < table_size){
             i = (i+j)%table_size;
-            prev = swapHash<T2>(hash_table1[i].value, value, BLANK);
+            prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev == BLANK){
                 hash_table1[i].key = BLANK;
@@ -832,14 +832,14 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
     //Quadratische Hashverfahren
     }else if(type_hash == quadratic_probe){
         size_t i, j;
-        T2 prev;
+        T1 prev;
         
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         while((j/2) < table_size){
             i = ((size_t) ((int) i + getProbe2(j))) %table_size;
-            prev = swapHash<T2>(hash_table1[i].value, value, BLANK);
+            prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev == BLANK){
                 hash_table1[i].key = BLANK;
@@ -852,14 +852,14 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
     //Doppelte Hashverfahren
     }else if (type_hash == double_probe){
         size_t i, j;
-        T2 prev;
+        T1 prev;
         
-        i = getHash<T1>(key,table_size,function1);
+        i = getHash<T2>(value,table_size,function1);
         j = 0;
 
         while(j < table_size){
-            i = (i+getHashProbe<T1>(key,j,table_size,function2))%table_size;
-            prev = swapHash<T2>(hash_table1[i].value, value, BLANK);
+            i = (i+getHashProbe<T2>(value,j,table_size,function2))%table_size;
+            prev = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev == BLANK){
                 hash_table1[i].key = BLANK;
@@ -872,13 +872,13 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
     //Cuckoo-Hashverfahren    
     }else{
         size_t i, j, k;
-        T2 prev1, prev2;
+        T1 prev1, prev2;
 
-        i = getHash<T1>(key,table_size,function1);
-        j = getHash<T1>(key,table_size,function2);
+        i = getHash<T2>(value,table_size,function1);
+        j = getHash<T2>(value,table_size,function2);
         k = 1;
 
-        prev1 = swapHash<T2>(hash_table1[i].value, value, BLANK);
+        prev1 = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
         if (prev1 == BLANK){
             hash_table1[i].key = BLANK;
@@ -886,7 +886,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
             return;
         }
 
-        prev2 = swapHash<T2>(hash_table2[j].value, value, BLANK);
+        prev2 = swapHash<T1>(hash_table2[j].key, key, BLANK);
 
         if (prev2 == BLANK){
             hash_table2[j].key = BLANK;
@@ -898,7 +898,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
             i = (i + k) % table_size;
             j = (j + k) % table_size;
 
-            prev1 = swapHash<T2>(hash_table1[i].value, value, BLANK);
+            prev1 = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             if (prev1 == BLANK){
                 hash_table1[i].key = BLANK;
@@ -906,7 +906,7 @@ void Hash_Table<T1,T2>::deleteKey(T1 key, T2 value){
                 break;
             }
 
-            prev2 = swapHash<T2>(hash_table2[j].value, value, BLANK);
+            prev2 = swapHash<T1>(hash_table2[j].key, key, BLANK);
 
             if (prev2 == BLANK){
                 hash_table2[j].key = BLANK;

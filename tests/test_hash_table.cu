@@ -14,14 +14,13 @@ std::vector<cell<T1,T2>> createCells(size_t cells_size, bool key_same=false){
         std::vector<cell<T1,T2>> cells_vector;
         cells_vector.reserve(cells_size);
         
-        T1 key = (T1) 1;
-        T2 value = (T2) 1; 
+        T1 key = (T1) 0;
+        T2 value = (T2) 0; 
         
         for (size_t i = 0; i < cells_size; i++){
-            cells_vector.push_back(cell<T1,T2>{key,value});
-            
             ++key;
             ++value;
+            cells_vector.push_back(cell<T1,T2>{key,value});
         }
         
         return shuffleKeys(cells_vector);
@@ -36,12 +35,12 @@ std::vector<cell<T1,T2>> createCells(size_t cells_size, bool key_same=false){
         
         std::uniform_int_distribution<T1> dist(1,cells_size);
 
-        T1 key = dist(rnd); 
-        T2 value = (T2) 1;
+        T1 key = 0; 
+        T2 value = dist(rnd);
         
         for (size_t i = 0; i < cells_size; i++){
+            ++key;
             cells_vector.push_back(cell<T1,T2>{key,value});
-            ++value;
         }
         return shuffleKeys(cells_vector);
     }

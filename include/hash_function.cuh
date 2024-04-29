@@ -183,7 +183,7 @@ template <typename T>
 */
 template <typename T>
 __device__  __host__   size_t getHashProbe(T key, size_t i, size_t table_size, hash_function function){
-    return i*getHash(key,table_size,function);
+    return i*getHash<T>(key,table_size,function);
 };
 
 /* Quadratische Sondierungsfunktion

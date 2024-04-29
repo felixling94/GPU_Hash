@@ -105,7 +105,7 @@ class Example_Hash_Table{
         };
 
         //Erzeuge verschiedene Werte für die Schlüssel und deren Längen zufällig
-        void createCells(bool key_same = false){
+        void createCells(bool value_same = false){
             std::random_device generator;
             size_t seed = generator();
             std::mt19937 rnd(seed);
@@ -113,7 +113,7 @@ class Example_Hash_Table{
             std::vector<cell<T1,T2>> cells_vector;
             cells_vector.reserve(exampleCellSize);
 
-            if (key_same == false){
+            if (value_same == false){
                 T1 key = 0; 
                 T2 value = 0;
         
@@ -128,8 +128,8 @@ class Example_Hash_Table{
             }else{
                 std::uniform_int_distribution<T1> dist(1,exampleCellSize);
 
-                T1 key = dist(rnd);
-                T2 value = 0; 
+                T1 key = 0;
+                T2 value = dist(rnd); 
         
                 for (size_t i = 0; i < exampleCellSize; i++){
                     ++key;
@@ -516,7 +516,7 @@ class Example_Hash_Table{
         //Sequentielle und parallele Ausführung
         /////////////////////////////////////////////////////////////////////////////////////////
         //Lösche eine Liste von Schlüsseln in der Hashtabelle bei einem Versuch
-        void deleteTestCells1(hash_type HashType, bool key_same = false){
+        void deleteTestCells1(hash_type HashType, bool value_same = false){
             //1. Deklariere und initialisiere alle Variablen
             /////////////////////////////////////////////////////////////////////////////////////////
             //Sequentielle Ausführung
@@ -561,7 +561,7 @@ class Example_Hash_Table{
             
             for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
             num_cells_prev1 = hash_table1.getNumCell();
-            createCells(key_same);
+            createCells(value_same);
             
             cellArray = exampleCellList.data();
 
@@ -647,7 +647,7 @@ class Example_Hash_Table{
         /////////////////////////////////////////////////////////////////////////////////////////
         //Lösche eine Liste von Schlüsseln in der Hashtabelle
         //bei Test_Num Versuchen, d.h 100 Versuchen    
-        void deleteTestCells2(hash_type HashType, bool key_same = false){
+        void deleteTestCells2(hash_type HashType, bool value_same = false){
             cell<T1,T2> * cellArray;
             T1 * keyListArray;
             T2 * valueListArray;
@@ -680,7 +680,7 @@ class Example_Hash_Table{
                                          exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
                 for (size_t i=0; i<exampleCellSize; i++) hash_table.insert(keyListArray[i],valueListArray[i]);
 
-                createCells(key_same);
+                createCells(value_same);
                 
                 hash_table.delete_List(key_vector.data(), value_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Delete = hash_table.getBenchmark(delete_hash_table);

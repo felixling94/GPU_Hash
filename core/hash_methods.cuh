@@ -13,7 +13,7 @@ __global__ void insert_normal(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
     //1. Deklariere die Variablen
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j;
-    T2 prev;
+    T1 prev;
 
     //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
     h = threadIdx.x;
@@ -26,14 +26,14 @@ __global__ void insert_normal(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
 
     //5. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle
-    prev = atomicCAS(&hashTable[j].value, BLANK, sharedCells[h].value);
+    prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
     
     //6. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
-    if (prev == BLANK || prev == sharedCells[h].value){
-        //6a. Belege die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
+    //   Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
+    if (prev == BLANK || prev == sharedCells[h].key){
         hashTable[j].key = sharedCells[h].key;
         hashTable[j].value = sharedCells[h].value;
     }
@@ -45,7 +45,7 @@ __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
     //1. Deklariere die Variablen
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
-    T2 prev;
+    T1 prev;
 
     //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
     h = threadIdx.x;
@@ -58,7 +58,7 @@ __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels und den Anfangsindex einer Schleife
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
     k = 0;
 
     //5. Führe einen Schleifendurchlauf aus, der die Größe einer Hashtabelle hat
@@ -67,11 +67,11 @@ __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
         j = (j + k) % hashTableSize;
 
         //5b. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle
-        prev = atomicCAS(&hashTable[j].value, BLANK, sharedCells[h].value);
+        prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
         
         //5c. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
-        if (prev == BLANK || prev == sharedCells[h].value){
-            //5c1. Belege die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
+        //    Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
+        if (prev == BLANK || prev == sharedCells[h].key){
             hashTable[j].key = sharedCells[h].key;
             hashTable[j].value = sharedCells[h].value;
             break;
@@ -87,7 +87,7 @@ __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, s
     //1. Deklariere die Variablen
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
-    T2 prev; 
+    T1 prev; 
 
     //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
     h = threadIdx.x;
@@ -100,7 +100,7 @@ __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, s
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels und den Anfangsindex einer Schleife
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
     k = 0;
     
     //5. Führe einen Schleifendurchlauf aus, die die doppelte Größe einer Hashtabelle hat
@@ -109,11 +109,11 @@ __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, s
         j = ((size_t) ((int) j + getProbe2(k))) % hashTableSize;
 
         //5b. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle
-        prev = atomicCAS(&hashTable[j].value, BLANK, sharedCells[h].value);
+        prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
 
         //5c. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
-        if (prev == BLANK || prev == sharedCells[h].value){
-            //5c1. Belege die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
+        //   Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
+        if (prev == BLANK || prev == sharedCells[h].key){
             hashTable[j].key = sharedCells[h].key;
             hashTable[j].value = sharedCells[h].value;
             break;
@@ -129,7 +129,7 @@ __global__ void insert_double(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
     //1. Deklariere die Variablen
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
-    T2 prev; 
+    T1 prev; 
 
     //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
     h = threadIdx.x;
@@ -142,19 +142,19 @@ __global__ void insert_double(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels und den Anfangsindex einer Schleife
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function1);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
     k = 0; 
 
     //5. Führe einen Schleifendurchlauf aus, die die Größe einer Hashtabelle hat
     while(k < hashTableSize){
         //5a. Berechne den neuen Hashwert eines Schlüssels durch eine neue Hashfunktion
-        j = (j + getHashProbe<T1>(sharedCells[h].key,k,hashTableSize,function2)) % hashTableSize;
+        j = (j + getHashProbe<T2>(sharedCells[h].value,k,hashTableSize,function2)) % hashTableSize;
         //5b. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle 
-        prev = atomicCAS(&hashTable[j].value, BLANK, sharedCells[h].value);
+        prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
         
         //5c. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
-        if (prev == BLANK || prev == sharedCells[h].value){
-            //5c1. Belege die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
+        //   Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
+        if (prev == BLANK || prev == sharedCells[h].key){
             hashTable[j].key = sharedCells[h].key;
             hashTable[j].value = sharedCells[h].value;
             break;
@@ -170,7 +170,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
     //1. Deklariere die Variablen
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k, m, max_hash_table_size;
-    T2 prev1, prev2;
+    T1 prev1, prev2;
     
     //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
     h = threadIdx.x;
@@ -183,16 +183,16 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
     __syncthreads();
 
     //4. Setze die Hashwerte eines Schlüssels, den Anfangsindex einer Schleife und die maximale Anzahl an Schleifen
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function1);
-    k = getHash<T1>(sharedCells[h].key,hashTableSize,function2);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
+    k = getHash<T2>(sharedCells[h].value,hashTableSize,function2);
     m = 1; 
     max_hash_table_size = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*hashTableSize);
 
     //5a1. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-    prev1 = atomicCAS(&hashTable1[j].value, BLANK, sharedCells[h].value);
+    prev1 = atomicCAS(&hashTable1[j].key, BLANK, sharedCells[h].key);
 
     //5a2. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
-    if (prev1 == BLANK || prev1 == sharedCells[h].value){
+    if (prev1 == BLANK || prev1 == sharedCells[h].key){
         //5a2a. Belege die Zelle in der ersten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
         hashTable1[j].key = sharedCells[h].key;
         hashTable1[j].value = sharedCells[h].value;
@@ -200,10 +200,10 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
     }
 
     //5b1. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-    prev2 = atomicCAS(&hashTable2[k].value, BLANK, sharedCells[h].value);
+    prev2 = atomicCAS(&hashTable2[k].key, BLANK, sharedCells[h].key);
 
     //5b2. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
-    if (prev2 == BLANK || prev2 == sharedCells[h].value){
+    if (prev2 == BLANK || prev2 == sharedCells[h].key){
         //5b2a. Belege die Zelle in der zweiten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
         hashTable2[k].key = sharedCells[h].key;
         hashTable2[k].value = sharedCells[h].value;
@@ -218,10 +218,10 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         
         //6b. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
         swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,j,hashTable1);
-        prev1 = atomicCAS(&hashTable1[j].value, BLANK, sharedCells[h].value);
+        prev1 = atomicCAS(&hashTable1[j].key, BLANK, sharedCells[h].key);
         
         //6c. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
-        if (prev1 == BLANK || prev1 == sharedCells[h].value){
+        if (prev1 == BLANK || prev1 == sharedCells[h].key){
             //6c1. Belege die Zelle in der ersten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
             hashTable1[j].key = sharedCells[h].key;
             hashTable1[j].value = sharedCells[h].value;
@@ -230,10 +230,10 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
 
         //6d. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
         swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,k,hashTable2);
-        prev2 = atomicCAS(&hashTable2[k].value, BLANK, sharedCells[h].value);
+        prev2 = atomicCAS(&hashTable2[k].key, BLANK, sharedCells[h].key);
 
         //6e. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
-        if (prev2 == BLANK || prev2 == sharedCells[h].value){
+        if (prev2 == BLANK || prev2 == sharedCells[h].key){
             //6e1. Belege die Zelle in der zweiten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
             hashTable2[k].key = sharedCells[h].key;
             hashTable2[k].value = sharedCells[h].value;
@@ -249,7 +249,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Keine Kollisionsauflösung
 template <typename T1, typename T2>
-__global__ void search_normal(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
+__global__ void search_normal(cell<T1,T2> * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j;
     
@@ -261,18 +261,18 @@ __global__ void search_normal(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1
 
     __syncthreads();
 
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
     
-    if (hashTable[j].value == sharedCells[h].value){
+    if (hashTable[j].key == sharedCells[h].key){
         keyListResult[i] = BLANK;
     }else{
-        keyListResult[i] = sharedCells[h].value;
+        keyListResult[i] = sharedCells[h].key;
     }
 };
 
 //Lineares Sondieren
 template <typename T1, typename T2>
-__global__ void search_linear(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
+__global__ void search_linear(cell<T1,T2> * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
     
@@ -284,14 +284,14 @@ __global__ void search_linear(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1
 
     __syncthreads();
     
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
     k = 0;
 
-    keyListResult[i] = sharedCells[h].value;
+    keyListResult[i] = sharedCells[h].key;
 
     while(k < hashTableSize){
         j = (j + k) % hashTableSize;
-        if (hashTable[j].value == sharedCells[h].value){
+        if (hashTable[j].key == sharedCells[h].key){
             keyListResult[i] = BLANK;
             break;
         } 
@@ -301,7 +301,7 @@ __global__ void search_linear(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1
 
 //Quadratisches Sondieren
 template <typename T1, typename T2>
-__global__ void search_quadratic(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
+__global__ void search_quadratic(cell<T1,T2> * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
     
@@ -313,14 +313,14 @@ __global__ void search_quadratic(cell<T1,T2> * keyList, T2 * keyListResult, cell
 
     __syncthreads();
 
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
     k = 0;
 
-    keyListResult[i] = sharedCells[h].value;
+    keyListResult[i] = sharedCells[h].key;
 
     while((k/2) < hashTableSize){
         j = ((size_t) ((int) j + getProbe2(k))) % hashTableSize;
-        if (hashTable[j].value == sharedCells[h].value){
+        if (hashTable[j].key == sharedCells[h].key){
             keyListResult[i] = BLANK;
             break;
         }
@@ -330,7 +330,7 @@ __global__ void search_quadratic(cell<T1,T2> * keyList, T2 * keyListResult, cell
 
 //Doppelte Hashverfahren
 template <typename T1, typename T2>
-__global__ void search_double(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void search_double(cell<T1,T2> * keyList, T1 * keyListResult, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
     
@@ -342,14 +342,14 @@ __global__ void search_double(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1
 
     __syncthreads();
 
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function1);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
     k = 0;
 
-    keyListResult[i] = sharedCells[h].value;
+    keyListResult[i] = sharedCells[h].key;
     
     while(k < hashTableSize){
-        j = (j + getHashProbe(sharedCells[h].key,k,hashTableSize,function2)) % hashTableSize;
-        if (hashTable[j].value == sharedCells[h].value){
+        j = (j + getHashProbe<T2>(sharedCells[h].value,k,hashTableSize,function2)) % hashTableSize;
+        if (hashTable[j].key == sharedCells[h].key){
             keyListResult[i] = BLANK;
             break;
         } 
@@ -359,7 +359,7 @@ __global__ void search_double(cell<T1,T2> * keyList, T2 * keyListResult, cell<T1
 
 //Cuckoo-Hashverfahren
 template <typename T1, typename T2>
-__global__ void search_cuckoo(cell<T1,T2>* keyList, T2 * keyListResult, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
+__global__ void search_cuckoo(cell<T1,T2>* keyList, T1 * keyListResult, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k, m;
     
@@ -371,17 +371,17 @@ __global__ void search_cuckoo(cell<T1,T2>* keyList, T2 * keyListResult, cell<T1,
 
     __syncthreads();
 
-    j = getHash<T1>(sharedCells[h].key,hashTableSize,function1);
-    k = getHash<T1>(sharedCells[h].key,hashTableSize,function2);
+    j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
+    k = getHash<T2>(sharedCells[h].value,hashTableSize,function2);
     m = 1;
 
-    keyListResult[i] = sharedCells[h].value;
+    keyListResult[i] = sharedCells[h].key;
     
-    if (hashTable1[j].value == sharedCells[h].value){
+    if (hashTable1[j].key == sharedCells[h].key){
         keyListResult[i] = BLANK;
         return;
     }
-    if (hashTable2[k].value == sharedCells[h].value){
+    if (hashTable2[k].key == sharedCells[h].key){
         keyListResult[i] = BLANK;
         return;
     }
@@ -390,12 +390,12 @@ __global__ void search_cuckoo(cell<T1,T2>* keyList, T2 * keyListResult, cell<T1,
         j = (j + m) % hashTableSize;
         k = (k + m) % hashTableSize;
         
-        if (hashTable1[j].value == sharedCells[h].value){
+        if (hashTable1[j].key == sharedCells[h].key){
             keyListResult[i] = BLANK;
             return;
         } 
 
-        if (hashTable2[k].value == sharedCells[h].value){
+        if (hashTable2[k].key == sharedCells[h].key){
             keyListResult[i] = BLANK;
             return;
         }
@@ -411,8 +411,8 @@ template <typename T1, typename T2>
 __global__ void delete_normal(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j;
-    T1 key;
-    T2 value, prev;
+    T1 key, prev;
+    T2 value;
     
     h = threadIdx.x;
     i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -425,11 +425,11 @@ __global__ void delete_normal(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, si
     key = keyList[i].value;
     value = keyList[i].key;
 
-    j = getHash<T1>(key,hashTableSize,function);
+    j = getHash<T2>(value,hashTableSize,function);
     
-    prev = atomicCAS(&hashTable[j].value,value, sharedCells[h].value);
+    prev = atomicCAS(&hashTable[j].key, key, sharedCells[h].key);
     
-    if (prev == sharedCells[h].value){
+    if (prev == sharedCells[h].key){
         hashTable[j].key = sharedCells[h].key;
         hashTable[j].value = sharedCells[h].value;
     }
@@ -440,8 +440,8 @@ template <typename T1, typename T2>
 __global__ void delete_linear(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
-    T1 key;
-    T2 value, prev;
+    T1 key, prev;
+    T2 value;
     
     h = threadIdx.x;
     i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -454,14 +454,14 @@ __global__ void delete_linear(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, si
     key = keyList[i].key;
     value = keyList[i].value;
 
-    j = getHash<T1>(key,hashTableSize,function);
+    j = getHash<T2>(value,hashTableSize,function);
     k = 0;
 
     while(k < hashTableSize){
         j = (j+k) % hashTableSize;
-        prev = atomicCAS(&hashTable[j].value,value, sharedCells[h].value);
+        prev = atomicCAS(&hashTable[j].key, key, sharedCells[h].key);
 
-        if (prev == sharedCells[h].value){
+        if (prev == sharedCells[h].key){
             hashTable[j].key = sharedCells[h].key;
             hashTable[j].value = sharedCells[h].value;
             break;
@@ -475,8 +475,8 @@ template <typename T1, typename T2>
 __global__ void delete_quadratic(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
-    T1 key;
-    T2 value, prev;
+    T1 key, prev;
+    T2 value;
     
     h = threadIdx.x;
     i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -489,14 +489,14 @@ __global__ void delete_quadratic(cell<T1,T2> * keyList, cell<T1,T2> * hashTable,
     key = keyList[i].key;
     value = keyList[i].value;
     
-    j = getHash<T1>(key,hashTableSize,function);
+    j = getHash<T2>(value,hashTableSize,function);
     k = 0;
 
     while((k/2) < hashTableSize){
         j = ((size_t) ((int) j + getProbe2(k))) % hashTableSize;
-        prev = atomicCAS(&hashTable[j].value, value, sharedCells[h].value);
+        prev = atomicCAS(&hashTable[j].key, key, sharedCells[h].key);
 
-        if (prev == sharedCells[h].value){
+        if (prev == sharedCells[h].key){
             hashTable[j].key = sharedCells[h].key;
             hashTable[j].value = sharedCells[h].value;
             break;
@@ -510,8 +510,8 @@ template <typename T1, typename T2>
 __global__ void delete_double(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k;
-    T1 key;
-    T2 value, prev;
+    T1 key, prev;
+    T2 value;
     
     h = threadIdx.x;
     i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -524,14 +524,14 @@ __global__ void delete_double(cell<T1,T2> * keyList, cell<T1,T2> * hashTable, si
     key = keyList[i].key;
     value = keyList[i].value;
     
-    j = getHash<T1>(key,hashTableSize,function1);
+    j = getHash<T2>(value,hashTableSize,function1);
     k = 0;
     
     while((k/2) < hashTableSize){
-        j = (j+getHashProbe<T1>(key,k,hashTableSize,function2)) % hashTableSize;
-        prev = atomicCAS(&hashTable[j].value, value, sharedCells[h].value); 
+        j = (j+getHashProbe<T2>(value,k,hashTableSize,function2)) % hashTableSize;
+        prev = atomicCAS(&hashTable[j].key, key, sharedCells[h].key); 
 
-        if (prev == sharedCells[h].value){
+        if (prev == sharedCells[h].key){
             hashTable[j].key = sharedCells[h].key;
             hashTable[j].value =  sharedCells[h].value;
             break;
@@ -545,8 +545,8 @@ template <typename T1, typename T2>
 __global__ void delete_cuckoo(cell<T1,T2> * keyList, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     extern __shared__ cell<T1,T2> sharedCells[];
     size_t h, i, j, k, m;
-    T1 key;
-    T2 value, prev1, prev2;
+    T1 key, prev1, prev2;
+    T2 value;
     
     h = threadIdx.x;
     i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -559,21 +559,21 @@ __global__ void delete_cuckoo(cell<T1,T2> * keyList, cell<T1,T2> * hashTable1, c
     key = keyList[i].key;
     value = keyList[i].value;
 
-    j = getHash<T1>(key,hashTableSize,function1);
-    k = getHash<T1>(key,hashTableSize,function2);
+    j = getHash<T2>(value,hashTableSize,function1);
+    k = getHash<T2>(value,hashTableSize,function2);
     m = 1;
     
-    prev1 = atomicCAS(&hashTable1[j].value, value, sharedCells[h].value); 
+    prev1 = atomicCAS(&hashTable1[j].key, key, sharedCells[h].key); 
 
-    if (prev1 == sharedCells[h].value){
+    if (prev1 == sharedCells[h].key){
         hashTable1[j].key = sharedCells[h].key;
         hashTable1[j].value = sharedCells[h].value;
         return;
     }
 
-    prev2 = atomicCAS(&hashTable2[k].value, value, sharedCells[h].value); 
+    prev2 = atomicCAS(&hashTable2[k].key, key, sharedCells[h].key); 
     
-    if (prev2 == sharedCells[h].value){
+    if (prev2 == sharedCells[h].key){
         hashTable2[k].key = sharedCells[h].key;
         hashTable2[k].value = sharedCells[h].value;
         return;
@@ -583,17 +583,17 @@ __global__ void delete_cuckoo(cell<T1,T2> * keyList, cell<T1,T2> * hashTable1, c
         j = (j + m) % hashTableSize;
         k = (k + m) % hashTableSize;
         
-        prev1 = atomicCAS(&hashTable1[j].value, value, sharedCells[h].value); 
+        prev1 = atomicCAS(&hashTable1[j].key, key, sharedCells[h].key); 
 
-        if (prev1 == sharedCells[h].value){
+        if (prev1 == sharedCells[h].key){
             hashTable1[j].key = sharedCells[h].key;
             hashTable1[j].value = sharedCells[h].value;
             break;
         }
 
-        prev2 = atomicCAS(&hashTable2[k].value, value, sharedCells[h].value); 
+        prev2 = atomicCAS(&hashTable2[k].key, key, sharedCells[h].key); 
 
-        if (prev2 == sharedCells[h].value){
+        if (prev2 == sharedCells[h].key){
             hashTable2[k].key = sharedCells[h].key;
             hashTable2[k].value = sharedCells[h].value;
             break;
