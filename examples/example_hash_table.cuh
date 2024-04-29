@@ -359,8 +359,8 @@ class Example_Hash_Table{
                 value_vector.push_back(cellArray[i].value);
             }
 
-            valueListArray = key_vector.data();           
-            keyListArray = value_vector.data();
+            keyListArray = key_vector.data();
+            valueListArray = value_vector.data();
 
             Hash_Table<T1,T2> hash_table(HashType,examplefunction1,examplefunction2,exampleHashTableSize,
                                      exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
@@ -454,8 +454,8 @@ class Example_Hash_Table{
                 value_vector.push_back(cellArray[i].value);
             }
 
-            valueListArray = value_vector.data();            
             keyListArray = key_vector.data();
+            valueListArray = value_vector.data();            
 
             benchmark_kernel.OperationType = search_hash_table;
 
