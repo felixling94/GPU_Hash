@@ -8,14 +8,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 //Divisions-Rest-Methode
 template <typename T>
-__device__  __host__   size_t modulo_hash(T value, size_t tableSize){
+__device__  __host__ size_t modulo_hash(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     return hashed_key % tableSize;
 };
 
 //Multiplikative Methode
 template <typename T>
-__device__  __host__   size_t multiplication_hash(T value, size_t tableSize){
+__device__  __host__ size_t multiplication_hash(T value, size_t tableSize){
     double golden_value, hashed_key, hash_table_size_double;
     
     golden_value = (sqrt(5.0)-1.0)/2.0;
@@ -29,14 +29,14 @@ __device__  __host__   size_t multiplication_hash(T value, size_t tableSize){
 
 //Universelle Hashverfahren
 template <typename T>
-__device__  __host__   size_t universal_hash(T value, size_t tableSize, size_t a, size_t b, size_t primeNum){
+__device__  __host__ size_t universal_hash(T value, size_t tableSize, size_t a, size_t b, size_t primeNum){
     size_t hashed_key = (size_t) value;
     return ((a*hashed_key + b)%primeNum) % tableSize;
 };
 
 //Murmer-Hashfunktion
 template <typename T>
-__device__  __host__   size_t murmer_hash(T value, size_t tableSize){
+__device__  __host__ size_t murmer_hash(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
 
     hashed_key ^= hashed_key >> 16;
@@ -53,7 +53,7 @@ __device__  __host__   size_t murmer_hash(T value, size_t tableSize){
 /////////////////////////////////////////////////////////////////////////////////////////
 //DyCuckoo-1
 template <typename T>
-__device__  __host__   size_t hash1(T value, size_t tableSize){
+__device__  __host__ size_t hash1(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     
     hashed_key = ~hashed_key + (hashed_key << 15);
@@ -68,7 +68,7 @@ __device__  __host__   size_t hash1(T value, size_t tableSize){
 
 //DyCuckoo-2
 template <typename T>
-__device__  __host__   size_t hash2(T value, size_t tableSize){
+__device__  __host__ size_t hash2(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     
     hashed_key = (hashed_key + 0x7ed55d16) + (hashed_key << 12);
@@ -83,14 +83,14 @@ __device__  __host__   size_t hash2(T value, size_t tableSize){
 
 //DyCuckoo-3
 template <typename T>
-__device__  __host__   size_t hash3(T value, size_t tableSize){
+__device__  __host__ size_t hash3(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     return (((hashed_key ^ 59064253) + 72355969) % 294967291u) % tableSize;
 };
 
 //DyCuckoo-4
 template <typename T>
-__device__  __host__   size_t hash4(T value, size_t tableSize){
+__device__  __host__ size_t hash4(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
 
     hashed_key = (hashed_key ^ 61) ^ (hashed_key>> 16);
@@ -104,7 +104,7 @@ __device__  __host__   size_t hash4(T value, size_t tableSize){
 
 //DyCuckoo-5
 template <typename T>
-__device__  __host__   size_t hash5(T value, size_t tableSize){
+__device__  __host__ size_t hash5(T value, size_t tableSize){
     size_t hashed_key = (size_t) value;
     hashed_key -= (hashed_key << 6);
     hashed_key ^= (hashed_key >> 17);
@@ -121,29 +121,29 @@ __device__  __host__   size_t hash5(T value, size_t tableSize){
 //Wahl einer Hashfunktion
 /////////////////////////////////////////////////////////////////////////////////////////
 template <typename T>
-__device__  __host__   size_t getHash(T key, size_t table_size, hash_function function){
+__device__  __host__ size_t getHash(T value, size_t table_size, hash_function function){
     if (function == multiplication){
-        return multiplication_hash<T>(key,table_size);
+        return multiplication_hash<T>(value,table_size);
     }else if (function == universal0 || function == universal3){
-        return universal_hash<T>(key, table_size, 20019, 20025, 20029);
+        return universal_hash<T>(value, table_size, 20019, 20025, 20029);
     }else if (function == universal1){
-        return universal_hash<T>(key, table_size, 10023, 10037, 10039);
+        return universal_hash<T>(value, table_size, 10023, 10037, 10039);
     }else if (function == universal2){
-        return universal_hash<T>(key, table_size, 5029, 5038, 5039);
+        return universal_hash<T>(value, table_size, 5029, 5038, 5039);
     }else if (function == murmer){
-        return murmer_hash<T>(key, table_size);
+        return murmer_hash<T>(value, table_size);
     }else if (function == dycuckoo_hash1){
-        return hash1<T>(key, table_size);
+        return hash1<T>(value, table_size);
     }else if (function == dycuckoo_hash2){
-        return hash2<T>(key, table_size);
+        return hash2<T>(value, table_size);
     }else if (function ==dycuckoo_hash3){
-        return hash3<T>(key, table_size);
+        return hash3<T>(value, table_size);
     }else if (function ==dycuckoo_hash4){
-        return hash4<T>(key, table_size);
+        return hash4<T>(value, table_size);
     }else if (function ==dycuckoo_hash5){
-        return hash5<T>(key, table_size);
+        return hash5<T>(value, table_size);
     }else{
-        return modulo_hash<T>(key,table_size);
+        return modulo_hash<T>(value,table_size);
     }
 };
 
@@ -151,7 +151,7 @@ __device__  __host__   size_t getHash(T key, size_t table_size, hash_function fu
 //Vertausche eine Zelle mit der anderen in einer Hashtabelle bei Cuckoo-Hashverfahren
 /////////////////////////////////////////////////////////////////////////////////////////
 template <typename T1, typename T2>
-__device__  __host__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
+__device__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
     T1 temp_key = hash_table[i].key;
     T2 temp_value = hash_table[i].value;
     
@@ -182,15 +182,15 @@ template <typename T>
     - einen Sondierungswert eines Schlüssels durch eine andere Hashfunktion ermitteln
 */
 template <typename T>
-__device__  __host__   size_t getHashProbe(T key, size_t i, size_t table_size, hash_function function){
-    return i*getHash<T>(key,table_size,function);
+__device__  __host__ size_t getHashProbe(T value, size_t i, size_t table_size, hash_function function){
+    return i*getHash<T>(value,table_size,function);
 };
 
 /* Quadratische Sondierungsfunktion
     - einen Sondierungswert eines Schlüssels durch quadratische Erhöhung vom
       Hashwert des Schlüssels ermitteln
 */
-__device__  __host__ __forceinline__  int getProbe2(size_t i){
+__device__  __host__ __forceinline__ int getProbe2(size_t i){
     int j = pow(ceil((double)i/2),2.0);
     int k = pow(-1.0,(double)i);
     return (j * k);

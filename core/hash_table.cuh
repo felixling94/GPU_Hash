@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <stdint.h>
+#include <algorithm>
 #include <cmath>
 
 #include <../include/base.h>
@@ -278,64 +279,61 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
     }else{
         //2a. Deklariere die Variablen
         size_t i, j, k, max_hash_table;
-        T1 prev1, prev2;
-        
+        T1 temp_key, prev1, prev2;
+        T2 temp_value;
+
         //2b. Setze die Hashwerte eines Schlüssels
         i = getHash<T2>(value,table_size,function1);
         j = getHash<T2>(value,table_size,function2);
-        k = 1;
+        k = 0;
         max_hash_table = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*table_size);
- 
-        //2c. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-        prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
-    
-        //2d1. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
-        //2d2. Belege die Zelle in der ersten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-        if (prev1 == BLANK || prev1 == key){
-            hash_table1[i].key = key;
-            hash_table1[i].value = value;
-            return;
-        }
-        //2e. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-        prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
-        
-        //2f1. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
-        //2f2. Belege die Zelle in der zweiten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-        if (prev2 == BLANK || prev2 == key){
-            hash_table2[j].key = key;
-            hash_table2[j].value = value;
-            return;
-        }
-        //2g. Führe einen Schleifendurchlauf durch eine bestimmte Anzahl an Schleifen aus
+
+        //2c. Überprüfe, ob der Schlüssel in einer Zelle der ersten oder zweiten Hashtabelle vorhanden ist
+        //    Falls der Schlüssel vorhanden ist, beende Cuckoo-Hashverfahren,
+        //    sonst, führe Cuckoo-Hashverfahren aus
+        if (key == hash_table1[i].key || key == hash_table2[j].key) return;
+
+        //2d. Führe einen Schleifendurchlauf durch eine bestimmte Anzahl an Schleifen aus
         while (k < max_hash_table){
-            //2g1. Berechne die neuen Hashwerte eines Schlüssels durch zwei lineare Sondierungsfunktionen
+            //2d1. Berechne die neuen Hashwerte eines Schlüssels durch zwei lineare Sondierungsfunktionen
             i = (i + k) % table_size;
             j = (j + k) % table_size;
 
-            //2g2. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-            swapCells<T1,T2>(key,value,i,hash_table1);
-            prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
+            //2d2. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
+            temp_key = hash_table1[i].key;
+            temp_value = hash_table1[i].value;
+                
+            hash_table1[i].key = key;
+            hash_table1[i].value = value;
+                
+            key = temp_key;
+            value = temp_value;
             
-            //2g3a. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
-            //2g3b. Belege die Zelle in der ersten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev1 == BLANK || prev1 == key){
-                hash_table1[i].key = key;
-                hash_table1[i].value = value;
-                return;
-            }
+            prev1 = swapHash<T1>(key, BLANK, hash_table1[i].key);
 
-            //2g4. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-            swapCells<T1,T2>(key,value,j,hash_table2);
-            prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
+            //2d3. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
+            //     Falls ja, verlasse die Schleife
+            //     Sonst, setze fort.
+            if (prev1 == BLANK || prev1 == hash_table1[i].key) break;
         
-            //2g5a. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
-            //2g5b. Belege die Zelle in der zweiten Hashtabelle mit den Werten vom Schlüssel und dessen Länge bei freiem Speicherplatz
-            if (prev2 == BLANK || prev2 == key){
-                hash_table2[j].key = key;
-                hash_table2[j].value = value;
-                break;
-            }
-            //2g6. Erhöhe den Hashwert eines Schlüssels
+            //2d4. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
+            temp_key = hash_table2[j].key;
+            temp_value = hash_table2[j].value;
+    
+            hash_table2[j].key = key;
+            hash_table2[j].value = value;
+    
+            key = temp_key;
+            value = temp_value;
+            
+            prev2 = swapHash<T1>(key, BLANK, hash_table2[j].key);
+            
+            //2d5. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
+            //     Falls ja, verlasse die Schleife
+            //     Sonst, setze fort.
+            if (prev2 == BLANK || prev2 == hash_table2[j].key) break;
+            
+            //2d6. Erhöhe den Hashwert eines Schlüssels
             ++k;
         }
     }

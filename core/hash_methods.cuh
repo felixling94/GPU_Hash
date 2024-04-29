@@ -185,31 +185,14 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
     //4. Setze die Hashwerte eines Schlüssels, den Anfangsindex einer Schleife und die maximale Anzahl an Schleifen
     j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
     k = getHash<T2>(sharedCells[h].value,hashTableSize,function2);
-    m = 1; 
+    m = 0; 
     max_hash_table_size = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*hashTableSize);
-
-    //5a1. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-    prev1 = atomicCAS(&hashTable1[j].key, BLANK, sharedCells[h].key);
-
-    //5a2. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
-    if (prev1 == BLANK || prev1 == sharedCells[h].key){
-        //5a2a. Belege die Zelle in der ersten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
-        hashTable1[j].key = sharedCells[h].key;
-        hashTable1[j].value = sharedCells[h].value;
-        return;
-    }
-
-    //5b1. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-    prev2 = atomicCAS(&hashTable2[k].key, BLANK, sharedCells[h].key);
-
-    //5b2. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
-    if (prev2 == BLANK || prev2 == sharedCells[h].key){
-        //5b2a. Belege die Zelle in der zweiten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
-        hashTable2[k].key = sharedCells[h].key;
-        hashTable2[k].value = sharedCells[h].value;
-        return;
-    }
     
+    //5. Überprüfe, ob der Schlüssel in einer Zelle der ersten oder zweiten Hashtabelle vorhanden ist
+    //   Falls der Schlüssel vorhanden ist, beende Cuckoo-Hashverfahren,
+    //   sonst, führe Cuckoo-Hashverfahren aus
+    if (sharedCells[h].key == hashTable1[j].key || sharedCells[h].key == hashTable2[k].key) return;
+
     //6. Führe einen Schleifendurchlauf aus, die die maximale festgelegte Anzahl an Schleifen hat
     while (m < max_hash_table_size){
         //6a. Berechne die Hashwerte eines Schlüssels durch zwei lineare Sondierungsfunktionen
@@ -218,27 +201,22 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         
         //6b. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
         swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,j,hashTable1);
-        prev1 = atomicCAS(&hashTable1[j].key, BLANK, sharedCells[h].key);
+        prev1 = atomicCAS(&sharedCells[h].key, BLANK, hashTable1[j].key);
         
-        //6c. Überprüfe, ob die Zelle in der ersten Hashtabelle belegt ist
-        if (prev1 == BLANK || prev1 == sharedCells[h].key){
-            //6c1. Belege die Zelle in der ersten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
-            hashTable1[j].key = sharedCells[h].key;
-            hashTable1[j].value = sharedCells[h].value;
-            break;
-        }
-
+        //6c. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
+        //    Falls ja, verlasse die Schleife
+        //    Sonst, setze fort.
+        if (prev1 == BLANK || prev1 == hashTable1[j].key) break;
+        
         //6d. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
         swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,k,hashTable2);
-        prev2 = atomicCAS(&hashTable2[k].key, BLANK, sharedCells[h].key);
+        prev2 = atomicCAS(&sharedCells[h].key, BLANK, hashTable2[k].key);
 
-        //6e. Überprüfe, ob die Zelle in der zweiten Hashtabelle belegt ist
-        if (prev2 == BLANK || prev2 == sharedCells[h].key){
-            //6e1. Belege die Zelle in der zweiten Hashtabelle mit neuen Werten vom Schlüssel und deren Wert
-            hashTable2[k].key = sharedCells[h].key;
-            hashTable2[k].value = sharedCells[h].value;
-            break;
-        }
+        //6e. Überprüfe, ob der Schlüssel gegen einen anderen in der zweiten Hashtabelle ausgetauscht wird
+        //    Falls ja, verlasse die Schleife
+        //    Sonst, setze fort.
+        if (prev2 == BLANK || prev2 == hashTable2[k].key) break;
+    
         //6f. Erhöhe den Hashwert eines Schlüssels
         ++m;
     }
