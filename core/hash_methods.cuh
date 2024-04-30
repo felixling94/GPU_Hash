@@ -206,7 +206,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         //6c. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
         //    Falls ja, verlasse die Schleife
         //    Sonst, setze fort.
-        if (prev1 == BLANK || prev1 == hashTable1[j].key) break;
+        if (prev1 == hashTable1[j].key) break;
         
         //6d. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
         swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,k,hashTable2);
@@ -215,7 +215,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         //6e. Überprüfe, ob der Schlüssel gegen einen anderen in der zweiten Hashtabelle ausgetauscht wird
         //    Falls ja, verlasse die Schleife
         //    Sonst, setze fort.
-        if (prev2 == BLANK || prev2 == hashTable2[k].key) break;
+        if (prev2 == hashTable2[k].key) break;
     
         //6f. Erhöhe den Hashwert eines Schlüssels
         ++m;

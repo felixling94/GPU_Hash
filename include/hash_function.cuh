@@ -166,8 +166,8 @@ __device__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
     wobei die Funktionalität der von atomicCAS auf der GPU gleich ist 
 */
 template <typename T>
- __host__ T swapHash(T currentValue, T reference, T value){
-    if (currentValue==reference){
+__host__ T swapHash(T currentValue, T reference, T value){
+    if (currentValue == reference){
         currentValue = value;
         return currentValue;
     }else{
