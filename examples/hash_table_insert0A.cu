@@ -23,8 +23,8 @@ int main(int argc, char** argv){
     int exampleBlockNum, exampleThreadsPerBlock;
     double occupancy;
 
-    int function_code1, function_code2, int_key_same;
-    bool key_same;
+    int function_code1, function_code2, int_value_same;
+    bool value_same;
     hash_function hash_function1, hash_function2; 
 
     int deviceID{0};
@@ -35,7 +35,7 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    int_key_same = atoi(argv[1]);
+    int_value_same = atoi(argv[1]);
     exampleKeyNum = (size_t) atoi(argv[2]);  
     occupancy = atof(argv[3]);
     function_code1 = atoi(argv[4]);
@@ -43,7 +43,7 @@ int main(int argc, char** argv){
     exampleBlockNum = atoi(argv[6]);
     exampleThreadsPerBlock= atoi(argv[7]);
 
-    if (int_key_same<0 || int_key_same>1){
+    if (int_value_same<0 || int_value_same>1){
         std::cout << "Der Code der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
         return -1;
     }
@@ -91,10 +91,10 @@ int main(int argc, char** argv){
     std::cout << "Größe der Hashtabelle" << "," << exampleHashTableSize << std::endl;
     std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*exampleHashTableSize << std::endl;
     
-    if (int_key_same == 1){
-        key_same = true;
+    if (int_value_same == 1){
+        value_same = true;
     }else{
-        key_same = false;     
+        value_same = false;     
     }
 
     std::cout << std::endl;
@@ -183,7 +183,7 @@ int main(int argc, char** argv){
 
     Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
                                                              exampleBlockNum,exampleThreadsPerBlock);
-    example_hash_table.createCells(key_same);
+    example_hash_table.createCells(value_same);
 
     CPUTimer timer;
     timer.start();

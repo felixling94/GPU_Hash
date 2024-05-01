@@ -8,20 +8,23 @@
 #include <../tools/timer.cuh>
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//Laufzeitvergleich zwischen verschiedenen Auslastungsgraden einer Hashtabelle bei
-//a. einer gegebenen Anzahl von Schlüsseln, 
-//b. gleichen oder unterschiedlichen Schlüsselgrößen, 
-//c. einer gegebenen 1. und 2. Hashfunktionen, und
-//d. gegebenen Hashverfahren, z.B. linearem Sondieren
+/* Laufzeitvergleich von einer Datei zwischen 
+    verschiedener Anzahl an Threadblöcke und 
+    verschiedener Anzahl an Threads pro Threadblock, und
+    verschiedenen offenen Hashverfahren bei
+
+    a. einem gegebenem Auslastungsgrad einer Hashtabelle,
+    b. einer gegebenen Anzahl von Schlüsseln, 
+    c. gleichen oder unterschiedlichen Schlüsselgrößen und 
+    d. einer gegebenen 1. und 2. Hashfunktionen
+ */
 /////////////////////////////////////////////////////////////////////////////////////////
-const size_t block_num{128}, num_threads_per_block{128};
-const size_t key_num{block_num*num_threads_per_block};
 
 template <typename T1, typename T2>
-void runKernel(){
+void runKernel(int block_num, int num_threads_per_block){
     int deviceID{0};
     struct cudaDeviceProp props;
-    const size_t matrix_size{key_num * sizeof(cell<T1,T2>)};
+    const size_t matrix_size{block_num*num_threads_per_block * sizeof(cell<T1,T2>)};
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -32,12 +35,13 @@ void runKernel(){
     std::cout << ((matrix_size * 3 + sizeof(cell<T1,T2>)) / 1024 / 1024) << "MB\n" << std::endl;
     std::cout << "Block_Zahl" << "," << "Threads_Zahl_Pro_Block" << std::endl;
     std::cout << block_num << "," << num_threads_per_block << std::endl;
-    std::cout << std::endl;   
+    std::cout << std::endl;     
 };
 
 //Führe Hashverfahren mit verschiedenen Datentypen aus
 template <typename T1, typename T2>
-void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy, bool value_same){
+void runMain(hash_type type, hash_function function1, hash_function function2, size_t key_num, double occupancy, char* fileName,
+             int block_num = 0, int num_threads_per_block = 0){
     const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
    
     std::cout << "Anzahl der gespeicherten Zellen" << "," << key_num << std::endl;
@@ -50,37 +54,45 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
     std::cout << std::endl;
 
     Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2,
-                                                 num_threads_per_block,block_num);
-    example_hash_table.createCells(value_same);
+                                                 block_num, num_threads_per_block);
+    example_hash_table.readCells(fileName);
     example_hash_table.insertTestCells2(type);
 };
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    const double * occupancy = new double[5]{1.0,0.8,0.6,0.4,0.2};
-    size_t * exampleHashTableSize = new size_t[5];
-    int function_code1, function_code2, hash_type_code, int_value_same;
+    char* fileName;
+    size_t exampleKeyNum;
+    double occupancy;
+    int function_code1, function_code2;
     hash_function hash_function1, hash_function2;
-    hash_type hash_type1;
-    bool value_same; 
-    
-    if(argc < 5){
+
+    const kernel_dimension * exampleKernelDimensions = new kernel_dimension[11]{
+        kernel_dimension{16384,1},kernel_dimension{8192,2},kernel_dimension{4096,4},
+        kernel_dimension{2048,8},kernel_dimension{1024,16},kernel_dimension{512,32},
+        kernel_dimension{256,64},
+        kernel_dimension{128,128},kernel_dimension{64,256},kernel_dimension{32,512},
+        kernel_dimension{16,1024}
+    };
+
+    if(argc < 6){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
-    int_value_same = atoi(argv[1]);
-    hash_type_code = atoi(argv[2]);
-    function_code1 = atoi(argv[3]);
-    function_code2 = atoi(argv[4]);
+    fileName = argv[1];
+    exampleKeyNum = (size_t) atoi(argv[2]);
+    occupancy = atof(argv[3]);
+    function_code1 = atoi(argv[4]);
+    function_code2 = atoi(argv[5]);
 
-    if (int_value_same<0 || int_value_same>1){
-        std::cout << "Der Code der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
+    if (exampleKeyNum <=0){
+        std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
-    if (hash_type_code<0 || hash_type_code>3){
-        std::cout << "Der Code eines Hashtyps muss innerhalb des Bereiches von 0 bis 3 sein." << std::endl;
+    if (occupancy <=0){
+        std::cout << "Der Auslastungsfaktor der Hashtabelle muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
@@ -92,24 +104,6 @@ int main(int argc, char** argv){
     if (function_code2<1 || function_code2>11){
         std::cout << "Der Code einer 2. Hashfunktion muss innerhalb des Bereiches von 1 bis 11 sein." << std::endl;
         return -1;
-    }
-    
-    if (hash_type_code == 1){
-        hash_type1 = quadratic_probe;
-    }else if(hash_type_code == 2){
-        hash_type1 = double_probe;
-    }else if(hash_type_code == 3){
-        hash_type1 = cuckoo_probe;
-    }else{
-        hash_type1 = linear_probe;
-    }
-
-    runKernel<uint32_t,uint32_t>();
-    
-    if (int_value_same == 1){
-        value_same = true;
-    }else{
-        value_same = false;     
     }
 
     if (function_code1 == 2){
@@ -197,9 +191,53 @@ int main(int argc, char** argv){
     
     CPUTimer timer;
     timer.start();
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Lineare Hashverfahren
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << "Lineares Sondieren" << std::endl;
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < 11; i++){
+        runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+        runMain<uint32_t,uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
+                                   exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Quadratische Hashverfahren
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << "Quadratisches Sondieren" << std::endl;
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < 11; i++){
+        runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+        runMain<uint32_t,uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
+                                   exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Doppelte Hashverfahren
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << "Doppelte Hashverfahren" << std::endl;
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < 11; i++){
+        runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+        runMain<uint32_t,uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
+                                   exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Cuckoo-Hashverfahren
+    /////////////////////////////////////////////////////////////////////////////////////////
+    std::cout << "Cuckoo-Hashverfahren" << std::endl;
+    std::cout << std::endl;
     
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i],value_same);
-  
+    for (size_t i = 0; i < 11; i++){
+        runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+        runMain<uint32_t,uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
+                                   exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////
+
     //Fasse Resultate zusammen
     timer.stop();
     std::cout << std::endl;

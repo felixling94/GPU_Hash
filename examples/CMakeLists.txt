@@ -16,6 +16,7 @@ add_executable(exampleInsert1 ../../examples/hash_table_insert1.cu)
 add_executable(exampleInsert2 ../../examples/hash_table_insert2.cu)
 add_executable(exampleInsert3 ../../examples/hash_table_insert3.cu)
 add_executable(exampleInsert4 ../../examples/hash_table_insert4.cu)
+add_executable(exampleInsert5 ../../examples/hash_table_insert5.cu)
 
 add_executable(exampleSearch1 ../../examples/hash_table_search1.cu)
 
