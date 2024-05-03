@@ -309,7 +309,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             key = temp_key;
             value = temp_value;
             
-            prev1 = swapHash<T1>(key, BLANK, hash_table1[i].key);
+            prev1 = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
             //2d3. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
             //     Falls ja, verlasse die Schleife
@@ -326,7 +326,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             key = temp_key;
             value = temp_value;
             
-            prev2 = swapHash<T1>(key, BLANK, hash_table2[j].key);
+            prev2 = swapHash<T1>(hash_table2[j].key, key, BLANK);
             
             //2d5. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
             //     Falls ja, verlasse die Schleife
@@ -391,7 +391,6 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
         //2c. Setze die Kerneldimension und die Speichergröße von "shared memory" für die Kernelausführung von offenen Hashverfahren
         dim3 num_Blocks(dimension_kernel.num_blocks,1,1);
         dim3 num_ThreadsPerBlock(dimension_kernel.num_threads_per_block,1,1);
-        size_t shared_memory_size{dimension_kernel.num_threads_per_block*sizeof(cell<T1,T2>)};
 
         //3. Kerneldurchführung mit ausgewählten Hashverfahren: 
         //3a. ohne Kollisionsauflösung, linearem Sondieren, quadratischem Sondieren oder
@@ -419,13 +418,13 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
 
             if (type_hash == linear_probe){
                 //4d3. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU durch lineares Sondieren hinzu
-                insert_linear<T1,T2><<<num_Blocks,num_ThreadsPerBlock,shared_memory_size,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
+                insert_linear<T1,T2><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }else if (type_hash == quadratic_probe){
                 //4d3. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU durch quadratisches Sondieren hinzu
-                insert_quadratic<T1,T2><<<num_Blocks,num_ThreadsPerBlock,shared_memory_size,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
+                insert_quadratic<T1,T2><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }else{
                 //4d3. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU ohne Kollisionsauflösung hinzu
-                insert_normal<T1,T2><<<num_Blocks,num_ThreadsPerBlock,shared_memory_size,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
+                insert_normal<T1,T2><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1);
             }
 
             //4d4. Ende der Zeitmessung der Kernelausführung von offenen Hashverfahren
@@ -460,7 +459,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             //4d1. Beginn der Zeitmessung der Kernelausführung von doppelten Hashverfahren
             run.GPUstart();
             //4d2. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU durch doppelte Hashverfahren hinzu
-            insert_double<T1,T2><<<num_Blocks,num_ThreadsPerBlock,shared_memory_size,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1, function2);
+            insert_double<T1,T2><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, table_size, function1, function2);
             //4d3. Ende der Zeitmessung der Kernelausführung von doppelten Hashverfahren
             run.GPUstop(); 
 
@@ -495,7 +494,7 @@ void Hash_Table<T1,T2>::insert_List(T1 * keyList, T2 * valueList, size_t cellSiz
             //4d1. Beginn der Zeitmessung der Kernelausführung von Cuckoo-Hashverfahren
             run.GPUstart();
             //4d2. Füge der Hashtabelle alle eingegebenen Zellen auf der GPU durch Cuckoo-Hashverfahren hinzu
-            insert_cuckoo<T1,T2><<<num_Blocks,num_ThreadsPerBlock,shared_memory_size,run.getStream()>>>(cells_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
+            insert_cuckoo<T1,T2><<<num_Blocks,num_ThreadsPerBlock,0,run.getStream()>>>(cells_device, hash_table_device1, hash_table_device2, table_size, function1, function2);
             //4d3. Ende der Zeitmessung der Kernelausführung von Cuckoo-Hashverfahren
             run.GPUstop(); 
             

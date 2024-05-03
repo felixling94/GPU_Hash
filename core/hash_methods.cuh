@@ -11,31 +11,30 @@
 template <typename T1, typename T2>
 __global__ void insert_normal(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     //1. Deklariere die Variablen
-    extern __shared__ cell<T1,T2> sharedCells[];
-    size_t h, i, j;
-    T1 prev;
+    size_t i, j;
+    T1 prev, key;
+    T2 value;
 
-    //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
-    h = threadIdx.x;
+    //2. Setze eine globale ID eines Threads
     i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    //3a. Lege einen Schlüssel und dessen Wert auf dem gemeinsamen Speicher mit ihren Werten auf dem globalen Speicher fest 
-    sharedCells[h].key = cells[i].key;
-    sharedCells[h].value = cells[i].value;
-    //3b. Warte, bis alle Werte von den Zellen von dem globalen auf gemeinsamen Speicher komplett übertragen werden
+    //3a. Lege einen Schlüssel und dessen Wert mit ihren Werten auf dem globalen Speicher fest 
+    key = cells[i].key;
+    value = cells[i].value;
+    //3b. Warte, bis alle Werte von den Zellen auf die Variablen komplett übertragen werden
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels
-    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
+    j = getHash<T2>(value,hashTableSize,function);
 
     //5. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle
-    prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
+    prev = atomicCAS(&hashTable[j].key, BLANK, key);
     
     //6. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
     //   Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
-    if (prev == BLANK || prev == sharedCells[h].key){
-        hashTable[j].key = sharedCells[h].key;
-        hashTable[j].value = sharedCells[h].value;
+    if (prev == BLANK || prev == key){
+        hashTable[j].key = key;
+        hashTable[j].value = value;
     }
 };
 
@@ -43,22 +42,21 @@ __global__ void insert_normal(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
 template <typename T1, typename T2>
 __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     //1. Deklariere die Variablen
-    extern __shared__ cell<T1,T2> sharedCells[];
-    size_t h, i, j, k;
-    T1 prev;
+    size_t i, j, k;
+    T1 prev, key;
+    T2 value;
 
-    //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
-    h = threadIdx.x;
+    //2. Setze eine globale ID eines Threads
     i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    //3a. Lege einen Schlüssel und dessen Wert auf dem gemeinsamen Speicher mit ihren Werten auf dem globalen Speicher fest    
-    sharedCells[h].key = cells[i].key;
-    sharedCells[h].value = cells[i].value;
-    //3b. Warte, bis alle Werte von den Zellen von dem globalen auf gemeinsamen Speicher komplett übertragen werden
+    //3a. Lege einen Schlüssel und dessen Wert mit ihren Werten auf dem globalen Speicher fest    
+    key = cells[i].key;
+    value = cells[i].value;
+    //3b. Warte, bis alle Werte von den Zellen auf die Variablen komplett übertragen werden
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels und den Anfangsindex einer Schleife
-    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
+    j = getHash<T2>(value,hashTableSize,function);
     k = 0;
 
     //5. Führe einen Schleifendurchlauf aus, der die Größe einer Hashtabelle hat
@@ -67,13 +65,13 @@ __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
         j = (j + k) % hashTableSize;
 
         //5b. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle
-        prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
+        prev = atomicCAS(&hashTable[j].key, BLANK, key);
         
         //5c. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
         //    Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
-        if (prev == BLANK || prev == sharedCells[h].key){
-            hashTable[j].key = sharedCells[h].key;
-            hashTable[j].value = sharedCells[h].value;
+        if (prev == BLANK || prev == key){
+            hashTable[j].key = key;
+            hashTable[j].value = value;
             break;
         }
         //5d. Erhöhe den Hashwert eines Schlüssels
@@ -85,22 +83,21 @@ __global__ void insert_linear(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
 template <typename T1, typename T2>
 __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function){
     //1. Deklariere die Variablen
-    extern __shared__ cell<T1,T2> sharedCells[];
-    size_t h, i, j, k;
-    T1 prev; 
+    size_t i, j, k;
+    T1 prev, key;
+    T2 value;
 
-    //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
-    h = threadIdx.x;
+    //2. Setze eine globale ID eines Threads
     i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    //3a. Lege einen Schlüssel und dessen Wert auf dem gemeinsamen Speicher mit ihren Werten auf dem globalen Speicher fest
-    sharedCells[h].key = cells[i].key;
-    sharedCells[h].value = cells[i].value;
-    //3b. Warte, bis alle Werte von den Zellen von dem globalen auf gemeinsamen Speicher komplett übertragen werden
+    //3a. Lege einen Schlüssel und dessen Wert mit ihren Werten auf dem globalen Speicher fest
+    key = cells[i].key;
+    value = cells[i].value;
+    //3b. Warte, bis alle Werte von den Zellen auf die Variablen komplett übertragen werden
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels und den Anfangsindex einer Schleife
-    j = getHash<T2>(sharedCells[h].value,hashTableSize,function);
+    j = getHash<T2>(value,hashTableSize,function);
     k = 0;
     
     //5. Führe einen Schleifendurchlauf aus, die die doppelte Größe einer Hashtabelle hat
@@ -109,13 +106,13 @@ __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, s
         j = ((size_t) ((int) j + getProbe2(k))) % hashTableSize;
 
         //5b. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle
-        prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
+        prev = atomicCAS(&hashTable[j].key, BLANK, key);
 
         //5c. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
         //   Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
-        if (prev == BLANK || prev == sharedCells[h].key){
-            hashTable[j].key = sharedCells[h].key;
-            hashTable[j].value = sharedCells[h].value;
+        if (prev == BLANK || prev == key){
+            hashTable[j].key = key;
+            hashTable[j].value = value;
             break;
         }
         //5d. Erhöhe den Hashwert eines Schlüssels
@@ -127,36 +124,35 @@ __global__ void insert_quadratic(cell<T1,T2> * cells, cell<T1,T2> * hashTable, s
 template <typename T1, typename T2>
 __global__ void insert_double(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size_t hashTableSize, hash_function function1, hash_function function2){
     //1. Deklariere die Variablen
-    extern __shared__ cell<T1,T2> sharedCells[];
-    size_t h, i, j, k;
-    T1 prev; 
+    size_t i, j, k;
+    T1 prev, key;
+    T2 value;
 
-    //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
-    h = threadIdx.x;
+    //2. Setze eine globale ID eines Threads
     i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    //3a. Lege einen Schlüssel und dessen Wert auf dem gemeinsamen Speicher mit ihren Werten auf dem globalen Speicher fest
-    sharedCells[h].key = cells[i].key;
-    sharedCells[h].value = cells[i].value;
-    //3b. Warte, bis alle Werte von den Zellen von dem globalen auf gemeinsamen Speicher komplett übertragen werden
+    //3a. Lege einen Schlüssel und dessen Wert mit ihren Werten auf dem globalen Speicher fest
+    key = cells[i].key;
+    value = cells[i].value;
+    //3b. Warte, bis alle Werte von den Zellen auf die Variablen komplett übertragen werden
     __syncthreads();
 
     //4. Setze den Hashwert eines Schlüssels und den Anfangsindex einer Schleife
-    j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
+    j = getHash<T2>(value,hashTableSize,function1);
     k = 0; 
 
     //5. Führe einen Schleifendurchlauf aus, die die Größe einer Hashtabelle hat
     while(k < hashTableSize){
         //5a. Berechne den neuen Hashwert eines Schlüssels durch eine neue Hashfunktion
-        j = (j + getHashProbe<T2>(sharedCells[h].value,k,hashTableSize,function2)) % hashTableSize;
+        j = (j + getHashProbe<T2>(value,k,hashTableSize,function2)) % hashTableSize;
         //5b. Vertausche einen Schlüssel mit dem anderen in einer Hashtabelle 
-        prev = atomicCAS(&hashTable[j].key, BLANK, sharedCells[h].key);
+        prev = atomicCAS(&hashTable[j].key, BLANK, key);
         
         //5c. Überprüfe, ob die Zelle in der Hashtabelle belegt ist
         //   Belege bei einer freien Zelle die Zelle in der Hashtabelle mit neuen Werten vom Schlüssel und dessen Wert
-        if (prev == BLANK || prev == sharedCells[h].key){
-            hashTable[j].key = sharedCells[h].key;
-            hashTable[j].value = sharedCells[h].value;
+        if (prev == BLANK || prev == key){
+            hashTable[j].key = key;
+            hashTable[j].value = value;
             break;
         }
         //5d. Erhöhe den Hashwert eines Schlüssels
@@ -168,30 +164,29 @@ __global__ void insert_double(cell<T1,T2> * cells, cell<T1,T2> * hashTable, size
 template <typename T1, typename T2>
 __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     //1. Deklariere die Variablen
-    extern __shared__ cell<T1,T2> sharedCells[];
-    size_t h, i, j, k, m, max_hash_table_size;
-    T1 prev1, prev2;
+    size_t i, j, k, m, max_hash_table_size;
+    T1 prev1, prev2, key;
+    T2 value;
     
-    //2. Setze eine globale ID und für gemeinsamen Speicher bestimmte ThreadID eines Threads
-    h = threadIdx.x;
+    //2. Setze eine globale ID eines Threads
     i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    //3a. Lege einen Schlüssel und dessen Wert auf dem gemeinsamen Speicher mit ihren Werten auf dem globalen Speicher fest
-    sharedCells[h].key = cells[i].key;
-    sharedCells[h].value = cells[i].value;
-    //3b. Warte, bis alle Werte von den Zellen von dem globalen auf gemeinsamen Speicher komplett übertragen werden
+    //3a. Lege einen Schlüssel und dessen Wert mit ihren Werten auf dem globalen Speicher fest
+    key = cells[i].key;
+    value = cells[i].value;
+    //3b. Warte, bis alle Werte von den Zellen auf die Variablen komplett übertragen werden
     __syncthreads();
 
     //4. Setze die Hashwerte eines Schlüssels, den Anfangsindex einer Schleife und die maximale Anzahl an Schleifen
-    j = getHash<T2>(sharedCells[h].value,hashTableSize,function1);
-    k = getHash<T2>(sharedCells[h].value,hashTableSize,function2);
+    j = getHash<T2>(value,hashTableSize,function1);
+    k = getHash<T2>(value,hashTableSize,function2);
     m = 0; 
     max_hash_table_size = (size_t)(((int)(100+LOOP_PERCENTAGE))/100*hashTableSize);
     
     //5. Überprüfe, ob der Schlüssel in einer Zelle der ersten oder zweiten Hashtabelle vorhanden ist
     //   Falls der Schlüssel vorhanden ist, beende Cuckoo-Hashverfahren,
     //   sonst, führe Cuckoo-Hashverfahren aus
-    if (sharedCells[h].key == hashTable1[j].key || sharedCells[h].key == hashTable2[k].key) return;
+    if (key == hashTable1[j].key || key == hashTable2[k].key) return;
 
     //6. Führe einen Schleifendurchlauf aus, die die maximale festgelegte Anzahl an Schleifen hat
     while (m < max_hash_table_size){
@@ -200,8 +195,8 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         k = (k + m) % hashTableSize;
         
         //6b. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-        swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,j,hashTable1);
-        prev1 = atomicCAS(&sharedCells[h].key, BLANK, hashTable1[j].key);
+        swapCells<T1,T2>(key,value,j,hashTable1);
+        prev1 = atomicCAS(&hashTable1[j].key, key, BLANK);
         
         //6c. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
         //    Falls ja, verlasse die Schleife
@@ -209,8 +204,8 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         if (prev1 == hashTable1[j].key) break;
         
         //6d. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-        swapCells<T1,T2>(sharedCells[h].key,sharedCells[h].value,k,hashTable2);
-        prev2 = atomicCAS(&sharedCells[h].key, BLANK, hashTable2[k].key);
+        swapCells<T1,T2>(key,value,k,hashTable2);
+        prev2 = atomicCAS(&hashTable2[k].key, key, BLANK);
 
         //6e. Überprüfe, ob der Schlüssel gegen einen anderen in der zweiten Hashtabelle ausgetauscht wird
         //    Falls ja, verlasse die Schleife
