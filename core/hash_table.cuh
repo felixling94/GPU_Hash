@@ -299,7 +299,17 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             i = (i + k) % table_size;
             j = (j + k) % table_size;
 
-            //2d2. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
+            //2d2. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht werden kann
+            //     Falls ja, verlasse die Schleife
+            //     Sonst, setze fort.
+            prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
+            if (prev1 == key) {
+                hash_table1[i].key = key;
+                hash_table1[i].value = value;
+                break;
+            }
+
+            //2d3. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
             temp_key = hash_table1[i].key;
             temp_value = hash_table1[i].value;
                 
@@ -308,15 +318,18 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
                 
             key = temp_key;
             value = temp_value;
-            
-            prev1 = swapHash<T1>(hash_table1[i].key, key, BLANK);
 
-            //2d3. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
+            //2d4. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht werden kann
             //     Falls ja, verlasse die Schleife
-            //     Sonst, setze fort.
-            if (prev1 == BLANK) break;
-        
-            //2d4. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
+            //     Sonst, setze fort.            
+            prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
+            if (prev1 == key) {
+                hash_table2[j].key = key;
+                hash_table2[j].value = value;
+                break;
+            }
+
+            //2d5. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
             temp_key = hash_table2[j].key;
             temp_value = hash_table2[j].value;
     
@@ -325,13 +338,6 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
     
             key = temp_key;
             value = temp_value;
-            
-            prev2 = swapHash<T1>(hash_table2[j].key, key, BLANK);
-            
-            //2d5. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
-            //     Falls ja, verlasse die Schleife
-            //     Sonst, setze fort.
-            if (prev2 == BLANK) break;
             
             //2d6. Erhöhe den Hashwert eines Schlüssels
             ++k;

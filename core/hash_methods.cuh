@@ -165,8 +165,8 @@ template <typename T1, typename T2>
 __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cell<T1,T2> * hashTable2, size_t hashTableSize, hash_function function1, hash_function function2){
     //1. Deklariere die Variablen
     size_t i, j, k, m, max_hash_table_size;
-    T1 prev1, prev2, key;
-    T2 value;
+    T1 key, temp_key, prev1, prev2;
+    T2 value, temp_value;
     
     //2. Setze eine globale ID eines Threads
     i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -194,24 +194,46 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         j = (j + m) % hashTableSize;
         k = (k + m) % hashTableSize;
         
-        //6b. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
-        swapCells<T1,T2>(key,value,j,hashTable1);
-        prev1 = atomicCAS(&hashTable1[j].key, key, BLANK);
-        
-        //6c. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht wird
+        //6b. Überprüfe, ob der Schlüssel gegen einen anderen in der ersten Hashtabelle ausgetauscht werden kann
         //    Falls ja, verlasse die Schleife
-        //    Sonst, setze fort.
-        if (prev1 == BLANK) break;
-        
-        //6d. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
-        swapCells<T1,T2>(key,value,k,hashTable2);
-        prev2 = atomicCAS(&hashTable2[k].key, key, BLANK);
+        //    Sonst, setze fort
+        prev1 = atomicCAS(&hashTable1[j].key, BLANK, key);
+        if (prev1 == key){
+            hashTable1[j].key = key;
+            hashTable1[j].value = value;
+            break;
+        }
 
-        //6e. Überprüfe, ob der Schlüssel gegen einen anderen in der zweiten Hashtabelle ausgetauscht wird
+        //6c. Vertausche einen Schlüssel mit dem anderen in der ersten Hashtabelle
+        temp_key = hashTable1[j].key;
+        temp_value = hashTable1[j].value;
+
+        hashTable1[j].key = key;
+        hashTable1[j].value = value;
+                
+        key = temp_key;
+        value = temp_value;
+
+        //6d. Überprüfe, ob der Schlüssel gegen einen anderen in der zweiten Hashtabelle ausgetauscht werden kann
         //    Falls ja, verlasse die Schleife
-        //    Sonst, setze fort.
-        if (prev2 == BLANK) break;
-    
+        //    Sonst, setze fort
+        prev2 = atomicCAS(&hashTable2[k].key, BLANK, key);
+        if (prev2 == key){
+            hashTable2[k].key = key;
+            hashTable2[k].value = value;
+            break;
+        }
+
+        //6e. Vertausche einen Schlüssel mit dem anderen in der zweiten Hashtabelle
+        temp_key = hashTable2[k].key;
+        temp_value = hashTable2[k].value;
+
+        hashTable2[k].key = key;
+        hashTable2[k].value = value;
+                
+        key = temp_key;
+        value = temp_value;
+
         //6f. Erhöhe den Hashwert eines Schlüssels
         ++m;
     }

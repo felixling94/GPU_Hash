@@ -147,32 +147,12 @@ __device__  __host__ size_t getHash(T value, size_t table_size, hash_function fu
     }
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//Vertausche eine Zelle mit der anderen in einer Hashtabelle bei Cuckoo-Hashverfahren
-/////////////////////////////////////////////////////////////////////////////////////////
-template <typename T1, typename T2>
-__device__ void swapCells(T1 key, T2 value, int i, cell<T1,T2> * hash_table){
-    T1 temp_key = hash_table[i].key;
-    T2 temp_value = hash_table[i].value;
-    
-    hash_table[i].key = key;
-    hash_table[i].value = value;
-    
-    key = temp_key;
-    value = temp_value;
-};
-
 /* Vertausche eine Zelle mit der anderen in einer Hashtabelle, 
     wobei die Funktionalität der von atomicCAS auf der GPU gleich ist 
 */
 template <typename T>
 __host__ T swapHash(T currentValue, T reference, T value){
-    if (currentValue == reference){
-        currentValue = value;
-        return currentValue;
-    }else{
-        return currentValue;
-    }
+    return currentValue == reference ? value: currentValue;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
