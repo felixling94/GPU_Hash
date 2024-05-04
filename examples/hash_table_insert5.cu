@@ -67,12 +67,13 @@ int main(int argc, char** argv){
     int function_code1, function_code2;
     hash_function hash_function1, hash_function2;
 
-    const kernel_dimension * exampleKernelDimensions = new kernel_dimension[11]{
+    const kernel_dimension * exampleKernelDimensions = new kernel_dimension[15]{
         kernel_dimension{16384,1},kernel_dimension{8192,2},kernel_dimension{4096,4},
         kernel_dimension{2048,8},kernel_dimension{1024,16},kernel_dimension{512,32},
         kernel_dimension{256,64},
         kernel_dimension{128,128},kernel_dimension{64,256},kernel_dimension{32,512},
-        kernel_dimension{16,1024}
+        kernel_dimension{16,1024},kernel_dimension{8,2048},kernel_dimension{4,4096},
+        kernel_dimension{2,8192},kernel_dimension{1,16384}
     };
 
     if(argc < 6){
@@ -198,7 +199,7 @@ int main(int argc, char** argv){
     std::cout << "Lineares Sondieren" << std::endl;
     std::cout << std::endl;
 
-    for (size_t i = 0; i < 11; i++){
+    for (size_t i = 0; i < 15; i++){
         runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
         runMain<uint32_t,uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
                                    exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
@@ -209,7 +210,7 @@ int main(int argc, char** argv){
     std::cout << "Quadratisches Sondieren" << std::endl;
     std::cout << std::endl;
 
-    for (size_t i = 0; i < 11; i++){
+    for (size_t i = 0; i < 15; i++){
         runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
         runMain<uint32_t,uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
                                    exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
@@ -220,7 +221,7 @@ int main(int argc, char** argv){
     std::cout << "Doppelte Hashverfahren" << std::endl;
     std::cout << std::endl;
 
-    for (size_t i = 0; i < 11; i++){
+    for (size_t i = 0; i < 15; i++){
         runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
         runMain<uint32_t,uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
                                    exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
@@ -231,7 +232,7 @@ int main(int argc, char** argv){
     std::cout << "Cuckoo-Hashverfahren" << std::endl;
     std::cout << std::endl;
     
-    for (size_t i = 0; i < 11; i++){
+    for (size_t i = 0; i < 15; i++){
         runKernel<uint32_t,uint32_t>(exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
         runMain<uint32_t,uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, occupancy, fileName,
                                    exampleKernelDimensions[i].num_blocks, exampleKernelDimensions[i].num_threads_per_block);
