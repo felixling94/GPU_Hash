@@ -119,8 +119,8 @@ class Example_Hash_Table{
             std::vector<cell<T1,T2>> cells_vector;
             cells_vector.reserve(exampleCellOccupySize);
 
-            T1 key = 0; 
-            T2 value = 0;
+            T1 key = exampleCellSize; 
+            T2 value = exampleCellSize;
 
             for (size_t i = 0; i < exampleCellOccupySize; i++){    
                 ++key;
