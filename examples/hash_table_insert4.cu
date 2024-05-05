@@ -38,20 +38,20 @@ void runKernel(int block_num, int num_threads_per_block){
 
 //Führe Hashverfahren mit verschiedenen Datentypen aus
 template <typename T1, typename T2>
-void runMain(hash_type type, hash_function function1, hash_function function2, size_t key_num, double occupancy, char* fileName,
+void runMain(hash_type type, hash_function function1, hash_function function2, size_t key_num, size_t hash_table_size, double occupancy, char* fileName,
              int block_num = 0, int num_threads_per_block = 0){
-    const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
+    const size_t exampleOccupyKeyNum{(size_t) ceil((double) (hash_table_size) * occupancy)};
    
     std::cout << "Anzahl der gespeicherten Zellen" << "," << key_num << std::endl;
     if (type != cuckoo_probe){
-        std::cout << "Größe der Hashtabelle" << "," << hashTableSize << std::endl;
+        std::cout << "Größe der Hashtabelle" << "," << hash_table_size << std::endl;
     }else{
-        std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*hashTableSize << std::endl;
+        std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*hash_table_size << std::endl;
     }
     std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2,
+    Example_Hash_Table<T1,T2> example_hash_table(key_num, exampleOccupyKeyNum, hash_table_size,function1,function2,
                                                  block_num, num_threads_per_block);
     example_hash_table.readCells(fileName);
     example_hash_table.insertTestCells2(type);
@@ -61,27 +61,26 @@ int main(int argc, char** argv){
     //1. Deklariere die Variablen
     char* fileName;
     int exampleBlockNum, exampleThreadsPerBlock;
-    const double * occupancy = new double[5]{1.0,0.8,0.6,0.4,0.2};
-
-    size_t exampleKeyNum;
-    size_t * exampleHashTableSize = new size_t[5];
+    const double * occupancy = new double[6]{1.0,0.8,0.6,0.4,0.2,0.0};
+    size_t exampleKeyNum, exampleHashTableSize;
     int function_code1, function_code2;
     hash_function hash_function1, hash_function2;
     
-    if(argc < 7){
+    if(argc < 8){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
     fileName = argv[1];
     exampleKeyNum = (size_t) atoi(argv[2]);
-    function_code1 = atoi(argv[3]);
-    function_code2 = atoi(argv[4]);
-    exampleBlockNum = atoi(argv[5]);
-    exampleThreadsPerBlock= atoi(argv[6]);
+    exampleHashTableSize = (size_t) atoi(argv[3]);  
+    function_code1 = atoi(argv[4]);
+    function_code2 = atoi(argv[5]);
+    exampleBlockNum = atoi(argv[6]);
+    exampleThreadsPerBlock= atoi(argv[7]);
 
-    if (exampleKeyNum <=0){
-        std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
+    if (exampleHashTableSize < 1){
+        std::cout << "Die Größe einer oder zwei Hashtabelle(n) muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
@@ -192,22 +191,22 @@ int main(int argc, char** argv){
     /////////////////////////////////////////////////////////////////////////////////////////
     //Lineare Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName,
+    for (size_t i = 0; i<6; i++) runMain<uint32_t,uint32_t>(linear_probe, hash_function1, hash_function2, exampleKeyNum, exampleHashTableSize,occupancy[i], fileName,
                                                             exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Quadratische Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
+    for (size_t i = 0; i<6; i++) runMain<uint32_t,uint32_t>(quadratic_probe, hash_function1, hash_function2, exampleKeyNum, exampleHashTableSize,occupancy[i], fileName, 
                                                             exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Doppelte Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
+    for (size_t i = 0; i<6; i++) runMain<uint32_t,uint32_t>(double_probe, hash_function1, hash_function2, exampleKeyNum, exampleHashTableSize, occupancy[i], fileName, 
                                                             exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
     //Cuckoo-Hashverfahren
     /////////////////////////////////////////////////////////////////////////////////////////
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, occupancy[i], fileName, 
+    for (size_t i = 0; i<6; i++) runMain<uint32_t,uint32_t>(cuckoo_probe, hash_function1, hash_function2, exampleKeyNum, exampleHashTableSize, occupancy[i], fileName, 
                                                             exampleBlockNum, exampleThreadsPerBlock);
     /////////////////////////////////////////////////////////////////////////////////////////
 

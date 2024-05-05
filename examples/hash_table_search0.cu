@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    size_t exampleHashTableSize, exampleKeyNum, matrix_size;
+    size_t exampleHashTableSize, exampleKeyNum, exampleOccupyKeyNum, matrix_size;
     int exampleBlockNum, exampleThreadsPerBlock;
     double occupancy;
 
@@ -22,31 +22,32 @@ int main(int argc, char** argv){
     int deviceID{0};
     struct cudaDeviceProp props;
 
-    if(argc < 8){
+    if(argc < 9){
         std::cout << "Fehler bei der Eingabe von Parametern" << std::endl;
         return -1;
     }
 
     int_key_same = atoi(argv[1]);
     exampleKeyNum = (size_t) atoi(argv[2]);
-    occupancy = atof(argv[3]);
-    function_code1 = atoi(argv[4]);
-    function_code2 = atoi(argv[5]);
-    exampleBlockNum = atoi(argv[6]);
-    exampleThreadsPerBlock= atoi(argv[7]);
+    exampleHashTableSize = (size_t) atoi(argv[3]);
+    occupancy = atof(argv[4]);
+    function_code1 = atoi(argv[5]);
+    function_code2 = atoi(argv[6]);
+    exampleBlockNum = atoi(argv[7]);
+    exampleThreadsPerBlock= atoi(argv[8]);
 
     if (int_key_same<0 || int_key_same>1){
         std::cout << "Der Code der Gleichheit der Schlüsselgröße muss entweder 0 bis 1 sein." << std::endl;
         return -1;
     }
 
-    if (exampleKeyNum <=0){
-        std::cout << "Die Anzahl an Schlüssel muss mehr als Null betragen." << std::endl;
+    if (exampleHashTableSize < 1){
+        std::cout << "Die Größe einer oder zwei Hashtabelle(n) muss mehr als Null betragen." << std::endl;
         return -1;
     }
 
-    if (occupancy <=0){
-        std::cout << "Der Auslastungsfaktor der Hashtabelle muss mehr als Null betragen." << std::endl;
+    if (occupancy < 0){
+        std::cout << "Der Auslastungsfaktor der Hashtabelle muss mindestens Null betragen." << std::endl;
         return -1;
     }
     
@@ -67,7 +68,7 @@ int main(int argc, char** argv){
     }
 
     matrix_size = exampleKeyNum * sizeof(cell<uint32_t,uint32_t>);
-    exampleHashTableSize = (size_t) ceil((double) (exampleKeyNum) / occupancy);
+    exampleOccupyKeyNum = (size_t) ceil((double) (exampleHashTableSize) * occupancy);
 
     cudaSetDevice(deviceID);
 	cudaGetDeviceProperties(&props, deviceID);
@@ -173,7 +174,7 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
     
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleHashTableSize,hash_function1,hash_function2,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table(exampleKeyNum,exampleOccupyKeyNum,exampleHashTableSize,hash_function1,hash_function2,
                                                              exampleBlockNum, exampleThreadsPerBlock);
     example_hash_table.createCells(key_same);
 

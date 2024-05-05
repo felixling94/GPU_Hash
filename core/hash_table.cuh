@@ -303,7 +303,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             //     Falls ja, verlasse die Schleife
             //     Sonst, setze fort.
             prev1 = swapHash<T1>(hash_table1[i].key, BLANK, key);
-            if (prev1 == key) {
+            if (prev1 == BLANK || prev1 == key) {
                 hash_table1[i].key = key;
                 hash_table1[i].value = value;
                 break;
@@ -323,7 +323,7 @@ void Hash_Table<T1,T2>::insert(T1 key, T2 value){
             //     Falls ja, verlasse die Schleife
             //     Sonst, setze fort.            
             prev2 = swapHash<T1>(hash_table2[j].key, BLANK, key);
-            if (prev1 == key) {
+            if (prev2 == BLANK || prev2 == key) {
                 hash_table2[j].key = key;
                 hash_table2[j].value = value;
                 break;

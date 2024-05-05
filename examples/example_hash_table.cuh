@@ -19,8 +19,10 @@
 template <typename T1, typename T2>
 class Example_Hash_Table{
     private:
+        std::vector<cell<T1,T2>> exampleCellOccupyList;
         std::vector<cell<T1,T2>> exampleCellList;
 
+        size_t exampleCellOccupySize = 11;
         size_t exampleCellSize = 11;
         size_t exampleHashTableSize = exampleCellSize + 5;
 
@@ -48,13 +50,14 @@ class Example_Hash_Table{
             exampleCellList.reserve(exampleCellSize);
         };
         
-        Example_Hash_Table(size_t test_cell_size, size_t test_table_size,hash_function function1, hash_function function2=modulo,
+        Example_Hash_Table(size_t test_cell_size, size_t test_cell_occupy_size, size_t test_table_size,hash_function function1, hash_function function2=modulo,
                            int test_block_num = 0, int test_threads_num_per_block = 0):
-        exampleCellSize(test_cell_size), exampleHashTableSize(test_table_size), examplefunction1(function1), examplefunction2(function2){
-            if (test_cell_size>test_table_size){
+        exampleCellSize(test_cell_size), exampleCellOccupySize(test_cell_occupy_size), exampleHashTableSize(test_table_size), examplefunction1(function1), examplefunction2(function2){
+            if (test_cell_size>test_table_size || test_cell_occupy_size > test_table_size){
                 std::cout << "Die Hashtabelle darf höchstens maximal " << test_table_size;
                 std::cout << " Datenelemente enthalten." << std::endl;
-                std::cout << "Leider beträgt die Zahl der Zellen " << test_cell_size << "." << std::endl;
+                std::cout << "Leider beträgt die Zahl der Zellen " << test_cell_size << "und ";
+                std::cout << "die Zahl der belegten Zellen " << test_cell_occupy_size << "." << std::endl;
                 exit (EXIT_FAILURE);
             }
 
@@ -65,6 +68,9 @@ class Example_Hash_Table{
 
             exampleCellSize = test_cell_size;
             exampleCellList.reserve(exampleCellSize);
+
+            exampleCellOccupySize = test_cell_occupy_size;
+            exampleCellOccupyList.reserve(exampleCellOccupySize);
         };
 
         //Destruktor
@@ -104,7 +110,29 @@ class Example_Hash_Table{
             std::copy(cells_vector.begin(),cells_vector.end(),exampleCellList.begin());       
         };
 
-        //Erzeuge verschiedene Werte für die Schlüssel und deren Längen zufällig
+        //Erzeuge verschiedene Werte für die Schlüssel und deren Werten zufällig für Auslastungsfaktor
+        void createOccupyCells(){
+            std::random_device generator;
+            size_t seed = generator();
+            std::mt19937 rnd(seed);
+            
+            std::vector<cell<T1,T2>> cells_vector;
+            cells_vector.reserve(exampleCellOccupySize);
+
+            std::uniform_int_distribution<T1> dist(1,exampleCellOccupySize);
+
+            T1 key = 1;
+            T2 value = dist(rnd); 
+        
+            for (size_t i = 0; i < exampleCellOccupySize; i++){    
+                cells_vector.push_back(cell<T1,T2>{key,value});
+                ++key;
+            }          
+            std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
+            std::copy(cells_vector.begin(),cells_vector.end(),exampleCellOccupyList.begin());
+        };
+
+        //Erzeuge verschiedene Werte für die Schlüssel und deren Werten zufällig
         void createCells(bool value_same = false){
             std::random_device generator;
             size_t seed = generator();
@@ -166,23 +194,38 @@ class Example_Hash_Table{
             //Sequentielle Ausführung
             /////////////////////////////////////////////////////////////////////////////////////////
             cell<T1,T2> * cellArray;
+            cell<T1,T2> * cellOccupyArray;
             T1 * keyListArray;
+            T1 * keyListOccupyArray;
             T2 * valueListArray;
-            std::vector<T1> key_vector;
-            std::vector<T2> value_vector;
+            T2 * valueListOccupyArray;
+            std::vector<T1> key_vector, key_occupy_vector;
+            std::vector<T2> value_vector, value_occupy_vector;
             
+            createOccupyCells();
+
             cellArray = exampleCellList.data();
+            cellOccupyArray = exampleCellOccupyList.data();
             
-            key_vector.reserve(exampleCellSize);            
-            value_vector.reserve(exampleCellSize); 
+            key_vector.reserve(exampleCellSize);
+            key_occupy_vector.reserve(exampleCellOccupySize);      
+            value_vector.reserve(exampleCellSize);
+            value_occupy_vector.reserve(exampleCellOccupySize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
                 key_vector.push_back(cellArray[i].key);
                 value_vector.push_back(cellArray[i].value);
             }
+
+            for (size_t i = 0; i < exampleCellOccupySize ; i++){
+                key_occupy_vector.push_back(cellOccupyArray[i].key);
+                value_occupy_vector.push_back(cellOccupyArray[i].value);
+            }
             
             keyListArray = key_vector.data();
+            keyListOccupyArray = key_occupy_vector.data();
             valueListArray = value_vector.data();
+            valueListOccupyArray = value_occupy_vector.data();
             
             if (HashType == no_probe){
                 std::cout << "OHNE KOLLISIONSAUFLÖSUNG" << std::endl;
@@ -203,6 +246,7 @@ class Example_Hash_Table{
 
             CPUTimer timer;
             timer.start();
+            hash_table1.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
             for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
             timer.stop();
 
@@ -220,6 +264,7 @@ class Example_Hash_Table{
                                       exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
+            hash_table2.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
 
             hash_table2.insert_List(key_vector.data(), value_vector.data(), exampleCellSize);
             Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
@@ -257,26 +302,41 @@ class Example_Hash_Table{
         //bei Test_Num Versuchen, d.h 100 Versuchen hinzu       
         void insertTestCells2(hash_type HashType){
             cell<T1,T2> * cellArray;
+            cell<T1,T2> * cellOccupyArray;
             T1 * keyListArray;
+            T1 * keyListOccupyArray;
             T2 * valueListArray;
-            std::vector<T1> key_vector;
-            std::vector<T2> value_vector;
+            T2 * valueListOccupyArray;
+            std::vector<T1> key_vector, key_occupy_vector;
+            std::vector<T2> value_vector, value_occupy_vector;
             
             std::string HashTypeString;
             float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal, averageNumCellsInsert;
-            
+
+            createOccupyCells();
+
             cellArray = exampleCellList.data();
+            cellOccupyArray = exampleCellOccupyList.data();
             
-            key_vector.reserve(exampleCellSize);            
-            value_vector.reserve(exampleCellSize); 
+            key_vector.reserve(exampleCellSize);
+            key_occupy_vector.reserve(exampleCellOccupySize);      
+            value_vector.reserve(exampleCellSize);
+            value_occupy_vector.reserve(exampleCellOccupySize); 
 
             for (size_t i = 0; i < exampleCellSize ; i++){
-                key_vector.push_back(cellArray[i].key); 
+                key_vector.push_back(cellArray[i].key);
                 value_vector.push_back(cellArray[i].value);
+            }
+
+            for (size_t i = 0; i < exampleCellOccupySize ; i++){
+                key_occupy_vector.push_back(cellOccupyArray[i].key);
+                value_occupy_vector.push_back(cellOccupyArray[i].value);
             }
             
             keyListArray = key_vector.data();
+            keyListOccupyArray = key_occupy_vector.data();
             valueListArray = value_vector.data();
+            valueListOccupyArray = value_occupy_vector.data();
 
             benchmark_kernel.OperationType = insert_hash_table;
 
@@ -286,6 +346,8 @@ class Example_Hash_Table{
             for (int i = 0; i < Test_Num; i++){
                 Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
                                           exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
+                hash_table2.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
+                
                 hash_table2.insert_List(key_vector.data(), value_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
                 

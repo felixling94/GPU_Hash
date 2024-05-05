@@ -198,7 +198,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         //    Falls ja, verlasse die Schleife
         //    Sonst, setze fort
         prev1 = atomicCAS(&hashTable1[j].key, BLANK, key);
-        if (prev1 == key){
+        if (prev1 == BLANK || prev1 == key){
             hashTable1[j].key = key;
             hashTable1[j].value = value;
             break;
@@ -218,7 +218,7 @@ __global__ void insert_cuckoo(cell<T1,T2> * cells, cell<T1,T2> * hashTable1, cel
         //    Falls ja, verlasse die Schleife
         //    Sonst, setze fort
         prev2 = atomicCAS(&hashTable2[k].key, BLANK, key);
-        if (prev2 == key){
+        if (prev2 == BLANK ||  prev2 == key){
             hashTable2[k].key = key;
             hashTable2[k].value = value;
             break;

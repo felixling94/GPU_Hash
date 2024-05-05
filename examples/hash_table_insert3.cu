@@ -16,6 +16,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 const size_t block_num{128}, num_threads_per_block{128};
 const size_t key_num{block_num*num_threads_per_block};
+const size_t hash_table_size{key_num};
 
 template <typename T1, typename T2>
 void runKernel(){
@@ -38,18 +39,18 @@ void runKernel(){
 //Führe Hashverfahren mit verschiedenen Datentypen aus
 template <typename T1, typename T2>
 void runMain(hash_type type, hash_function function1, hash_function function2, double occupancy, bool value_same){
-    const size_t hashTableSize{(size_t) ceil((double) (key_num) / occupancy)};
-   
+    const size_t keyOccupyNum{(size_t) ceil((double) (hash_table_size)*occupancy)};
+
     std::cout << "Anzahl der gespeicherten Zellen" << "," << key_num << std::endl;
     if (type != cuckoo_probe){
-        std::cout << "Größe der Hashtabelle" << "," << hashTableSize << std::endl;
+        std::cout << "Größe der Hashtabelle" << "," << hash_table_size << std::endl;
     }else{
-        std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*hashTableSize << std::endl;
+        std::cout << "Größe der Cuckoo-Hashtabelle" << "," << 2*hash_table_size << std::endl;
     }
     std::cout << "Auslastungsfaktor der Hashtabelle" << "," << occupancy << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<T1,T2> example_hash_table(key_num,hashTableSize,function1,function2,
+    Example_Hash_Table<T1,T2> example_hash_table(key_num,keyOccupyNum,hash_table_size,function1,function2,
                                                  num_threads_per_block,block_num);
     example_hash_table.createCells(value_same);
     example_hash_table.insertTestCells2(type);
@@ -57,8 +58,7 @@ void runMain(hash_type type, hash_function function1, hash_function function2, d
 
 int main(int argc, char** argv){
     //1. Deklariere die Variablen
-    const double * occupancy = new double[5]{1.0,0.8,0.6,0.4,0.2};
-    size_t * exampleHashTableSize = new size_t[5];
+    const double * occupancy = new double[6]{1.0,0.8,0.6,0.4,0.2,0.0};
     int function_code1, function_code2, hash_type_code, int_value_same;
     hash_function hash_function1, hash_function2;
     hash_type hash_type1;
@@ -198,7 +198,7 @@ int main(int argc, char** argv){
     CPUTimer timer;
     timer.start();
     
-    for (size_t i = 0; i<5; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i],value_same);
+    for (size_t i = 0; i<6; i++) runMain<uint32_t,uint32_t>(hash_type1, hash_function1, hash_function2, occupancy[i],value_same);
   
     //Fasse Resultate zusammen
     timer.stop();

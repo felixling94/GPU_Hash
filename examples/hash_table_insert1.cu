@@ -47,7 +47,7 @@ int main(){
     std::cout << "1. Hashfunktion" << "," << "Divisions-Rest-Methode" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table1(exampleKeyNum,exampleHashTableSize,modulo,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table1(exampleKeyNum,0,exampleHashTableSize,modulo,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table1.createCells();
     example_hash_table1.insertTestCells2(no_probe);
@@ -59,7 +59,7 @@ int main(){
     std::cout << "2. Hashfunktion" << "," << "Multiplikative Methode" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table2(exampleKeyNum,exampleHashTableSize,multiplication,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table2(exampleKeyNum,0,exampleHashTableSize,multiplication,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table2.createCells();
     example_hash_table2.insertTestCells2(no_probe);
@@ -71,7 +71,7 @@ int main(){
     std::cout << "3. Hashfunktion" << "," << "Murmer-Hashfunktion" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table3(exampleKeyNum,exampleHashTableSize,murmer,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table3(exampleKeyNum,0,exampleHashTableSize,murmer,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table3.createCells();
     example_hash_table3.insertTestCells2(no_probe);
@@ -84,7 +84,7 @@ int main(){
     std::cout << "," << "a: 20019" << "," << "b: 20025" << "," <<  "Primzahl: 20029" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table4(exampleKeyNum,exampleHashTableSize,universal0,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table4(exampleKeyNum,0,exampleHashTableSize,universal0,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table4.createCells();
     example_hash_table4.insertTestCells2(no_probe);
@@ -97,7 +97,7 @@ int main(){
     std::cout << "," << "a: 10023" << "," << "b: 10037" << "," <<  "Primzahl: 10039" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table5(exampleKeyNum,exampleHashTableSize,universal1,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table5(exampleKeyNum,0,exampleHashTableSize,universal1,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table5.createCells();
     example_hash_table5.insertTestCells2(no_probe);
@@ -110,7 +110,7 @@ int main(){
     std::cout << "," << "a: 5029" << "," << "b: 5038" << "," <<  "Primzahl: 5039" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table6(exampleKeyNum,exampleHashTableSize,universal2,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table6(exampleKeyNum,0,exampleHashTableSize,universal2,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table6.createCells();
     example_hash_table6.insertTestCells2(no_probe);
@@ -122,7 +122,7 @@ int main(){
     std::cout << "7. Hashfunktion" << "," << "DyCuckoo-1" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table7(exampleKeyNum,exampleHashTableSize,dycuckoo_hash1,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table7(exampleKeyNum,0,exampleHashTableSize,dycuckoo_hash1,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table7.createCells();
     example_hash_table7.insertTestCells2(no_probe);
@@ -134,7 +134,7 @@ int main(){
     std::cout << "9. Hashfunktion" << "," << "DyCuckoo-2" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table8(exampleKeyNum,exampleHashTableSize,dycuckoo_hash2,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table8(exampleKeyNum,0,exampleHashTableSize,dycuckoo_hash2,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table8.createCells();
     example_hash_table8.insertTestCells2(no_probe);
@@ -146,7 +146,7 @@ int main(){
     std::cout << "9. Hashfunktion" << "," << "DyCuckoo-3" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table9(exampleKeyNum,exampleHashTableSize,dycuckoo_hash3,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table9(exampleKeyNum,0,exampleHashTableSize,dycuckoo_hash3,modulo,
                                                               num_threads_per_block,block_num);
     example_hash_table9.createCells();
     example_hash_table9.insertTestCells2(no_probe);
@@ -159,7 +159,7 @@ int main(){
     std::cout << "10. Hashfunktion" << "," << "DyCuckoo-4" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table10(exampleKeyNum,exampleHashTableSize,dycuckoo_hash4,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table10(exampleKeyNum,0,exampleHashTableSize,dycuckoo_hash4,modulo,
                                                                num_threads_per_block,block_num);
     example_hash_table10.createCells();
     example_hash_table10.insertTestCells2(no_probe);
@@ -171,7 +171,7 @@ int main(){
     std::cout << "11. Hashfunktion" << "," << "DyCuckoo-5" << std::endl;
     std::cout << std::endl;
 
-    Example_Hash_Table<uint32_t,uint32_t> example_hash_table11(exampleKeyNum,exampleHashTableSize,dycuckoo_hash5,modulo,
+    Example_Hash_Table<uint32_t,uint32_t> example_hash_table11(exampleKeyNum,0,exampleHashTableSize,dycuckoo_hash5,modulo,
                                                                num_threads_per_block,block_num);
     example_hash_table11.createCells();
     example_hash_table11.insertTestCells2(no_probe);
