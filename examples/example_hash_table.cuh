@@ -115,19 +115,19 @@ class Example_Hash_Table{
             std::random_device generator;
             size_t seed = generator();
             std::mt19937 rnd(seed);
-            
+
             std::vector<cell<T1,T2>> cells_vector;
             cells_vector.reserve(exampleCellOccupySize);
 
-            std::uniform_int_distribution<T1> dist(1,exampleCellOccupySize);
+            T1 key = 0; 
+            T2 value = 0;
 
-            T1 key = 1;
-            T2 value = dist(rnd); 
-        
             for (size_t i = 0; i < exampleCellOccupySize; i++){    
-                cells_vector.push_back(cell<T1,T2>{key,value});
                 ++key;
-            }          
+                ++value;
+                cells_vector.push_back(cell<T1,T2>{key,value});
+            }     
+
             std::shuffle(cells_vector.begin(), cells_vector.end(), rnd);
             std::copy(cells_vector.begin(),cells_vector.end(),exampleCellOccupyList.begin());
         };
