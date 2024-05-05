@@ -114,6 +114,12 @@ hash_type Hash_Table<T1,T2>::getHashType(){
     return type_hash;
 };
 
+//Ändere den Hashtyp einer Hashtabelle
+template <typename T1, typename T2>
+void Hash_Table<T1,T2>::replaceHashType(hash_type typeHash){
+    type_hash = typeHash;
+};
+
 //Gebe eine der zwei Hashfunktionen in der Hashtabelle zurück 
 template <typename T1, typename T2>
 hash_function Hash_Table<T1,T2>::getHashFunction(int i){
@@ -131,7 +137,19 @@ hash_function Hash_Table<T1,T2>::getHashFunction(int i){
 template <typename T1, typename T2>
 kernel_dimension Hash_Table<T1,T2>::getKernelDimension(){
     return dimension_kernel;
-}
+};
+
+//Ändere die Dimension eines Kernelaufrufes
+template <typename T1, typename T2>
+bool Hash_Table<T1,T2>::replaceKernelDimension(int numBlocks, int numThreadsPerBlock){
+    if (numBlocks > 0 && numThreadsPerBlock > 0){
+        dimension_kernel.num_blocks = numBlocks;
+        dimension_kernel.num_threads_per_block = numThreadsPerBlock;
+        return true;
+    }else{
+        return false;
+    }
+};
 
 //Gebe eine Zeitmessung für eine Operation in der Hashtabelle zurück
 template <typename T1, typename T2>

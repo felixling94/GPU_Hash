@@ -31,9 +31,12 @@ class Hash_Table{
         cell<T1,T2> * getTable(int i = 0);
 
         hash_type getHashType();
+        void replaceHashType(hash_type typeHash);
         hash_function getHashFunction(int i = 0);
 
         kernel_dimension getKernelDimension();
+        bool replaceKernelDimension(int numBlocks = 0, int numThreadsPerBlock = 0);
+
         Benchmark getBenchmark(operation_type type);
         Benchmark * getBenchmarkList();
 

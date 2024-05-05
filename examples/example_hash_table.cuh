@@ -201,6 +201,7 @@ class Example_Hash_Table{
             T2 * valueListOccupyArray;
             std::vector<T1> key_vector, key_occupy_vector;
             std::vector<T2> value_vector, value_occupy_vector;
+            bool kernel_dimension_status;
             
             createOccupyCells();
 
@@ -242,12 +243,21 @@ class Example_Hash_Table{
             std::cout << "SEQUENTIELLE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
             
-            Hash_Table<T1,T2> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize);
+            Hash_Table<T1,T2> hash_table1(HashType,examplefunction1,examplefunction2,exampleHashTableSize,exampleCellOccupySize,1);
 
             CPUTimer timer;
             timer.start();
-            hash_table1.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
+            
+            if (exampleCellOccupySize > 0){
+                hash_table1.replaceHashType(no_probe);
+                
+                hash_table1.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
+                
+                hash_table1.replaceHashType(HashType);
+            }
+           
             for (size_t i=0; i<exampleCellSize; i++) hash_table1.insert(keyListArray[i],valueListArray[i]);
+            
             timer.stop();
 
             hash_table1.print();
@@ -264,7 +274,16 @@ class Example_Hash_Table{
                                       exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
             std::cout << "PARALLELE AUSFÜHRUNG" << std::endl;
             std::cout << std::endl;
-            hash_table2.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
+
+            if (exampleCellOccupySize > 0){
+                hash_table2.replaceHashType(no_probe);
+                kernel_dimension_status = hash_table2.replaceKernelDimension(exampleCellOccupySize,1);
+               
+                hash_table2.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
+                
+                hash_table2.replaceHashType(HashType);
+                kernel_dimension_status = hash_table2.replaceKernelDimension(exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
+            }
 
             hash_table2.insert_List(key_vector.data(), value_vector.data(), exampleCellSize);
             Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
@@ -309,6 +328,7 @@ class Example_Hash_Table{
             T2 * valueListOccupyArray;
             std::vector<T1> key_vector, key_occupy_vector;
             std::vector<T2> value_vector, value_occupy_vector;
+            bool kernel_dimension_status;
             
             std::string HashTypeString;
             float averageDurationUpload, averageDurationRun, averageDurationDownload, averageDurationTotal, averageNumCellsInsert;
@@ -346,8 +366,16 @@ class Example_Hash_Table{
             for (int i = 0; i < Test_Num; i++){
                 Hash_Table<T1,T2> hash_table2(HashType,examplefunction1,examplefunction2,exampleHashTableSize, 
                                           exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
-                hash_table2.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
-                
+                if (exampleCellOccupySize > 0){
+                    hash_table2.replaceHashType(no_probe);
+                    kernel_dimension_status = hash_table2.replaceKernelDimension(exampleCellOccupySize,1);
+                    
+                    hash_table2.insert_List(key_occupy_vector.data(), value_occupy_vector.data(), exampleCellOccupySize);
+                    
+                    hash_table2.replaceHashType(HashType);
+                    kernel_dimension_status = hash_table2.replaceKernelDimension(exampleKernelDimension.num_blocks, exampleKernelDimension.num_threads_per_block);
+                }
+
                 hash_table2.insert_List(key_vector.data(), value_vector.data(), exampleCellSize);
                 Benchmark Benchmark_Insert = hash_table2.getBenchmark(insert_hash_table);
                 
